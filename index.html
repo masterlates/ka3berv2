@@ -335,10 +335,16 @@
                 </div>
             </div>
             
-            <!-- Host-only button to end question early -->
-            <button id="end-question-early-button" class="w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out mt-6 hidden">
-                <i class="fas fa-flag-checkered"></i> إنهاء السؤال الآن <!-- End question early button -->
-            </button>
+            <!-- Host-only controls during game play -->
+            <div id="host-gameplay-controls" class="w-full flex flex-col items-center gap-4 hidden">
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">حالة إجابة اللاعبين (المضيف فقط):</h3>
+                <ul id="host-submission-status-list" class="w-full bg-gray-100 border border-gray-200 rounded-lg p-3 mb-4 shadow-inner text-base max-h-32 overflow-y-auto">
+                    <!-- Player submission status will be listed here -->
+                </ul>
+                <button id="end-question-early-button" class="w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out">
+                    <i class="fas fa-flag-checkered"></i> إنهاء السؤال الآن <!-- End question early button -->
+                </button>
+            </div>
         </div>
 
         <!-- Question Results Screen (New) -->
@@ -423,28 +429,28 @@
             {
                 category: "عواصم الدول العربية",
                 questions: [
-                    { questionText: "ما هي عاصمة تونس؟", correctAnswers: ["تونس"] },
-                    { questionText: "ما هي عاصمة مصر؟", correctAnswers: ["القاهرة"] },
-                    { questionText: "ما هي عاصمة السعودية؟", correctAnswers: ["الرياض"] },
-                    { questionText: "ما هي عاصمة العراق؟", correctAnswers: ["بغداد"] },
-                    { questionText: "ما هي عاصمة سوريا؟", correctAnswers: ["دمشق"] },
-                    { questionText: "ما هي عاصمة الأردن؟", correctAnswers: ["عمان"] },
-                    { questionText: "ما هي عاصمة لبنان؟", correctAnswers: ["بيروت"] },
-                    { questionText: "ما هي عاصمة المغرب؟", correctAnswers: ["الرباط"] },
-                    { questionText: "ما هي عاصمة الجزائر؟", correctAnswers: ["الجزائر"] },
-                    { questionText: "ما هي عاصمة السودان؟", correctAnswers: ["الخرطوم"] },
-                    { questionText: "ما هي عاصمة اليمن؟", correctAnswers: ["صنعاء"] },
-                    { questionText: "ما هي عاصمة الإمارات؟", correctAnswers: ["ابوظبي", "أبو ظبي"] },
-                    { questionText: "ما هي عاصمة قطر؟", correctAnswers: ["الدوحة"] },
-                    { questionText: "ما هي عاصمة الكويت؟", correctAnswers: ["الكويت"] },
-                    { questionText: "ما هي عاصمة البحرين؟", correctAnswers: ["المنامة"] },
-                    { questionText: "ما هي عاصمة الصومال؟", correctAnswers: ["مقديشو"] },
-                    { questionText: "ما هي عاصمة جيبوتي؟", correctAnswers: ["جيبوتي"] },
-                    { questionText: "ما هي عاصمة جزر القمر؟", correctAnswers: ["موروني"] },
-                    { questionText: "ما هي عاصمة ليبيا؟", correctAnswers: ["طرابلس"] },
-                    { questionText: "ما هي عاصمة موريتانيا؟", correctAnswers: ["نواكشوط"] },
-                    { questionText: "ما هي عاصمة سلطنة عمان؟", correctAnswers: ["مسقط"] },
-                    { questionText: "ما هي عاصمة فلسطين؟", correctAnswers: ["القدس"] }
+                    { questionText: "ما هي عاصمة تونس؟", correctAnswers: ["تونس", "tunis"] },
+                    { questionText: "ما هي عاصمة مصر؟", correctAnswers: ["القاهرة", "cairo"] },
+                    { questionText: "ما هي عاصمة السعودية؟", correctAnswers: ["الرياض", "riyadh"] },
+                    { questionText: "ما هي عاصمة العراق؟", correctAnswers: ["بغداد", "baghdad"] },
+                    { questionText: "ما هي عاصمة سوريا؟", correctAnswers: ["دمشق", "damascus"] },
+                    { questionText: "ما هي عاصمة الأردن؟", correctAnswers: ["عمان", "amman"] },
+                    { questionText: "ما هي عاصمة لبنان؟", correctAnswers: ["بيروت", "beirut"] },
+                    { questionText: "ما هي عاصمة المغرب؟", correctAnswers: ["الرباط", "rabat"] },
+                    { questionText: "ما هي عاصمة الجزائر؟", correctAnswers: ["الجزائر", "algiers"] },
+                    { questionText: "ما هي عاصمة السودان؟", correctAnswers: ["الخرطوم", "khartoum"] },
+                    { questionText: "ما هي عاصمة اليمن؟", correctAnswers: ["صنعاء", "sanaa"] },
+                    { questionText: "ما هي عاصمة الإمارات؟", correctAnswers: ["ابوظبي", "أبو ظبي", "abu dhabi"] },
+                    { questionText: "ما هي عاصمة قطر؟", correctAnswers: ["الدوحة", "doha"] },
+                    { questionText: "ما هي عاصمة الكويت؟", correctAnswers: ["الكويت", "kuwait"] },
+                    { questionText: "ما هي عاصمة البحرين؟", correctAnswers: ["المنامة", "manama"] },
+                    { questionText: "ما هي عاصمة الصومال؟", correctAnswers: ["مقديشو", "mogadishu"] },
+                    { questionText: "ما هي عاصمة جيبوتي؟", correctAnswers: ["جيبوتي", "djibouti"] },
+                    { questionText: "ما هي عاصمة جزر القمر؟", correctAnswers: ["موروني", "moroni"] },
+                    { questionText: "ما هي عاصمة ليبيا؟", correctAnswers: ["طرابلس", "tripoli"] },
+                    { questionText: "ما هي عاصمة موريتانيا؟", correctAnswers: ["نواكشوط", "nouakchott"] },
+                    { questionText: "ما هي عاصمة سلطنة عمان؟", correctAnswers: ["مسقط", "muscat"] },
+                    { questionText: "ما هي عاصمة فلسطين؟", correctAnswers: ["القدس", "jerusalem"] }
                 ]
             },
             {
@@ -460,26 +466,26 @@
             {
                 category: "عواصم دول أوروبية",
                 questions: [
-                    { questionText: "ما هي عاصمة ألمانيا؟", correctAnswers: ["برلين"] },
-                    { questionText: "ما هي عاصمة فرنسا؟", correctAnswers: ["باريس"] },
-                    { questionText: "ما هي عاصمة إيطاليا؟", correctAnswers: ["روما"] },
-                    { questionText: "ما هي عاصمة إسبانيا؟", correctAnswers: ["مدريد"] },
-                    { questionText: "ما هي عاصمة المملكة المتحدة؟", correctAnswers: ["لندن"] },
-                    { questionText: "ما هي عاصمة بولندا؟", correctAnswers: ["وارسو"] },
-                    { questionText: "ما هي عاصمة أوكرانيا؟", correctAnswers: ["كييف"] },
-                    { questionText: "ما هي عاصمة رومانيا؟", correctAnswers: ["بوخارست"] },
-                    { questionText: "ما هي عاصمة هولندا؟", correctAnswers: ["أمستردام"] },
-                    { questionText: "ما هي عاصمة بلجيكا؟", correctAnswers: ["بروكسل"] },
-                    { questionText: "ما هي عاصمة اليونان؟", correctAnswers: ["أثينا"] },
-                    { questionText: "ما هي عاصمة البرتغال؟", correctAnswers: ["لشبونة"] },
-                    { questionText: "ما هي عاصمة السويد؟", correctAnswers: ["ستوكهولم"] },
-                    { questionText: "ما هي عاصمة النمسا؟", correctAnswers: ["فيينا"] },
-                    { questionText: "ما هي عاصمة سويسرا؟", correctAnswers: ["برن"] },
-                    { questionText: "ما هي عاصمة الدنمارك؟", correctAnswers: ["كوبنهاغن"] },
-                    { questionText: "ما هي عاصمة فنلندا؟", correctAnswers: ["هلسنكي"] },
-                    { questionText: "ما هي عاصمة النرويج؟", correctAnswers: ["أوسلو"] },
-                    { questionText: "ما هي عاصمة إيرلندا؟", correctAnswers: ["دبلن"] },
-                    { questionText: "ما هي عاصمة كرواتيا؟", correctAnswers: ["زغرب"] }
+                    { questionText: "ما هي عاصمة ألمانيا؟", correctAnswers: ["برلين", "berlin"] },
+                    { questionText: "ما هي عاصمة فرنسا؟", correctAnswers: ["باريس", "paris"] },
+                    { questionText: "ما هي عاصمة إيطاليا؟", correctAnswers: ["روما", "rome"] },
+                    { questionText: "ما هي عاصمة إسبانيا؟", correctAnswers: ["مدريد", "madrid"] },
+                    { questionText: "ما هي عاصمة المملكة المتحدة؟", correctAnswers: ["لندن", "london"] },
+                    { questionText: "ما هي عاصمة بولندا؟", correctAnswers: ["وارسو", "warsaw"] },
+                    { questionText: "ما هي عاصمة أوكرانيا؟", correctAnswers: ["كييف", "kiev"] },
+                    { questionText: "ما هي عاصمة رومانيا؟", correctAnswers: ["بوخارست", "bucharest"] },
+                    { questionText: "ما هي عاصمة هولندا؟", correctAnswers: ["أمستردام", "amsterdam"] },
+                    { questionText: "ما هي عاصمة بلجيكا؟", correctAnswers: ["بروكسل", "brussels"] },
+                    { questionText: "ما هي عاصمة اليونان؟", correctAnswers: ["أثينا", "athens"] },
+                    { questionText: "ما هي عاصمة البرتغال؟", correctAnswers: ["لشبونة", "lisbon"] },
+                    { questionText: "ما هي عاصمة السويد؟", correctAnswers: ["ستوكهولم", "stockholm"] },
+                    { questionText: "ما هي عاصمة النمسا؟", correctAnswers: ["فيينا", "vienna"] },
+                    { questionText: "ما هي عاصمة سويسرا؟", correctAnswers: ["برن", "bern"] },
+                    { questionText: "ما هي عاصمة الدنمارك؟", correctAnswers: ["كوبنهاغن", "copenhagen"] },
+                    { questionText: "ما هي عاصمة فنلندا؟", correctAnswers: ["هلسنكي", "helsinki"] },
+                    { questionText: "ما هي عاصمة النرويج؟", correctAnswers: ["أوسلو", "oslo"] },
+                    { questionText: "ما هي عاصمة إيرلندا؟", correctAnswers: ["دبلن", "dublin"] },
+                    { questionText: "ما هي عاصمة كرواتيا؟", correctAnswers: ["زغرب", "zagreb"] }
                 ]
             },
             {
@@ -495,11 +501,11 @@
             {
                 category: "عواصم دول العالم (غير العربية)",
                 questions: [
-                    { questionText: "ما هي عاصمة اليابان؟", correctAnswers: ["طوكيو"] },
-                    { questionText: "ما هي عاصمة الولايات المتحدة الأمريكية؟", correctAnswers: ["واشنطن"] },
-                    { questionText: "ما هي عاصمة روسيا؟", correctAnswers: ["موسكو"] },
-                    { questionText: "ما هي عاصمة الصين؟", correctAnswers: ["بكين"] },
-                    { questionText: "ما هي عاصمة الهند؟", correctAnswers: ["نيودلهي"] }
+                    { questionText: "ما هي عاصمة اليابان؟", correctAnswers: ["طوكيو", "tokyo"] },
+                    { questionText: "ما هي عاصمة الولايات المتحدة الأمريكية؟", correctAnswers: ["واشنطن", "washington"] },
+                    { questionText: "ما هي عاصمة روسيا؟", correctAnswers: ["موسكو", "moscow"] },
+                    { questionText: "ما هي عاصمة الصين؟", correctAnswers: ["بكين", "beijing"] },
+                    { questionText: "ما هي عاصمة الهند؟", correctAnswers: ["نيودلهي", "new delhi"] }
                 ]
             }
         ];
@@ -658,7 +664,10 @@
 
         const gameCountdownScreen = document.getElementById('game-countdown-screen'); // Renamed from countdownScreen
         const countdownTimerDisplay = document.getElementById('countdown-timer-display'); // Countdown timer display element
-        const questionCounterDisplay = document.getElementById('question-counter'); // NEW: Question counter display
+        const questionCounterDisplay = document.getElementById('question-counter'); // Question counter display
+
+        const hostSubmissionStatusList = document.getElementById('host-submission-status-list'); // NEW: For host to see player submission status
+        const hostGameplayControls = document.getElementById('host-gameplay-controls'); // NEW: Container for host controls in gameplay
 
 
         const endTitle = document.getElementById('end-title');
@@ -696,7 +705,9 @@
                 'gameCountdownScreen': gameCountdownScreen, // Renamed
                 'countdownTimerDisplay': countdownTimerDisplay,
                 'totalQuestionsPerGameSelect': totalQuestionsPerGameSelect,
-                'questionCounterDisplay': questionCounterDisplay // New
+                'questionCounterDisplay': questionCounterDisplay,
+                'hostSubmissionStatusList': hostSubmissionStatusList, // New
+                'hostGameplayControls': hostGameplayControls // New
             };
 
             for (const id in requiredElements) {
@@ -852,7 +863,7 @@
 
         // Hides the loading spinner overlay
         function hideLoading() {
-            if (loadingOverlay) loadingOverlay.classList.add('hidden');
+            if (loadingOverlay) loading.classList.add('hidden');
         }
 
         // Hides all game screens and shows the specified one
@@ -1089,7 +1100,7 @@
         }
 
         // Initiates the game start countdown (only once at the very beginning)
-        async function initiateGameStartCountdown() { // Renamed from initiateCountdownForNextQuestion
+        async function initiateGameStartCountdown() { 
             showLoading();
             try {
                 if (!gameId) throw new Error("لا يوجد معرف لعبة.");
@@ -1109,7 +1120,7 @@
 
                 // Update game phase to game_countdown and set countdown start time
                 await gameRef.update({
-                    gamePhase: 'game_countdown', // NEW phase for initial countdown
+                    gamePhase: 'game_countdown', // Phase for initial game countdown
                     countdownStartTime: Date.now(),
                     countdownDuration: 5 // 5 seconds countdown for game start
                 });
@@ -1176,14 +1187,13 @@
                 console.log("Reset player-specific question data for new question.");
 
                 // Reset player's local UI for the new question
-                if (playerCorrectGuessesList) playerCorrectGuessesList.innerHTML = ''; 
                 if (gameGuessInput) {
-                    gameGuessInput.value = '';
+                    gameGuessInput.value = ''; // Clear input field for ALL players
                 }
                 // Reset points button selection to default (1) and re-enable them
                 selectedPointsBet = 1;
                 populatePointsButtons(); // Re-render buttons to reset selection visually and enable
-                
+
                 console.log(`Starting question ${currentQuestionIndex + 1}: ${currentQuestion.category} - Question: ${currentQuestion.question}`);
 
             } catch (error) {
@@ -1363,13 +1373,11 @@
 
                     if (hasSubmittedAnswer) {
                         console.log("Player already submitted answer for this question (transaction check).");
-                        showCustomMessageBox("تم الإجابة", "لقد أجبت بالفعل على هذا السؤال.");
-                        return; // Exit transaction if already submitted
+                        throw new Error("لقد أجبت بالفعل على هذا السؤال."); // Throw specific error to be caught below
                     }
                     if (playerUsedPointsBets.includes(pointsBet)) {
                          console.log("Player already used this point value in this game (transaction check).");
-                         showCustomMessageBox("نقاط مستخدمة", `لقد استخدمت قيمة ${pointsBet} نقطة بالفعل في هذه اللعبة. الرجاء اختيار قيمة أخرى.`);
-                         return; // Exit transaction if points already used
+                         throw new Error(`لقد استخدمت قيمة ${pointsBet} نقطة بالفعل في هذه اللعبة. الرجاء اختيار قيمة أخرى.`); // Throw specific error
                     }
 
 
@@ -1414,11 +1422,11 @@
 
             } catch (error) {
                 console.error("Error submitting guess:", error);
-                // Check for specific Firestore errors (e.g., aborts from transaction logic)
-                if (error === "Player already submitted answer for this question.") {
-                     showCustomMessageBox("تم الإجابة", "لقد أجبت بالفعل على هذا السؤال.");
-                } else if (typeof error === 'string' && error.includes("لقد استخدمت قيمة")) { // Specific check for the points re-use error
-                     showCustomMessageBox("نقاط مستخدمة", error); // Show the specific message
+                // Catch specific errors thrown from transaction
+                if (error.message.includes("لقد أجبت بالفعل")) {
+                     showCustomMessageBox("تم الإجابة", error.message);
+                } else if (error.message.includes("لقد استخدمت قيمة")) { 
+                     showCustomMessageBox("نقاط مستخدمة", error.message);
                 }
                 else {
                     showCustomMessageBox("خطأ في الإجابة", error.message || "حدث خطأ أثناء إرسال الإجابة.");
@@ -1525,9 +1533,9 @@
 
                         // Show/hide "End Question Early" button for host only during game play
                         if (isHost) {
-                            if (endQuestionEarlyButton) endQuestionEarlyButton.classList.remove('hidden');
+                            if (hostGameplayControls) hostGameplayControls.classList.remove('hidden'); // Show host controls
                         } else {
-                            if (endQuestionEarlyButton) endQuestionEarlyButton.classList.add('hidden');
+                            if (hostGameplayControls) hostGameplayControls.classList.add('hidden'); // Hide host controls
                         }
 
                         // Host-specific timer logic: Host updates time in Firestore
@@ -1583,7 +1591,7 @@
                             roundCorrectAnswersList.innerHTML = '';
                             (gameData.currentCorrectAnswers || []).forEach(answer => { // Use currentCorrectAnswers for this question
                                 const listItem = document.createElement('li');
-                                // Highlight if it was guessed by anyone (from shared guesses)
+                                // Highlight if it was guessed by anyone
                                 if ((gameData.currentQuestionGuessedAnswers || []).includes(answer)) {
                                     listItem.innerHTML = `<i class="fas fa-check text-green-500 mr-2"></i> ${answer}`;
                                 } else {
@@ -1650,6 +1658,12 @@
                         hostIdFromGame = gameDoc.data().hostId;
                     }
 
+                    // NEW: Update host submission status list
+                    if (hostSubmissionStatusList && isHost) { // Only update if current user is host
+                        hostSubmissionStatusList.innerHTML = '';
+                    }
+
+
                     snapshot.forEach((doc) => {
                         const playerData = doc.data();
                         const playerId = doc.id;
@@ -1666,6 +1680,17 @@
                             listItem.innerHTML = `${playerDisplayName} (ID: ${playerId.substring(0, 8)}... - النقاط: ${playerData.score || 0})`;
                             joinedPlayersList.appendChild(listItem);
                         }
+
+                        // NEW: Update host's view of player submission status
+                        if (hostSubmissionStatusList && isHost) {
+                            const statusItem = document.createElement('li');
+                            let statusIcon = playerData.hasSubmittedAnswer 
+                                ? '<i class="fas fa-check-circle text-green-500 ml-2"></i>' 
+                                : '<i class="fas fa-hourglass-half text-gray-500 ml-2"></i>';
+                            statusItem.innerHTML = `${playerData.nickname || 'لاعب مجهول'}: ${statusIcon}`;
+                            hostSubmissionStatusList.appendChild(statusItem);
+                        }
+
 
                         // Update current player's overall score (only for self)
                         if (playerId === userId) {
