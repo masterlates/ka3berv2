@@ -199,6 +199,24 @@
             </button>
         </div>
 
+        <!-- Join Game Screen (Player) -->
+        <div id="join-game-screen" class="w-full flex flex-col items-center hidden">
+            <h2 class="text-3xl font-bold text-indigo-700 mb-6">الانضمام إلى غرفة اللعب</h2> <!-- Join game title -->
+            <div class="w-full mb-6">
+                <label for="game-code-input" class="block text-xl font-semibold text-gray-700 mb-2">أدخل رمز الغرفة:</label> <!-- Game code input label -->
+                <input type="text" id="game-code-input" placeholder="مثال: ABCDE"
+                       class="w-full p-4 mb-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50 uppercase text-center tracking-widest">
+            </div>
+             <div class="w-full mb-6">
+                <label for="player-nickname-input" class="block text-xl font-semibold text-gray-700 mb-2">أدخل اسمك المستعار:</label> <!-- Player nickname input label -->
+                <input type="text" id="player-nickname-input" placeholder="اسمك"
+                       class="w-full p-4 mb-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50 text-center">
+            </div>
+            <button id="join-room-button" class="w-full bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
+                <i class="fas fa-door-open"></i> الانضمام <!-- Join button -->
+            </button>
+        </div>
+
         <!-- Game Play Screen (Host & Player) -->
         <div id="game-play-screen" class="w-full hidden">
             <div class="flex flex-col md:flex-row justify-between items-center w-full mb-8 space-y-4 md:space-y-0">
@@ -343,12 +361,17 @@
         
         // Multi-select quiz categories logic
         let selectedQuizIndices = [];
+        // Defensive check for elements - getElementById returns null if not found
         const quizCategoryInput = document.getElementById('quiz-category-input');
         const quizCategoryDropdown = document.getElementById('quiz-category-dropdown');
         const selectedCategoriesTags = document.getElementById('selected-categories-tags');
 
         // Function to populate and manage the multi-select dropdown
         function setupQuizCategorySelection() {
+            if (!quizCategoryDropdown) {
+                console.error("Error: quizCategoryDropdown element not found.");
+                return;
+            }
             quizCategoryDropdown.innerHTML = ''; // Clear previous options
             quizzes.forEach((quiz, index) => {
                 const label = document.createElement('label');
@@ -379,6 +402,10 @@
 
         // Function to update the displayed tags for selected categories
         function updateSelectedCategoriesTags() {
+            if (!selectedCategoriesTags) {
+                console.error("Error: selectedCategoriesTags element not found.");
+                return;
+            }
             selectedCategoriesTags.innerHTML = '';
             selectedQuizIndices.forEach(index => {
                 const quiz = quizzes[index];
@@ -399,27 +426,39 @@
                 }
             });
             // Update input placeholder based on selection
-            if (selectedQuizIndices.length === 0) {
-                quizCategoryInput.placeholder = "انقر هنا لاختيار الفئات...";
-            } else {
-                quizCategoryInput.placeholder = `تم اختيار ${selectedQuizIndices.length} فئات`;
+            if (quizCategoryInput) {
+                if (selectedQuizIndices.length === 0) {
+                    quizCategoryInput.placeholder = "انقر هنا لاختيار الفئات...";
+                } else {
+                    quizCategoryInput.placeholder = `تم اختيار ${selectedQuizIndices.length} فئات`;
+                }
             }
         }
-
-        // Toggle dropdown visibility
-        quizCategoryInput.addEventListener('click', () => {
-            quizCategoryDropdown.classList.toggle('hidden');
-        });
+        
+        // Add event listeners only if elements exist
+        if (quizCategoryInput) {
+            // Toggle dropdown visibility
+            quizCategoryInput.addEventListener('click', () => {
+                if (quizCategoryDropdown) {
+                    quizCategoryDropdown.classList.toggle('hidden');
+                }
+            });
+        }
 
         // Hide dropdown when clicking outside
         document.addEventListener('click', (event) => {
-            if (!quizCategoryInput.contains(event.target) && !quizCategoryDropdown.contains(event.target)) {
+            // Ensure elements exist before checking contains
+            const clickedInsideInput = quizCategoryInput && quizCategoryInput.contains(event.target);
+            const clickedInsideDropdown = quizCategoryDropdown && quizCategoryDropdown.contains(event.target);
+            
+            if (quizCategoryDropdown && !clickedInsideInput && !clickedInsideDropdown) {
                 quizCategoryDropdown.classList.add('hidden');
             }
         });
 
 
         // --- DOM Elements (Get references to HTML elements) ---
+        // Defensive checks for all DOM elements to catch missing ones early
         const loadingOverlay = document.getElementById('loading-overlay');
         const roleSelectionScreen = document.getElementById('role-selection-screen');
         const hostSetupScreen = document.getElementById('host-setup-screen');
@@ -467,6 +506,38 @@
         const customMessageTitle = document.getElementById('custom-message-title');
         const customMessageContent = document.getElementById('custom-message-content');
         const customMessageCloseButton = document.getElementById('custom-message-close-button');
+
+        // Initial check for all important DOM elements
+        document.addEventListener('DOMContentLoaded', () => {
+            const requiredElements = {
+                'loadingOverlay': loadingOverlay,
+                'roleSelectionScreen': roleSelectionScreen,
+                'createHostButton': createHostButton,
+                'joinPlayerButton': joinPlayerButton,
+                // Add other critical elements here
+                'gameLinkDisplay': gameLinkDisplay,
+                'qrcodeDiv': qrcodeDiv,
+                'copyLinkButton': copyLinkButton,
+                'customMessageBox': customMessageBox
+            };
+
+            for (const id in requiredElements) {
+                if (!requiredElements[id]) {
+                    console.error(`CRITICAL ERROR: Element with ID '${id}' not found in the DOM. Please check your HTML.`);
+                    // Display a persistent error message to the user if a critical element is missing
+                    document.body.innerHTML = `
+                        <div style="text-align: center; color: red; font-size: 1.5em; margin-top: 50px;">
+                            خطأ فادح: لم يتم العثور على مكونات أساسية في الصفحة. يرجى إبلاغ مطور اللعبة.
+                        </div>
+                    `;
+                    // Prevent further script execution if a critical element is missing
+                    throw new Error(`Element ${id} not found.`);
+                }
+            }
+            // If all critical elements are found, proceed with Firebase init
+            initializeFirebase();
+        });
+
 
         // --- Firebase Initialization ---
         // This function initializes Firebase and handles user authentication.
@@ -550,37 +621,59 @@
         // --- UI Management Functions ---
         // Shows the loading spinner overlay
         function showLoading() {
-            loadingOverlay.classList.remove('hidden');
+            if (loadingOverlay) loadingOverlay.classList.remove('hidden');
         }
 
         // Hides the loading spinner overlay
         function hideLoading() {
-            loadingOverlay.classList.add('hidden');
+            if (loadingOverlay) loadingOverlay.classList.add('hidden');
         }
 
         // Hides all game screens and shows the specified one
         function showScreen(screenElement) {
-            // Hide all potential screens
-            roleSelectionScreen.classList.add('hidden');
-            hostSetupScreen.classList.add('hidden');
-            waitingRoomScreen.classList.add('hidden');
-            joinGameScreen.classList.add('hidden');
-            gamePlayScreen.classList.add('hidden');
-            roundResultsScreen.classList.add('hidden'); // Hide new round results screen
-            gameEndScreen.classList.add('hidden');
-            customMessageBox.classList.add('hidden'); // Also ensure custom message box is hidden
+            console.log("Attempting to show screen:", screenElement ? screenElement.id : "undefined/null screenElement");
 
-            // Show the target screen
-            screenElement.classList.remove('hidden');
-            // If it's not the message box, ensure the message box is hidden
-            if (screenElement !== customMessageBox) {
-                customMessageBox.classList.remove('flex', 'opacity-100');
+            // Ensure screenElement is a valid DOM element
+            if (!screenElement || !(screenElement instanceof HTMLElement)) {
+                console.error("Invalid screenElement provided to showScreen:", screenElement);
+                showCustomMessageBox("خطأ في العرض", "حدث خطأ غير متوقع في واجهة المستخدم (عنصر الشاشة غير صالح).");
+                return; // Prevent further execution that might blank the screen
+            }
+
+            // Hide all potential screens
+            // It's safer to ensure these elements exist before trying to modify their classes
+            const allScreens = [
+                roleSelectionScreen, hostSetupScreen, waitingRoomScreen,
+                joinGameScreen, gamePlayScreen, roundResultsScreen, gameEndScreen
+            ];
+            allScreens.forEach(screen => {
+                if (screen && screen instanceof HTMLElement) { // Defensive check
+                    screen.classList.add('hidden');
+                }
+            });
+            
+            // Hide the custom message box if it's currently showing
+            if (customMessageBox) {
                 customMessageBox.classList.add('hidden', 'opacity-0');
+            }
+
+            // Then show the target screen
+            screenElement.classList.remove('hidden');
+            // If the screen is supposed to be visible, ensure it's not also hidden by the message box logic
+            if (screenElement !== customMessageBox) {
+                screenElement.classList.remove('flex', 'opacity-100'); // Ensure it doesn't get message box styles
             }
         }
 
         // Displays a custom message box (replacement for alert/confirm)
         function showCustomMessageBox(title, content) {
+            // Defensive checks for message box elements
+            if (!customMessageBox || !customMessageTitle || !customMessageContent) {
+                console.error("Error: Custom message box elements not found. Cannot display message.");
+                // Fallback to native alert if custom message box is critical and missing
+                alert(`خطأ: ${title}\n${content}`);
+                return;
+            }
             customMessageTitle.textContent = title;
             customMessageContent.textContent = content;
             customMessageBox.classList.remove('hidden', 'opacity-0');
@@ -589,8 +682,10 @@
 
         // Hides the custom message box
         function hideCustomMessageBox() {
-            customMessageBox.classList.remove('flex', 'opacity-100');
-            customMessageBox.classList.add('hidden', 'opacity-0'); // Remove flex and opacity for fade-out
+            if (customMessageBox) {
+                customMessageBox.classList.remove('flex', 'opacity-100');
+                customMessageBox.classList.add('hidden', 'opacity-0'); // Remove flex and opacity for fade-out
+            }
         }
 
         // --- Game Helper Functions ---
@@ -666,14 +761,16 @@
                 console.log("Game created with ID:", gameId);
                 // Display the direct link to the game room
                 const gameRoomLink = `${window.location.origin}${window.location.pathname}?gameId=${gameId}`;
-                gameLinkDisplay.textContent = gameRoomLink; // Display the full link
-                gameLinkDisplay.href = gameRoomLink; // Make it clickable (if needed, though copy is main)
+                if (gameLinkDisplay) {
+                    gameLinkDisplay.textContent = gameRoomLink; // Display the full link
+                    gameLinkDisplay.href = gameRoomLink; // Make it clickable (if needed, though copy is main)
+                }
                 
                 // Try to generate QR code, with fallback if QRCode library is not defined
-                qrcodeDiv.innerHTML = ''; // Clear previous content
-                qrcodeFallbackMessage.textContent = ''; // Clear fallback message
+                if (qrcodeDiv) qrcodeDiv.innerHTML = ''; // Clear previous content
+                if (qrcodeFallbackMessage) qrcodeFallbackMessage.textContent = ''; // Clear fallback message
                 try {
-                    if (typeof QRCode !== 'undefined' && QRCode) { // Explicit check for QRCode global object
+                    if (typeof QRCode !== 'undefined' && QRCode && qrcodeDiv) { // Explicit check for QRCode global object and qrcodeDiv existence
                         new QRCode(qrcodeDiv, {
                             text: gameRoomLink,
                             width: 128,
@@ -684,38 +781,43 @@
                         });
                         console.log("QR Code generated successfully.");
                     } else {
-                        throw new Error("QRCode library not available (fallback).");
+                        throw new Error("QRCode library not available or qrcodeDiv missing (fallback).");
                     }
                 } catch (qrError) {
                     console.warn("Failed to generate QR Code:", qrError);
-                    qrcodeFallbackMessage.textContent = "فشل توليد رمز QR. يرجى استخدام الرابط أعلاه للانضمام.";
-                    // Optionally style qrcodeDiv to show the message better
-                    qrcodeDiv.style.minHeight = 'auto';
-                    qrcodeDiv.style.border = '1px dashed #ddd';
-                    qrcodeDiv.style.padding = '10px';
+                    if (qrcodeFallbackMessage) {
+                        qrcodeFallbackMessage.textContent = "فشل توليد رمز QR. يرجى استخدام الرابط أعلاه للانضمام.";
+                    }
+                    if (qrcodeDiv) { // Optionally style qrcodeDiv to show the message better
+                        qrcodeDiv.style.minHeight = 'auto';
+                        qrcodeDiv.style.border = '1px dashed #ddd';
+                        qrcodeDiv.style.padding = '10px';
+                    }
                 }
 
                 // Add an event listener to copy the link to clipboard
-                copyLinkButton.onclick = () => {
-                    // Use document.execCommand('copy') for better compatibility in iframes
-                    const textArea = document.createElement("textarea");
-                    textArea.value = gameRoomLink;
-                    document.body.appendChild(textArea);
-                    textArea.select();
-                    try {
-                        document.execCommand('copy');
-                        showCustomMessageBox("تم النسخ!", "تم نسخ رابط الغرفة إلى الحافظة.");
-                    } catch (err) {
-                        console.error('Failed to copy text: ', err);
-                        showCustomMessageBox("خطأ في النسخ", "فشل نسخ الرابط، يرجى نسخه يدوياً.");
-                    }
-                    document.body.removeChild(textArea);
-                };
+                if (copyLinkButton) {
+                    copyLinkButton.onclick = () => {
+                        // Use document.execCommand('copy') for better compatibility in iframes
+                        const textArea = document.createElement("textarea");
+                        textArea.value = gameRoomLink;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        try {
+                            document.execCommand('copy');
+                            showCustomMessageBox("تم النسخ!", "تم نسخ رابط الغرفة إلى الحافظة.");
+                        } catch (err) {
+                            console.error('Failed to copy text: ', err);
+                            showCustomMessageBox("خطأ في النسخ", "فشل نسخ الرابط، يرجى نسخه يدوياً.");
+                        }
+                        document.body.removeChild(textArea);
+                    };
+                }
 
                 showScreen(waitingRoomScreen); // Show waiting room screen
                 listenToGameChanges(); // Start listening to the game document for real-time updates
                 listenToPlayers(); // Start listening to players joining the room
-                startGameButton.classList.remove('hidden'); // Show start game button for host
+                if (startGameButton) startGameButton.classList.remove('hidden'); // Show start game button for host
             } catch (error) {
                 console.error("Error creating game:", error);
                 showCustomMessageBox("خطأ في إنشاء اللعبة", error.message || "حدث خطأ أثناء إنشاء الغرفة.");
@@ -755,14 +857,16 @@
                     currentRoundGuessedAnswers: [], // Reset guessed answers for new round
                     roundStartTime: Date.now(),
                     currentTime: gameData.timeLimitPerRound, // Reset timer
-                    // Clear player-specific correct guesses from previous round for results screen
+                    // Reset player-specific correct guesses from previous round for results screen
                     playerRoundCorrectGuesses: {} 
                 });
 
                 // Clear player's correct guesses for the *new* round on their local UI
-                playerCorrectGuessesList.innerHTML = ''; 
-                gameGuessInput.value = '';
-                gameGuessInput.focus();
+                if (playerCorrectGuessesList) playerCorrectGuessesList.innerHTML = ''; 
+                if (gameGuessInput) {
+                    gameGuessInput.value = '';
+                    gameGuessInput.focus();
+                }
 
                 console.log(`Starting round ${currentQuizIndex + 1}: ${nextQuiz.category}`);
 
@@ -863,9 +967,11 @@
                 }
 
                 showScreen(waitingRoomScreen); // Show waiting room screen
-                document.getElementById('waiting-room-title').textContent = `في انتظار بدء اللعبة...`; // Player-specific waiting message
+                if (document.getElementById('waiting-room-title')) document.getElementById('waiting-room-title').textContent = `في انتظار بدء اللعبة...`; // Player-specific waiting message
+                
                 // For players, the game link display will just show the game ID
-                gameLinkDisplay.textContent = `رمز الغرفة: ${gameId}`;
+                if (gameLinkDisplay) gameLinkDisplay.textContent = `رمز الغرفة: ${gameId}`;
+                
                 // Hide QR code and copy button for players
                 if (qrcodeDiv) qrcodeDiv.innerHTML = ''; // Clear QR code
                 if (qrcodeFallbackMessage) qrcodeFallbackMessage.textContent = ''; // Clear fallback message
@@ -884,8 +990,12 @@
         // Submits a player's guess to Firestore
         async function submitGuess() {
             // Only allow submission if gameId is set and we are on the game play screen.
-            if (!gameId || gamePlayScreen.classList.contains('hidden')) {
+            if (!gameId || (gamePlayScreen && gamePlayScreen.classList.contains('hidden'))) {
                  return; // Do nothing if not in active game play
+            }
+            if (!gameGuessInput) {
+                console.error("Error: gameGuessInput element not found.");
+                return;
             }
 
             const guess = normalizeString(gameGuessInput.value); // Get and normalize player's guess
@@ -913,7 +1023,8 @@
                     const currentAllAnswers = gameData.currentAllAnswers || []; // All possible answers for the current round
                     const currentRoundGuessedAnswers = gameData.currentRoundGuessedAnswers || []; // Answers guessed in THIS round by ANY player
                     let playerOverallScore = playerData.score || 0; // Player's overall score
-                    let playerRoundCorrectGuesses = playerData.currentRoundCorrectGuesses || []; // Player's correct guesses for THIS round
+                    // Ensure playerRoundCorrectGuesses is properly initialized and fetched from player data
+                    let playerRoundCorrectGuesses = playerData.currentRoundCorrectGuesses || [];
 
                     // Check if guess is correct AND has not been guessed by ANYONE yet for THIS round
                     if (currentAllAnswers.includes(guess) && !currentRoundGuessedAnswers.includes(guess)) {
@@ -957,37 +1068,35 @@
                     const gameData = docSnap.data();
                     const gamePhase = gameData.gamePhase;
 
-                    // Update global player score (your own score)
-                    // This will be updated by listenToPlayers, but keep this for direct gameData access too if needed.
-                    // (Not strictly necessary here as listenToPlayers handles it)
-
                     // Phase: Waiting room / Lobby
                     if (gamePhase === 'lobby') {
                         showScreen(waitingRoomScreen);
                         // Host sees 'Start Game' (which starts first round)
                         if (isHost) {
-                            startGameButton.textContent = "بدء الجولة الأولى!";
-                            startGameButton.onclick = startNextRound; // Change function for start button
-                            if (joinedPlayersList.children.length > 1) { // If at least host + 1 player
-                                startGameButton.classList.remove('hidden');
-                            } else {
-                                startGameButton.classList.add('hidden');
+                            if (startGameButton) {
+                                startGameButton.textContent = "بدء الجولة الأولى!";
+                                startGameButton.onclick = startNextRound; // Change function for start button
+                                if (joinedPlayersList && joinedPlayersList.children.length > 1) { // If at least host + 1 player
+                                    startGameButton.classList.remove('hidden');
+                                } else {
+                                    startGameButton.classList.add('hidden');
+                                }
                             }
                         } else {
-                            startGameButton.classList.add('hidden'); // Players don't see this button
+                            if (startGameButton) startGameButton.classList.add('hidden'); // Players don't see this button
                         }
                     } 
                     // Phase: Question is active
                     else if (gamePhase === 'question_active') {
                         showScreen(gamePlayScreen);
-                        gameCategoryDisplay.textContent = gameData.currentCategory;
-                        gameGuessInput.focus();
+                        if (gameCategoryDisplay) gameCategoryDisplay.textContent = gameData.currentCategory;
+                        if (gameGuessInput) gameGuessInput.focus();
                         
                         // Show/hide "End Round Early" button for host only during game play
                         if (isHost) {
-                            endRoundEarlyButton.classList.remove('hidden');
+                            if (endRoundEarlyButton) endRoundEarlyButton.classList.remove('hidden');
                         } else {
-                            endRoundEarlyButton.classList.add('hidden');
+                            if (endRoundEarlyButton) endRoundEarlyButton.classList.add('hidden');
                         }
 
                         // Host-specific timer logic: Host updates time in Firestore
@@ -1002,7 +1111,7 @@
                                 if (remainingTime >= 0) {
                                     // Update Firestore with current time and last update timestamp
                                     await gameRef.update({ currentTime: remainingTime, lastUpdate: now });
-                                    gameTimerDisplay.textContent = remainingTime; // Update timer display
+                                    if (gameTimerDisplay) gameTimerDisplay.textContent = remainingTime; // Update timer display
                                 } else {
                                     clearInterval(timerInterval); // Stop timer
                                     // If time runs out, move to round results phase
@@ -1012,18 +1121,20 @@
                         } else {
                             // Player-specific timer logic: Players display time from host's update
                             const timeFromHost = gameData.currentTime;
-                            gameTimerDisplay.textContent = timeFromHost;
+                            if (gameTimerDisplay) gameTimerDisplay.textContent = timeFromHost;
                             // Game status change to 'round_results' or 'final_results' will trigger screen change for players
                         }
 
                         // Update shared correct guesses list for the CURRENT ROUND for all players
-                        sharedRoundGuessesList.innerHTML = ''; // Clear existing list
-                        (gameData.currentRoundGuessedAnswers || []).forEach(answer => {
-                            const listItem = document.createElement('li');
-                            listItem.textContent = answer;
-                            listItem.classList.add('text-purple-700', 'font-semibold', 'opacity-0', 'animate-fade-in-up');
-                            sharedRoundGuessesList.appendChild(listItem);
-                        });
+                        if (sharedRoundGuessesList) {
+                            sharedRoundGuessesList.innerHTML = ''; // Clear existing list
+                            (gameData.currentRoundGuessedAnswers || []).forEach(answer => {
+                                const listItem = document.createElement('li');
+                                listItem.textContent = answer;
+                                listItem.classList.add('text-purple-700', 'font-semibold', 'opacity-0', 'animate-fade-in-up');
+                                sharedRoundGuessesList.appendChild(listItem);
+                            });
+                        }
 
                         // Auto-advance if all answers for the current round are guessed
                         if ((gameData.currentRoundGuessedAnswers || []).length === (gameData.currentAllAnswers || []).length && (gameData.currentAllAnswers || []).length > 0) {
@@ -1038,37 +1149,39 @@
                         showScreen(roundResultsScreen);
                         clearInterval(timerInterval); // Stop any timer
 
-                        resultsCategory.textContent = gameData.currentCategory;
+                        if (resultsCategory) resultsCategory.textContent = gameData.currentCategory;
                         
                         // Display all correct answers for this specific round
-                        roundCorrectAnswersList.innerHTML = '';
-                        (gameData.currentAllAnswers || []).forEach(answer => {
-                            const listItem = document.createElement('li');
-                            // Highlight if it was guessed
-                            if ((gameData.currentRoundGuessedAnswers || []).includes(answer)) {
-                                listItem.innerHTML = `<i class="fas fa-check text-green-500 mr-2"></i> ${answer}`;
-                            } else {
-                                listItem.innerHTML = `<i class="fas fa-times text-red-500 mr-2"></i> ${answer}`;
-                            }
-                            roundCorrectAnswersList.appendChild(listItem);
-                        });
+                        if (roundCorrectAnswersList) {
+                            roundCorrectAnswersList.innerHTML = '';
+                            (gameData.currentAllAnswers || []).forEach(answer => {
+                                const listItem = document.createElement('li');
+                                // Highlight if it was guessed
+                                if ((gameData.currentRoundGuessedAnswers || []).includes(answer)) {
+                                    listItem.innerHTML = `<i class="fas fa-check text-green-500 mr-2"></i> ${answer}`;
+                                } else {
+                                    listItem.innerHTML = `<i class="fas fa-times text-red-500 mr-2"></i> ${answer}`;
+                                }
+                                roundCorrectAnswersList.appendChild(listItem);
+                            });
+                        }
 
                         // Display player scores for this round (fetching live data from players subcollection)
                         showRoundPlayerScores();
 
                         // Host controls for next round or end game
-                        if (isHost) {
+                        if (isHost && roundResultsHostControls) {
                             roundResultsHostControls.classList.remove('hidden');
                             // Check if there are more quizzes
                             if (gameData.currentQuizIndexInOrder < gameData.quizSet.length) {
-                                nextRoundButton.classList.remove('hidden');
-                                endGameFinalButton.classList.add('hidden'); // Hide end game button if more rounds
+                                if (nextRoundButton) nextRoundButton.classList.remove('hidden');
+                                if (endGameFinalButton) endGameFinalButton.classList.add('hidden'); // Hide end game button if more rounds
                             } else {
-                                nextRoundButton.classList.add('hidden'); // Hide next round button
-                                endGameFinalButton.classList.remove('hidden'); // Show end game button
+                                if (nextRoundButton) nextRoundButton.classList.add('hidden'); // Hide next round button
+                                if (endGameFinalButton) endGameFinalButton.classList.remove('hidden'); // Show end game button
                             }
                         } else {
-                            roundResultsHostControls.classList.add('hidden'); // Hide host controls for players
+                            if (roundResultsHostControls) roundResultsHostControls.classList.add('hidden'); // Hide host controls for players
                         }
                     }
                     // Phase: Final Game Results
@@ -1096,8 +1209,8 @@
             const q = playersRef;
 
             playersSnapshotUnsubscribe = q.onSnapshot((snapshot) => {
-                joinedPlayersList.innerHTML = ''; // Clear current list of joined players
-                playerCorrectGuessesList.innerHTML = ''; // Clear player's own current round guesses display
+                if (joinedPlayersList) joinedPlayersList.innerHTML = ''; // Clear current list of joined players
+                if (playerCorrectGuessesList) playerCorrectGuessesList.innerHTML = ''; // Clear player's own current round guesses display
 
                 let currentPlayerOverallScore = 0;
                 let currentPlayerRoundCorrectGuesses = [];
@@ -1107,26 +1220,30 @@
                     const playerId = doc.id;
 
                     // Update the list of joined players in the waiting room
-                    const listItem = document.createElement('li');
-                    // Display partial user ID for uniqueness and debugging in multiplayer
-                    listItem.textContent = `${playerData.nickname || 'لاعب مجهول'} (ID: ${playerId.substring(0, 8)}... - النقاط: ${playerData.score || 0})`;
-                    joinedPlayersList.appendChild(listItem);
+                    if (joinedPlayersList) {
+                        const listItem = document.createElement('li');
+                        // Display partial user ID for uniqueness and debugging in multiplayer
+                        listItem.textContent = `${playerData.nickname || 'لاعب مجهول'} (ID: ${playerId.substring(0, 8)}... - النقاط: ${playerData.score || 0})`;
+                        joinedPlayersList.appendChild(listItem);
+                    }
 
                     // Update current player's overall score and current round guesses (only for self)
                     if (playerId === userId) {
-                        playerOverallScore = playerData.score || 0;
+                        currentPlayerOverallScore = playerData.score || 0;
                         currentPlayerRoundCorrectGuesses = playerData.currentRoundCorrectGuesses || [];
                     }
                 });
-                playerScoreDisplay.textContent = currentPlayerOverallScore; // Update UI with overall score
+                if (playerScoreDisplay) playerScoreDisplay.textContent = currentPlayerOverallScore; // Update UI with overall score
 
                 // Populate the current player's specific correct guesses list for THIS ROUND
-                currentPlayerRoundCorrectGuesses.forEach(guess => {
-                    const listItem = document.createElement('li');
-                    listItem.textContent = guess;
-                    listItem.classList.add('text-green-700', 'font-semibold', 'opacity-0', 'animate-fade-in-up');
-                    playerCorrectGuessesList.appendChild(listItem);
-                });
+                if (playerCorrectGuessesList) {
+                    currentPlayerRoundCorrectGuesses.forEach(guess => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = guess;
+                        listItem.classList.add('text-green-700', 'font-semibold', 'opacity-0', 'animate-fade-in-up');
+                        playerCorrectGuessesList.appendChild(listItem);
+                    });
+                }
 
                 // Host-specific logic: Show/hide start button based on number of players
                 // Only apply if host is in waiting room phase
@@ -1134,9 +1251,9 @@
                 gameDocRef.get().then(doc => {
                     if (doc.exists && doc.data().gamePhase === 'lobby' && isHost) {
                         if (snapshot.size > 1) { // More than 1 player (host + at least one other)
-                            startGameButton.classList.remove('hidden'); // Show start button
+                            if (startGameButton) startGameButton.classList.remove('hidden'); // Show start button
                         } else {
-                            startGameButton.classList.add('hidden'); // Hide if only host or no other players
+                            if (startGameButton) startGameButton.classList.add('hidden'); // Hide if only host or no other players
                         }
                     }
                 }).catch(error => console.error("Error checking game phase:", error));
@@ -1149,7 +1266,7 @@
 
         // Displays scores of players for the CURRENT round on the results screen
         async function showRoundPlayerScores() {
-            roundPlayerScoresList.innerHTML = ''; // Clear previous scores
+            if (roundPlayerScoresList) roundPlayerScoresList.innerHTML = ''; // Clear previous scores
             try {
                 const playersRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
                 const playersSnapshot = await playersRef.get();
@@ -1167,12 +1284,14 @@
                 // Sort by round correct guesses count descending
                 roundScores.sort((a, b) => b.roundCorrectGuessesCount - a.roundCorrectGuessesCount);
 
-                roundScores.forEach(player => {
-                    const listItem = document.createElement('li');
-                    listItem.classList.add('py-2', 'px-4', 'rounded-lg', 'mb-2', 'bg-gray-50');
-                    listItem.textContent = `${player.nickname}: ${player.roundCorrectGuessesCount} إجابة صحيحة في هذه الجولة (إجمالي النقاط: ${player.overallScore})`;
-                    roundPlayerScoresList.appendChild(listItem);
-                });
+                if (roundPlayerScoresList) {
+                    roundScores.forEach(player => {
+                        const listItem = document.createElement('li');
+                        listItem.classList.add('py-2', 'px-4', 'rounded-lg', 'mb-2', 'bg-gray-50');
+                        listItem.textContent = `${player.nickname}: ${player.roundCorrectGuessesCount} إجابة صحيحة في هذه الجولة (إجمالي النقاط: ${player.overallScore})`;
+                        roundPlayerScoresList.appendChild(listItem);
+                    });
+                }
 
             } catch (error) {
                 console.error("Error showing round player scores:", error);
@@ -1207,25 +1326,27 @@
                 // Sort players by overall score in descending order to determine winner
                 finalScores.sort((a, b) => (b.score || 0) - (a.score || 0));
 
-                finalScoresList.innerHTML = ''; // Clear previous final scores list
-                if (finalScores.length > 0) {
-                    finalScores.forEach((player, index) => {
-                        const listItem = document.createElement('li');
-                        listItem.classList.add('py-2', 'px-4', 'rounded-lg', 'mb-2');
-                        if (index === 0) { // Highlight the winner
-                            listItem.classList.add('bg-yellow-200', 'font-bold', 'text-yellow-800');
-                            listItem.innerHTML = `<i class="fas fa-trophy text-yellow-600 mr-2"></i> المركز الأول: ${player.nickname} - ${player.score} نقطة`;
-                        } else { // Other players
-                            listItem.classList.add('bg-gray-50');
-                            listItem.textContent = `${player.nickname} - ${player.score} نقطة`;
-                        }
-                        finalScoresList.appendChild(listItem);
-                    });
-                    endTitle.textContent = "انتهت اللعبة!";
-                    endMessage.textContent = `فاز ${finalScores[0].nickname} بـ ${finalScores[0].score} نقطة!`;
-                } else {
-                    endTitle.textContent = "انتهت اللعبة!";
-                    endMessage.textContent = "لم يكن هناك لاعبون في هذه الجولة.";
+                if (finalScoresList) {
+                    finalScoresList.innerHTML = ''; // Clear previous final scores list
+                    if (finalScores.length > 0) {
+                        finalScores.forEach((player, index) => {
+                            const listItem = document.createElement('li');
+                            listItem.classList.add('py-2', 'px-4', 'rounded-lg', 'mb-2');
+                            if (index === 0) { // Highlight the winner
+                                listItem.classList.add('bg-yellow-200', 'font-bold', 'text-yellow-800');
+                                listItem.innerHTML = `<i class="fas fa-trophy text-yellow-600 mr-2"></i> المركز الأول: ${player.nickname} - ${player.score} نقطة`;
+                            } else { // Other players
+                                listItem.classList.add('bg-gray-50');
+                                listItem.textContent = `${player.nickname} - ${player.score} نقطة`;
+                            }
+                            finalScoresList.appendChild(listItem);
+                        });
+                        if (endTitle) endTitle.textContent = "انتهت اللعبة!";
+                        if (endMessage) endMessage.textContent = `فاز ${finalScores[0].nickname} بـ ${finalScores[0].score} نقطة!`;
+                    } else {
+                        if (endTitle) endTitle.textContent = "انتهت اللعبة!";
+                        if (endMessage) endMessage.textContent = "لم يكن هناك لاعبون في هذه الجولة.";
+                    }
                 }
 
                 showScreen(gameEndScreen); // Show the game end screen
@@ -1240,76 +1361,86 @@
 
         // --- Event Listeners (Handle user interactions) ---
         // When host wants to create a game
-        createHostButton.addEventListener('click', () => {
-            setupQuizCategorySelection(); // Initialize multi-select dropdown
-            showScreen(hostSetupScreen); // Show host setup screen
-        });
+        if (createHostButton) {
+            createHostButton.addEventListener('click', () => {
+                setupQuizCategorySelection(); // Initialize multi-select dropdown
+                showScreen(hostSetupScreen); // Show host setup screen
+            });
+        }
 
         // When a player wants to join a game
-        joinPlayerButton.addEventListener('click', () => {
-            playerNicknameInput.value = localStorage.getItem('playerNickname') || ''; // Pre-fill nickname if saved
-            showScreen(joinGameScreen); // Show join game screen
-        });
+        if (joinPlayerButton) {
+            joinPlayerButton.addEventListener('click', () => {
+                if (playerNicknameInput) playerNicknameInput.value = localStorage.getItem('playerNickname') || ''; // Pre-fill nickname if saved
+                showScreen(joinGameScreen); // Show join game screen
+            });
+        }
 
         // Host clicks to create the game instance in Firebase
-        createGameButton.addEventListener('click', createGame);
+        if (createGameButton) createGameButton.addEventListener('click', createGame);
 
         // Host clicks to start the game (first round) from waiting room
-        startGameButton.addEventListener('click', startNextRound); // Reassigned to startNextRound
+        if (startGameButton) startGameButton.addEventListener('click', startNextRound); // Reassigned to startNextRound
 
         // Host clicks to end the current round early
-        endRoundEarlyButton.addEventListener('click', endRoundEarly);
+        if (endRoundEarlyButton) endRoundEarlyButton.addEventListener('click', endRoundEarly);
 
         // Host clicks to proceed to the next round from round results screen
-        nextRoundButton.addEventListener('click', startNextRound);
+        if (nextRoundButton) nextRoundButton.addEventListener('click', startNextRound);
 
         // Host clicks to end the entire game from round results screen
-        endGameFinalButton.addEventListener('click', endGame);
+        if (endGameFinalButton) endGameFinalButton.addEventListener('click', endGame);
 
 
         // Player clicks to join a specific room
-        joinRoomButton.addEventListener('click', () => {
-            const code = gameCodeInput.value.trim().toUpperCase(); // Get game code
-            const nickname = playerNicknameInput.value.trim(); // Get player nickname
-            if (code && nickname) { // Validate inputs
-                joinGame(code, nickname);
-            } else {
-                showCustomMessageBox("خطأ في الإدخال", "يرجى إدخال رمز الغرفة واسمك المستعار.");
-            }
-        });
+        if (joinRoomButton) {
+            joinRoomButton.addEventListener('click', () => {
+                const code = gameCodeInput ? gameCodeInput.value.trim().toUpperCase() : '';
+                const nickname = playerNicknameInput ? playerNicknameInput.value.trim() : '';
+                if (code && nickname) { // Validate inputs
+                    joinGame(code, nickname);
+                } else {
+                    showCustomMessageBox("خطأ في الإدخال", "يرجى إدخال رمز الغرفة واسمك المستعار.");
+                }
+            });
+        }
 
         // Handle player's guess submission on Enter key press
-        gameGuessInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                submitGuess(); // Submit the guess
-            }
-        });
+        if (gameGuessInput) {
+            gameGuessInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    submitGuess(); // Submit the guess
+                }
+            });
+        }
 
         // Button to play again after a game ends
-        playAgainButton.addEventListener('click', () => {
-            // Reset all game-related global variables and listeners
-            gameId = null;
-            isHost = false;
-            clearInterval(timerInterval); // Clear any active timer
-            if (gameSnapshotUnsubscribe) { // Unsubscribe from Firestore listeners
-                gameSnapshotUnsubscribe();
-                gameSnapshotUnsubscribe = null;
-            }
-            if (playersSnapshotUnsubscribe) { // Unsubscribe from Firestore listeners
-                playersSnapshotUnsubscribe();
-                playersSnapshotUnsubscribe = null;
-            }
-            selectedQuizIndices = []; // Reset selected quizzes for host setup
-            showScreen(roleSelectionScreen); // Return to role selection screen
-            window.history.pushState({}, '', window.location.pathname); // Clear gameId from URL
-        });
+        if (playAgainButton) {
+            playAgainButton.addEventListener('click', () => {
+                // Reset all game-related global variables and listeners
+                gameId = null;
+                isHost = false;
+                clearInterval(timerInterval); // Clear any active timer
+                if (gameSnapshotUnsubscribe) { // Unsubscribe from Firestore listeners
+                    gameSnapshotUnsubscribe();
+                    gameSnapshotUnsubscribe = null;
+                }
+                if (playersSnapshotUnsubscribe) { // Unsubscribe from Firestore listeners
+                    playersSnapshotUnsubscribe();
+                    playersSnapshotUnsubscribe = null;
+                }
+                selectedQuizIndices = []; // Reset selected quizzes for host setup
+                showScreen(roleSelectionScreen); // Return to role selection screen
+                window.history.pushState({}, '', window.location.pathname); // Clear gameId from URL
+            });
+        }
 
         // Close button for the custom message box
-        customMessageCloseButton.addEventListener('click', hideCustomMessageBox);
+        if (customMessageCloseButton) customMessageCloseButton.addEventListener('click', hideCustomMessageBox);
 
         // --- Initial Load ---
-        // Initialize Firebase when the DOM content is fully loaded
-        document.addEventListener('DOMContentLoaded', initializeFirebase);
+        // No longer using DOMContentLoaded directly here, it's called by the initial check
+        // document.addEventListener('DOMContentLoaded', initializeFirebase);
     </script>
 </body>
 </html>
