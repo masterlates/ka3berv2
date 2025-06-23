@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سبوركل بارتي (متعدد اللاعبين)</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter for typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- QRCode.js for generating QR codes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode.js/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        /* Base font and direction for Arabic */
+        body {
+            font-family: 'Inter', sans-serif;
+            direction: rtl; /* For Arabic text */
+            text-align: right; /* For Arabic text */
+        }
+        /* Custom animation for list items - Tailwind's default doesn't have this exact one */
+        @keyframes fadeInFromBottom {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+            animation: fadeInFromBottom 0.5s ease-out forwards;
+        }
+        /* Loading spinner animation */
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #4a90e2; /* Blue color for spinner */
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 min-h-screen flex flex-col items-center justify-center p-4 text-gray-800">
+
+    <!-- Loading Overlay - Shown during Firebase initialization or data fetching -->
+    <div id="loading-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="flex flex-col items-center text-white text-xl">
+            <div class="loading-spinner mb-4"></div>
+            جاري التحميل... <!-- Loading text in Arabic -->
+        </div>
+    </div>
+
+    <!-- Main Game Container -->
+    <div class="bg-white rounded-xl shadow-2xl p-8 max-w-3xl w-full flex flex-col items-center relative overflow-hidden transform transition-all duration-500 ease-in-out">
+        <h1 class="text-4xl font-extrabold text-gray-800 mb-6 text-center leading-tight">لعبة سبوركل بارتي <i class="fas fa-users text-blue-500"></i></h1>
+        <p class="text-lg text-gray-600 mb-8 text-center" id="game-description">
+            اختر دورك: إما مضيف لإنشاء غرفة، أو لاعب للانضمام إلى غرفة موجودة. <!-- Game description in Arabic -->
+        </p>
+
+        <!-- Role Selection Screen -->
+        <div id="role-selection-screen" class="w-full flex flex-col items-center space-y-6">
+            <button id="create-host-button" class="w-full md:w-2/3 bg-blue-600 hover:bg-blue-700 text-white text-2xl font-bold py-5 rounded-lg shadow-xl transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
+                <i class="fas fa-crown"></i> إنشاء غرفة (مضيف) <!-- Create host room button -->
+            </button>
+            <button id="join-player-button" class="w-full md:w-2/3 bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-5 rounded-lg shadow-xl transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
+                <i class="fas fa-gamepad"></i> الانضمام إلى غرفة (لاعب) <!-- Join player room button -->
+            </button>
+        </div>
+
+        <!-- Host Room Setup Screen -->
+        <div id="host-setup-screen" class="w-full flex flex-col items-center hidden">
+            <h2 class="text-3xl font-bold text-indigo-700 mb-6">إعداد غرفة اللعب</h2> <!-- Host setup title -->
+
+            <div class="w-full mb-6">
+                <label for="quiz-category-select" class="block text-xl font-semibold text-gray-700 mb-2">اختر فئة الأسئلة:</label> <!-- Quiz category label -->
+                <select id="quiz-category-select" class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50">
+                    <!-- Options will be populated by JS -->
+                </select>
+            </div>
+
+            <div class="w-full mb-6">
+                <label for="time-limit-select" class="block text-xl font-semibold text-gray-700 mb-2">الوقت المخصص للجولة (بالثواني):</label> <!-- Time limit label -->
+                <select id="time-limit-select" class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50">
+                    <option value="60">60 ثانية</option>
+                    <option value="90">90 ثانية</option>
+                    <option value="120">120 ثانية</option>
+                    <option value="180">180 ثانية</option>
+                </select>
+            </div>
+
+            <button id="create-game-button" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
+                <i class="fas fa-plus-circle"></i> إنشاء اللعبة <!-- Create game button -->
+            </button>
+        </div>
+
+        <!-- Waiting Room Screen (Host & Player) -->
+        <div id="waiting-room-screen" class="w-full flex flex-col items-center hidden">
+            <h2 class="text-3xl font-bold text-indigo-700 mb-4" id="waiting-room-title">انتظر انضمام اللاعبين...</h2> <!-- Waiting room title -->
+            <p class="text-xl text-gray-700 mb-6">شارك هذا الرمز مع أصدقائك للانضمام:</p> <!-- Share code instruction -->
+            <div class="bg-gray-100 p-4 rounded-lg shadow-inner mb-6">
+                <span id="game-code-display" class="text-4xl font-extrabold text-blue-600 tracking-wider"></span>
+            </div>
+            <div id="qrcode" class="mb-8 p-2 bg-white rounded-lg shadow-md"></div> <!-- QR code will be rendered here -->
+
+            <h3 class="text-2xl font-semibold text-gray-800 mb-4">اللاعبون المنضمون:</h3> <!-- Joined players list title -->
+            <ul id="joined-players-list" class="w-full bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8 h-40 overflow-y-auto shadow-inner text-lg">
+                <!-- Players will be listed here by JavaScript -->
+            </ul>
+
+            <button id="start-game-button" class="w-full bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out hidden">
+                <i class="fas fa-play"></i> بدء اللعب! <!-- Start game button (for host) -->
+            </button>
+        </div>
+
+        <!-- Join Game Screen (Player) -->
+        <div id="join-game-screen" class="w-full flex flex-col items-center hidden">
+            <h2 class="text-3xl font-bold text-indigo-700 mb-6">الانضمام إلى غرفة اللعب</h2> <!-- Join game title -->
+            <div class="w-full mb-6">
+                <label for="game-code-input" class="block text-xl font-semibold text-gray-700 mb-2">أدخل رمز الغرفة:</label> <!-- Game code input label -->
+                <input type="text" id="game-code-input" placeholder="مثال: ABCDE"
+                       class="w-full p-4 mb-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50 uppercase text-center tracking-widest">
+            </div>
+             <div class="w-full mb-6">
+                <label for="player-nickname-input" class="block text-xl font-semibold text-gray-700 mb-2">أدخل اسمك المستعار:</label> <!-- Player nickname input label -->
+                <input type="text" id="player-nickname-input" placeholder="اسمك"
+                       class="w-full p-4 mb-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50 text-center">
+            </div>
+            <button id="join-room-button" class="w-full bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
+                <i class="fas fa-door-open"></i> الانضمام <!-- Join button -->
+            </button>
+        </div>
+
+        <!-- Game Play Screen (Host & Player) -->
+        <div id="game-play-screen" class="w-full hidden">
+            <div class="flex flex-col md:flex-row justify-between items-center w-full mb-8 space-y-4 md:space-y-0">
+                <div class="flex items-center space-x-2 space-x-reverse text-2xl font-bold text-gray-700 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
+                    <i class="fas fa-hourglass-half text-blue-500"></i>
+                    <span>الوقت: <span id="game-timer" class="text-blue-600">--</span> ثانية</span> <!-- Game timer display -->
+                </div>
+                <div class="flex items-center space-x-2 space-x-reverse text-2xl font-bold text-gray-700 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
+                    <i class="fas fa-star text-yellow-500"></i>
+                    <span>نقاطك: <span id="player-score" class="text-yellow-600">0</span></span> <!-- Player's score display -->
+                </div>
+            </div>
+
+            <p class="text-2xl font-bold text-gray-800 mb-4 text-center">الفئة: <span id="game-category" class="text-indigo-600"></span></p> <!-- Current category display -->
+
+            <input type="text" id="game-guess-input" placeholder="اكتب إجابتك هنا..."
+                   class="w-full p-4 mb-6 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50"> <!-- Guess input field -->
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 h-64 overflow-y-auto shadow-inner">
+                    <h3 class="text-xl font-semibold text-blue-800 mb-3">الإجابات الصحيحة (الخاصة بك):</h3> <!-- Player's correct guesses title -->
+                    <ul id="player-correct-guesses-list" class="list-disc pr-6 text-gray-700 text-lg space-y-2">
+                        <!-- Player's correct guesses will be listed here -->
+                    </ul>
+                </div>
+                <div class="bg-purple-50 border border-purple-200 rounded-lg p-6 h-64 overflow-y-auto shadow-inner">
+                    <h3 class="text-xl font-semibold text-purple-800 mb-3">الإجابات المشتركة (من الجميع):</h3> <!-- Shared correct guesses title -->
+                    <ul id="shared-correct-guesses-list" class="list-disc pr-6 text-gray-700 text-lg space-y-2">
+                        <!-- All correct guesses across players will be listed here -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game End Screen -->
+        <div id="game-end-screen" class="w-full hidden">
+            <h2 class="text-3xl font-bold text-indigo-700 mb-6 text-center" id="end-title">انتهت اللعبة!</h2> <!-- Game end title -->
+            <p class="text-xl text-gray-700 mb-6 text-center" id="end-message"></p> <!-- End message -->
+
+            <h3 class="text-2xl font-semibold text-gray-800 mb-4 text-center">النتائج النهائية:</h3> <!-- Final scores title -->
+            <ul id="final-scores-list" class="w-full bg-gray-100 border border-gray-200 rounded-lg p-4 mb-8 shadow-inner text-lg max-h-64 overflow-y-auto">
+                <!-- Final scores will be listed here by JavaScript -->
+            </ul>
+
+            <button id="play-again-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
+                <i class="fas fa-redo"></i> العب مرة أخرى <!-- Play again button -->
+            </button>
+        </div>
+
+        <!-- Custom Message Box - For alerts and confirmations -->
+        <div id="custom-message-box" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-40 hidden transition-opacity duration-300 ease-out opacity-0">
+            <div class="bg-white rounded-xl p-8 text-center shadow-xl transform scale-90 transition-transform duration-300 ease-out">
+                <h2 id="custom-message-title" class="text-3xl font-bold text-gray-900 mb-4"></h2> <!-- Message title -->
+                <p id="custom-message-content" class="text-xl text-gray-700 mb-6"></p> <!-- Message content -->
+                <button id="custom-message-close-button" class="bg-blue-600 hover:bg-blue-700 text-white text-xl font-semibold py-3 px-8 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out">
+                    حسناً <!-- Close button -->
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main JavaScript Logic -->
+    <script type="text/javascript">
+        // Global variables for Firebase and App
+        let app, db, auth, userId, userNickname;
+        let gameId = null;
+        let isHost = false;
+        let gameSnapshotUnsubscribe = null; // Listener for game document changes
+        let playersSnapshotUnsubscribe = null; // Listener for players collection changes
+        let timerInterval = null; // Interval for host's game timer
+
+        // Quiz data - Add more quizzes as needed!
+        // IMPORTANT: Answers should be unique within each quiz to avoid issues with `arrayUnion`
+        const quizzes = [
+            {
+                category: "عواصم الدول العربية",
+                answers: ["الرياض", "القاهرة", "بغداد", "دمشق", "عمان", "بيروت", "الرباط", "تونس", "الجزائر", "الخرطوم", "صنعاء", "ابوظبي", "الدوحة", "الكويت", "المنامة", "مقديشو", "جيبوتي", "موروني", "طرابلس", "نواكشوط", "مسقط", "القدس"]
+            },
+            {
+                category: "الفواكه",
+                answers: ["تفاح", "برتقال", "موز", "عنب", "فراولة", "مانجو", "أناناس", "بطيخ", "شمام", "كيوي", "توت", "كرز", "ليمون", "جوافة", "خوخ", "رمان", "تين", "بلح", "توت أزرق", "كمثرى"]
+            },
+            {
+                category: "حيوانات الغابة",
+                answers: ["أسد", "نمر", "فيل", "زرافة", "قرد", "دب", "ثعلب", "ذئب", "غزال", "حمار وحشي", "ضبع", "كنغر", "كوالا", "باندا"]
+            },
+            {
+                category: "عواصم دول العالم (غير العربية)",
+                answers: ["واشنطن", "لندن", "باريس", "برلين", "روما", "مدريد", "طوكيو", "بكين", "موسكو", "أوتاوا", "كانبرا", "برازيليا", "بوينس آيرس", "نيودلهي", "أثينا", "وارسو", "ليما", "سيول", "بانكوك", "أنقرة"]
+            }
+        ];
+
+        // --- DOM Elements (Get references to HTML elements) ---
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const roleSelectionScreen = document.getElementById('role-selection-screen');
+        const hostSetupScreen = document.getElementById('host-setup-screen');
+        const waitingRoomScreen = document.getElementById('waiting-room-screen');
+        const joinGameScreen = document.getElementById('join-game-screen');
+        const gamePlayScreen = document.getElementById('game-play-screen');
+        const gameEndScreen = document.getElementById('game-end-screen');
+
+        const createHostButton = document.getElementById('create-host-button');
+        const joinPlayerButton = document.getElementById('join-player-button');
+        const quizCategorySelect = document.getElementById('quiz-category-select');
+        const timeLimitSelect = document.getElementById('time-limit-select');
+        const createGameButton = document.getElementById('create-game-button');
+        const gameCodeDisplay = document.getElementById('game-code-display');
+        const qrcodeDiv = document.getElementById('qrcode');
+        const joinedPlayersList = document.getElementById('joined-players-list');
+        const startGameButton = document.getElementById('start-game-button');
+        const gameCodeInput = document.getElementById('game-code-input');
+        const playerNicknameInput = document.getElementById('player-nickname-input');
+        const joinRoomButton = document.getElementById('join-room-button');
+        const gameTimerDisplay = document.getElementById('game-timer');
+        const playerScoreDisplay = document.getElementById('player-score');
+        const gameCategoryDisplay = document.getElementById('game-category');
+        const gameGuessInput = document.getElementById('game-guess-input');
+        const playerCorrectGuessesList = document.getElementById('player-correct-guesses-list');
+        const sharedCorrectGuessesList = document.getElementById('shared-correct-guesses-list');
+        const endTitle = document.getElementById('end-title');
+        const endMessage = document.getElementById('end-message');
+        const finalScoresList = document.getElementById('final-scores-list');
+        const playAgainButton = document.getElementById('play-again-button');
+        const customMessageBox = document.getElementById('custom-message-box');
+        const customMessageTitle = document.getElementById('custom-message-title');
+        const customMessageContent = document.getElementById('custom-message-content');
+        const customMessageCloseButton = document.getElementById('custom-message-close-button');
+
+        // --- Firebase Initialization ---
+        // This function initializes Firebase and handles user authentication.
+        // It relies on global `firebase` object provided by Firebase CDN scripts loaded later in body.
+        async function initializeFirebase() {
+            showLoading(); // Show loading overlay
+            try {
+                // `__app_id` and `__firebase_config` are global variables provided by the Canvas environment.
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+
+                app = firebase.initializeApp(firebaseConfig); // Initialize Firebase app
+                db = firebase.firestore(app); // Get Firestore instance
+                auth = firebase.auth(app); // Get Auth instance
+
+                // Sign in anonymously for game functionality if no custom token is provided
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await auth.signInWithCustomToken(__initial_auth_token); // Use provided custom token
+                } else {
+                    await auth.signInAnonymously(); // Sign in anonymously
+                }
+
+                // Listen for authentication state changes
+                auth.onAuthStateChanged((user) => {
+                    if (user) {
+                        userId = user.uid; // Store the authenticated user ID
+                        console.log("Authenticated with userId:", userId);
+                        hideLoading(); // Hide loading overlay
+
+                        // Check URL for existing gameId to auto-join if provided (e.g., from QR code link)
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const idFromUrl = urlParams.get('gameId');
+                        if (idFromUrl) {
+                            gameId = idFromUrl;
+                            playerNicknameInput.value = localStorage.getItem('playerNickname') || ''; // Load saved nickname from local storage
+
+                            // If nickname is available, prompt user to join directly. Otherwise, show join screen.
+                            if (!playerNicknameInput.value) {
+                                showScreen(joinGameScreen); // Show join screen for nickname input
+                                // Optionally show a message to enter nickname
+                                showCustomMessageBox("الانضمام إلى لعبة", `أدخل اسمك المستعار للانضمام إلى اللعبة برمز ${gameId}.`);
+                                customMessageCloseButton.onclick = () => {
+                                    hideCustomMessageBox();
+                                    // User needs to fill nickname and click join manually
+                                };
+                            } else {
+                                showCustomMessageBox("الانضمام إلى لعبة", `هل تريد الانضمام إلى اللعبة برمز ${gameId} باسم ${playerNicknameInput.value}؟`);
+                                customMessageCloseButton.onclick = () => {
+                                    hideCustomMessageBox();
+                                    joinGame(gameId, playerNicknameInput.value); // Auto-join with saved nickname
+                                };
+                            }
+                        } else {
+                            showScreen(roleSelectionScreen); // Show role selection if no gameId in URL
+                        }
+                    } else {
+                        console.log("No user signed in.");
+                        hideLoading(); // Hide loading even if no user
+                        showScreen(roleSelectionScreen); // Always show role selection if not authenticated
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+                showCustomMessageBox("خطأ", "فشل تهيئة اللعبة. حاول تحديث الصفحة.");
+                hideLoading();
+            }
+        }
+
+        // --- UI Management Functions ---
+        // Shows the loading spinner overlay
+        function showLoading() {
+            loadingOverlay.classList.remove('hidden');
+        }
+
+        // Hides the loading spinner overlay
+        function hideLoading() {
+            loadingOverlay.classList.add('hidden');
+        }
+
+        // Hides all game screens and shows the specified one
+        function showScreen(screenElement) {
+            // Hide all potential screens
+            roleSelectionScreen.classList.add('hidden');
+            hostSetupScreen.classList.add('hidden');
+            waitingRoomScreen.classList.add('hidden');
+            joinGameScreen.classList.add('hidden');
+            gamePlayScreen.classList.add('hidden');
+            gameEndScreen.classList.add('hidden');
+            customMessageBox.classList.add('hidden'); // Also ensure custom message box is hidden
+
+            // Show the target screen
+            screenElement.classList.remove('hidden');
+            // If it's not the message box itself, ensure the message box is hidden
+            if (screenElement !== customMessageBox) {
+                customMessageBox.classList.remove('flex', 'opacity-100');
+                customMessageBox.classList.add('hidden', 'opacity-0');
+            }
+        }
+
+        // Displays a custom message box (replacement for alert/confirm)
+        function showCustomMessageBox(title, content) {
+            customMessageTitle.textContent = title;
+            customMessageContent.textContent = content;
+            customMessageBox.classList.remove('hidden', 'opacity-0');
+            customMessageBox.classList.add('flex', 'opacity-100'); // Add flex and opacity for fade-in
+        }
+
+        // Hides the custom message box
+        function hideCustomMessageBox() {
+            customMessageBox.classList.remove('flex', 'opacity-100');
+            customMessageBox.classList.add('hidden', 'opacity-0'); // Remove flex and opacity for fade-out
+        }
+
+        // --- Game Helper Functions ---
+        // Generates a short, random alphanumeric string for game codes
+        function generateGameCode(length = 5) {
+            return Math.random().toString(36).substring(2, 2 + length).toUpperCase();
+        }
+
+        // Normalizes a string (lowercase, trims whitespace) for consistent comparison
+        function normalizeString(str) {
+            return str.toLowerCase().trim();
+        }
+
+        // Populates the quiz category dropdown for the host
+        function populateCategories() {
+            quizCategorySelect.innerHTML = ''; // Clear existing options
+            quizzes.forEach((quiz, index) => {
+                const option = document.createElement('option');
+                option.value = index; // Use index as value to reference quiz data
+                option.textContent = quiz.category;
+                quizCategorySelect.appendChild(option);
+            });
+        }
+
+        // --- Host Specific Functions ---
+        // Creates a new game instance in Firestore
+        async function createGame() {
+            showLoading(); // Show loading spinner
+            try {
+                gameId = generateGameCode(); // Generate a unique game ID
+                isHost = true; // Set current user as host
+                const selectedQuizIndex = parseInt(quizCategorySelect.value); // Get selected quiz index
+                const selectedQuiz = quizzes[selectedQuizIndex]; // Get selected quiz data
+                const timeLimit = parseInt(timeLimitSelect.value); // Get selected time limit
+
+                if (!selectedQuiz) {
+                    throw new Error("لم يتم اختيار فئة صالحة."); // Error if no category selected
+                }
+
+                // Reference to the new game document in Firestore
+                // Path: artifacts/{appId}/public/data/games/{gameId}
+                const gameRef = db.collection(`artifacts/${__app_id}/public/data/games`).doc(gameId);
+                await gameRef.set({ // Create the game document
+                    hostId: userId,
+                    category: selectedQuiz.category,
+                    allAnswers: selectedQuiz.answers.map(normalizeString), // Store normalized answers
+                    timeLimit: timeLimit,
+                    currentTime: timeLimit, // Initialize current time with full time limit
+                    status: 'waiting', // Game status: 'waiting', 'playing', 'finished'
+                    startedAt: null, // Timestamp when game starts
+                    guessedAnswers: [], // Array to store all unique answers guessed by any player
+                    lastUpdate: Date.now(), // Timestamp for host's last update (for real-time timer sync)
+                    playerScores: {} // Object to store final scores for display at end
+                });
+
+                // Add host as a player in the game's subcollection
+                // Path: artifacts/{appId}/public/data/games/{gameId}/players/{userId}
+                const playerRef = gameRef.collection('players').doc(userId);
+                await playerRef.set({
+                    nickname: "المضيف", // Default nickname for the host
+                    score: 0,
+                    joinedAt: Date.now(),
+                    correctGuesses: [] // Individual correct guesses for this player
+                });
+                userNickname = "المضيف"; // Set current user's nickname
+
+                console.log("Game created with ID:", gameId);
+                gameCodeDisplay.textContent = gameId; // Display game ID on screen
+                qrcodeDiv.innerHTML = ''; // Clear any existing QR code
+                // Generate QR code for easy joining
+                new QRCode(qrcodeDiv, {
+                    text: `${window.location.origin}${window.location.pathname}?gameId=${gameId}`,
+                    width: 128,
+                    height: 128,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+
+                showScreen(waitingRoomScreen); // Show waiting room screen
+                listenToGameChanges(); // Start listening to the game document for real-time updates
+                listenToPlayers(); // Start listening to players joining the room
+                startGameButton.classList.remove('hidden'); // Show start game button for host
+            } catch (error) {
+                console.error("Error creating game:", error);
+                showCustomMessageBox("خطأ في إنشاء اللعبة", error.message || "حدث خطأ أثناء إنشاء الغرفة.");
+            } finally {
+                hideLoading(); // Hide loading spinner
+            }
+        }
+
+        // Starts the game by updating its status in Firestore
+        async function startGame() {
+            showLoading(); // Show loading spinner
+            try {
+                if (!gameId) {
+                    throw new Error("لا يوجد معرف لعبة لبدء اللعبة."); // Error if no game ID
+                }
+                // Reference to the game document
+                const gameRef = db.collection(`artifacts/${__app_id}/public/data/games`).doc(gameId);
+                await gameRef.update({ // Update game status to 'playing' and set start time
+                    status: 'playing',
+                    startedAt: Date.now()
+                });
+                console.log("Game started!");
+            } catch (error) {
+                console.error("Error starting game:", error);
+                showCustomMessageBox("خطأ في بدء اللعبة", error.message || "حدث خطأ أثناء بدء اللعبة.");
+            } finally {
+                hideLoading(); // Hide loading spinner
+            }
+        }
+
+        // --- Player Specific Functions ---
+        // Allows a player to join an existing game
+        async function joinGame(code, nickname) {
+            showLoading(); // Show loading spinner
+            try {
+                if (!code || !nickname) {
+                    throw new Error("يرجى إدخال رمز اللعبة واسمك المستعار."); // Input validation
+                }
+
+                // Reference to the game document
+                const gameRef = db.collection(`artifacts/${__app_id}/public/data/games`).doc(code);
+                const gameDoc = await gameRef.get(); // Get game document
+
+                if (!gameDoc.exists) {
+                    throw new Error("رمز اللعبة غير صحيح أو الغرفة غير موجودة."); // Game not found
+                }
+
+                gameId = code; // Set current game ID
+                isHost = false; // Current user is a player
+                userNickname = nickname; // Set current user's nickname
+                localStorage.setItem('playerNickname', nickname); // Save nickname locally for future use
+
+                // Add player to the game's players subcollection
+                const playerRef = gameRef.collection('players').doc(userId);
+                await playerRef.set({ // Use set with merge to avoid overwriting if player rejoins
+                    nickname: nickname,
+                    score: 0,
+                    joinedAt: Date.now(),
+                    correctGuesses: []
+                }, { merge: true });
+
+                console.log("Joined game:", gameId);
+                // Update URL to include gameId for easy sharing/rejoining
+                if (!window.location.search.includes(`gameId=${gameId}`)) {
+                    const newUrl = `${window.location.origin}${window.location.pathname}?gameId=${gameId}`;
+                    window.history.pushState({ path: newUrl }, '', newUrl); // Change URL without reloading
+                }
+
+                showScreen(waitingRoomScreen); // Show waiting room screen
+                document.getElementById('waiting-room-title').textContent = `في انتظار بدء اللعبة...`; // Player-specific waiting message
+                gameCodeDisplay.textContent = gameId; // Show game code to player
+                qrcodeDiv.innerHTML = ''; // Clear QR code as players don't need it
+                startGameButton.classList.add('hidden'); // Hide start button for players
+
+                listenToGameChanges(); // Start listening to game document
+                listenToPlayers(); // Start listening to players in the room
+            } catch (error) {
+                console.error("Error joining game:", error);
+                showCustomMessageBox("خطأ في الانضمام", error.message || "فشل الانضمام إلى الغرفة.");
+            } finally {
+                hideLoading(); // Hide loading spinner
+            }
+        }
+
+        // Submits a player's guess to Firestore
+        async function submitGuess() {
+            // Only allow submission if gameId is set and we are on the game play screen.
+            if (!gameId || gamePlayScreen.classList.contains('hidden')) {
+                 return; // Do nothing if not in active game play
+            }
+
+            const guess = normalizeString(gameGuessInput.value); // Get and normalize player's guess
+            gameGuessInput.value = ''; // Clear input field immediately after submission
+
+            if (guess === '') return; // Do nothing if guess is empty
+
+            showLoading(); // Show loading spinner
+            try {
+                const gameRef = db.collection(`artifacts/${__app_id}/public/data/games`).doc(gameId);
+                const playerRef = gameRef.collection('players').doc(userId);
+
+                // Use a Firestore transaction to ensure atomic updates
+                await db.runTransaction(async (transaction) => {
+                    const gameDoc = await transaction.get(gameRef); // Get current game data
+                    const playerDoc = await transaction.get(playerRef); // Get current player data
+
+                    if (!gameDoc.exists || !playerDoc.exists) {
+                        throw "Game or player data not found."; // Critical error if documents don't exist
+                    }
+
+                    const gameData = gameDoc.data();
+                    const playerData = playerDoc.data();
+
+                    const allAnswers = gameData.allAnswers || []; // All possible answers for the quiz
+                    const guessedAnswers = gameData.guessedAnswers || []; // Answers already guessed by any player
+                    let currentScore = playerData.score || 0; // Current score of this player
+
+                    // Check if guess is correct AND has not been guessed by ANYONE yet
+                    if (allAnswers.includes(guess) && !guessedAnswers.includes(guess)) {
+                        // Add guess to the shared list of guessed answers in the game document
+                        transaction.update(gameRef, {
+                            guessedAnswers: firebase.firestore.FieldValue.arrayUnion(guess) // Atomically add unique guess
+                        });
+
+                        // Update player's individual score and their own list of correct guesses
+                        transaction.update(playerRef, {
+                            score: currentScore + 10, // Increase score by 10
+                            correctGuesses: firebase.firestore.FieldValue.arrayUnion(guess) // Atomically add unique guess to player's list
+                        });
+                        console.log("Correct guess:", guess);
+                    } else if (allAnswers.includes(guess) && guessedAnswers.includes(guess)) {
+                        console.log("Answer already guessed by someone:", guess);
+                        // Optionally provide visual feedback to user (e.g., a temporary message "already guessed!")
+                    } else {
+                        console.log("Incorrect guess:", guess);
+                        // Optionally provide visual feedback to user (e.g., a temporary message "incorrect!")
+                    }
+                });
+            } catch (error) {
+                console.error("Error submitting guess:", error);
+                // For a multiplayer game, avoid showing pop-up for every incorrect guess. Log instead.
+            } finally {
+                hideLoading(); // Hide loading spinner
+            }
+        }
+
+        // --- Real-time Listeners ---
+        // Listens for changes to the main game document in Firestore
+        function listenToGameChanges() {
+            if (gameSnapshotUnsubscribe) gameSnapshotUnsubscribe(); // Unsubscribe from previous listener if exists
+
+            const gameRef = db.collection(`artifacts/${__app_id}/public/data/games`).doc(gameId);
+
+            gameSnapshotUnsubscribe = gameRef.onSnapshot((docSnap) => {
+                if (docSnap.exists) {
+                    const gameData = docSnap.data();
+                    gameCategoryDisplay.textContent = gameData.category; // Update category display
+
+                    if (gameData.status === 'playing') {
+                        showScreen(gamePlayScreen); // Show game play screen
+                        gameGuessInput.focus(); // Focus on input field
+
+                        // Host-specific timer logic: Host updates time in Firestore
+                        if (isHost) {
+                            clearInterval(timerInterval); // Clear any old timer
+                            timerInterval = setInterval(async () => {
+                                const now = Date.now();
+                                // Calculate elapsed time since game started
+                                const elapsed = Math.floor((now - gameData.startedAt) / 1000);
+                                const remainingTime = gameData.timeLimit - elapsed;
+                                if (remainingTime >= 0) {
+                                    // Update Firestore with current time and last update timestamp
+                                    await gameRef.update({ currentTime: remainingTime, lastUpdate: now });
+                                    gameTimerDisplay.textContent = remainingTime; // Update timer display
+                                } else {
+                                    clearInterval(timerInterval); // Stop timer
+                                    await gameRef.update({ status: 'finished', currentTime: 0 }); // Set game status to finished
+                                }
+                            }, 1000); // Update every second
+                        } else {
+                            // Player-specific timer logic: Players display time from host's update
+                            const timeFromHost = gameData.currentTime;
+                            gameTimerDisplay.textContent = timeFromHost;
+                            // Game status change to 'finished' will trigger end game for players
+                        }
+
+                        // Update shared correct guesses list for all players
+                        sharedCorrectGuessesList.innerHTML = ''; // Clear existing list
+                        (gameData.guessedAnswers || []).forEach(answer => {
+                            const listItem = document.createElement('li');
+                            listItem.textContent = answer;
+                            listItem.classList.add('text-purple-700', 'font-semibold', 'opacity-0', 'animate-fade-in-up');
+                            sharedCorrectGuessesList.appendChild(listItem);
+                        });
+
+                        // Check if all possible answers have been guessed (game won condition)
+                        if ((gameData.guessedAnswers || []).length === (gameData.allAnswers || []).length && (gameData.allAnswers || []).length > 0) {
+                            if (gameData.status !== 'finished') { // Prevent redundant updates
+                                gameRef.update({ status: 'finished' }); // Mark game as finished
+                            }
+                        }
+
+                    } else if (gameData.status === 'finished') {
+                        clearInterval(timerInterval); // Stop any active timers
+                        showFinalScores(); // Display final scores
+                    }
+                } else {
+                    console.log("Game document deleted or does not exist.");
+                    // If game document is deleted (e.g., host left), notify players and return to role selection
+                    showCustomMessageBox("اللعبة غير موجودة", "غرفة اللعب هذه لم تعد موجودة. قد يكون المضيف قد أغلقها.");
+                    showScreen(roleSelectionScreen); // Go back to role selection
+                }
+            }, (error) => {
+                console.error("Error listening to game changes:", error);
+                showCustomMessageBox("خطأ في الاتصال", "فقد الاتصال باللعبة. يرجى التحقق من اتصالك بالإنترنت.");
+            });
+        }
+
+        // Listens for changes to the players subcollection in Firestore
+        function listenToPlayers() {
+            if (playersSnapshotUnsubscribe) playersSnapshotUnsubscribe(); // Unsubscribe from previous listener
+
+            const playersRef = db.collection(`artifacts/${__app_id}/public/data/games/${gameId}/players`);
+            // Query to get all player documents in this game's subcollection
+            const q = playersRef;
+
+            playersSnapshotUnsubscribe = q.onSnapshot((snapshot) => {
+                joinedPlayersList.innerHTML = ''; // Clear current list of joined players
+                playerCorrectGuessesList.innerHTML = ''; // Clear player's own guesses display (will be repopulated)
+                let currentPlayerScore = 0;
+                let currentPlayerCorrectGuesses = [];
+
+                snapshot.forEach((doc) => {
+                    const playerData = doc.data();
+                    const playerId = doc.id;
+
+                    // Update the list of joined players in the waiting room
+                    const listItem = document.createElement('li');
+                    // Display partial user ID for uniqueness and debugging in multiplayer
+                    listItem.textContent = `${playerData.nickname || 'لاعب مجهول'} (ID: ${playerId.substring(0, 8)}... - النقاط: ${playerData.score || 0})`;
+                    joinedPlayersList.appendChild(listItem);
+
+                    // If this player document belongs to the current user, update their score and guesses display
+                    if (playerId === userId) {
+                        playerScoreDisplay.textContent = playerData.score || 0;
+                        currentPlayerScore = playerData.score || 0;
+                        currentPlayerCorrectGuesses = playerData.correctGuesses || [];
+                    }
+                });
+
+                // Populate the current player's specific correct guesses list
+                currentPlayerCorrectGuesses.forEach(guess => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = guess;
+                    listItem.classList.add('text-green-700', 'font-semibold', 'opacity-0', 'animate-fade-in-up');
+                    playerCorrectGuessesList.appendChild(listItem);
+                });
+
+                // Host-specific logic: Show/hide start button based on number of players
+                if (isHost && !waitingRoomScreen.classList.contains('hidden')) { // Only apply if host is in waiting room
+                    if (snapshot.size > 1) { // More than 1 player (host + at least one other)
+                        startGameButton.classList.remove('hidden'); // Show start button
+                    } else {
+                        startGameButton.classList.add('hidden'); // Hide if only host or no other players
+                    }
+                }
+            }, (error) => {
+                console.error("Error listening to players:", error);
+                // Optionally show error message about player list update issues
+            });
+        }
+
+        // Displays the final scores screen and results
+        async function showFinalScores() {
+            showLoading(); // Show loading spinner
+            try {
+                // Unsubscribe from real-time listeners to prevent further updates
+                if (gameSnapshotUnsubscribe) {
+                    gameSnapshotUnsubscribe();
+                    gameSnapshotUnsubscribe = null;
+                }
+                if (playersSnapshotUnsubscribe) {
+                    playersSnapshotUnsubscribe();
+                    playersSnapshotUnsubscribe = null;
+                }
+
+                // Fetch all player data one last time to get final scores
+                const playersRef = db.collection(`artifacts/${__app_id}/public/data/games/${gameId}/players`);
+                const playersSnapshot = await playersRef.get();
+
+                let finalScores = [];
+                playersSnapshot.forEach(doc => {
+                    finalScores.push(doc.data());
+                });
+
+                // Sort players by score in descending order to determine winner
+                finalScores.sort((a, b) => (b.score || 0) - (a.score || 0));
+
+                finalScoresList.innerHTML = ''; // Clear previous final scores list
+                if (finalScores.length > 0) {
+                    finalScores.forEach((player, index) => {
+                        const listItem = document.createElement('li');
+                        listItem.classList.add('py-2', 'px-4', 'rounded-lg', 'mb-2');
+                        if (index === 0) { // Highlight the winner
+                            listItem.classList.add('bg-yellow-200', 'font-bold', 'text-yellow-800');
+                            listItem.innerHTML = `<i class="fas fa-trophy text-yellow-600 mr-2"></i> المركز الأول: ${player.nickname} - ${player.score} نقطة`;
+                        } else { // Other players
+                            listItem.classList.add('bg-gray-50');
+                            listItem.textContent = `${player.nickname} - ${player.score} نقطة`;
+                        }
+                        finalScoresList.appendChild(listItem);
+                    });
+                    endTitle.textContent = "انتهت اللعبة!";
+                    endMessage.textContent = `فاز ${finalScores[0].nickname} بـ ${finalScores[0].score} نقطة!`;
+                } else {
+                    endTitle.textContent = "انتهت اللعبة!";
+                    endMessage.textContent = "لم يكن هناك لاعبون في هذه الجولة.";
+                }
+
+                showScreen(gameEndScreen); // Show the game end screen
+
+            } catch (error) {
+                console.error("Error showing final scores:", error);
+                showCustomMessageBox("خطأ في النتائج", "فشل عرض النتائج النهائية.");
+            } finally {
+                hideLoading(); // Hide loading spinner
+            }
+        }
+
+        // --- Event Listeners (Handle user interactions) ---
+        // When host wants to create a game
+        createHostButton.addEventListener('click', () => {
+            populateCategories(); // Populate quiz categories dropdown
+            showScreen(hostSetupScreen); // Show host setup screen
+        });
+
+        // When a player wants to join a game
+        joinPlayerButton.addEventListener('click', () => {
+            playerNicknameInput.value = localStorage.getItem('playerNickname') || ''; // Pre-fill nickname if saved
+            showScreen(joinGameScreen); // Show join game screen
+        });
+
+        // Host clicks to create the game instance in Firebase
+        createGameButton.addEventListener('click', createGame);
+
+        // Host clicks to start the game after players have joined
+        startGameButton.addEventListener('click', startGame);
+
+        // Player clicks to join a specific room
+        joinRoomButton.addEventListener('click', () => {
+            const code = gameCodeInput.value.trim().toUpperCase(); // Get game code
+            const nickname = playerNicknameInput.value.trim(); // Get player nickname
+            if (code && nickname) { // Validate inputs
+                joinGame(code, nickname);
+            } else {
+                showCustomMessageBox("خطأ في الإدخال", "يرجى إدخال رمز الغرفة واسمك المستعار.");
+            }
+        });
+
+        // Handle player's guess submission on Enter key press
+        gameGuessInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                submitGuess(); // Submit the guess
+            }
+        });
+
+        // Button to play again after a game ends
+        playAgainButton.addEventListener('click', () => {
+            // Reset all game-related global variables and listeners
+            gameId = null;
+            isHost = false;
+            clearInterval(timerInterval); // Clear any active timer
+            if (gameSnapshotUnsubscribe) { // Unsubscribe from Firestore listeners
+                gameSnapshotUnsubscribe();
+                gameSnapshotUnsubscribe = null;
+            }
+            if (playersSnapshotUnsubscribe) { // Unsubscribe from Firestore listeners
+                playersSnapshotUnsubscribe();
+                playersSnapshotUnsubscribe = null;
+            }
+            showScreen(roleSelectionScreen); // Return to role selection screen
+            window.history.pushState({}, '', window.location.pathname); // Clear gameId from URL
+        });
+
+        // Close button for the custom message box
+        customMessageCloseButton.addEventListener('click', hideCustomMessageBox);
+
+        // --- Initial Load ---
+        // Initialize Firebase when the DOM content is fully loaded
+        document.addEventListener('DOMContentLoaded', initializeFirebase);
+    </script>
+
+    <!-- Firebase CDN Scripts - MUST be included at the end of <body> for global access -->
+    <!-- Use specific version that is compatible with the Firebase functions used (e.g., 8.10.1) -->
+    <script type="text/javascript" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+</body>
+</html>
