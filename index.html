@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سبوركل بارتي (متعدد اللاعبين)</title>
+    <title> كعبورة يجاوب   </title>
     <!-- Tailwind CSS CDN for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts - Cairo for typography -->
@@ -409,6 +409,24 @@
 
     <!-- QRCode.js for generating QR codes -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode.js/1.0.0/qrcode.min.js"></script>
+<script>
+    // دالة توليد QR
+    function generateQRCode(link) {
+        const qrcodeContainer = document.getElementById("qrcode");
+        qrcodeContainer.innerHTML = ""; // ننظف القديم لو موجود
+
+        new QRCode(qrcodeContainer, {
+            text: link,
+            width: 150,
+            height: 150,
+        });
+    }
+
+    // مثال عند فتح غرفة اللعب، تولي:
+    const gameLink = window.location.href; // ولا استبدلها بالرابط الصحيح إن لزم
+    document.getElementById("game-link-display").textContent = gameLink;
+    generateQRCode(gameLink);
+</script>
 
     <!-- Main JavaScript Logic -->
     <script type="text/javascript">
@@ -2116,5 +2134,12 @@
         // --- Initial Load ---
         // DOMContentLoaded listener is already used at the bottom of the script for initial checks and Firebase init.
     </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+
+
+
+    
 </body>
 </html>
