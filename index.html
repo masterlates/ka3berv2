@@ -386,13 +386,13 @@
                 <!-- Final scores will be listed here by JavaScript -->
             </ul>
 
-            <button id="play-again-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
+            <button id="play-again-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-content-center gap-3">
                 <i class="fas fa-redo"></i> العب مرة أخرى <!-- Play again button -->
             </button>
         </div>
 
         <!-- Custom Message Box - For alerts and confirmations -->
-        <div id="custom-message-box" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-40 hidden transition-opacity duration-300 ease-out opacity-0">
+        <div id="custom-message-box" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-content-center p-4 z-40 hidden transition-opacity duration-300 ease-out opacity-0">
             <div class="bg-white rounded-xl p-8 text-center shadow-xl transform scale-90 transition-transform duration-300 ease-out">
                 <h2 id="custom-message-title" class="text-3xl font-bold text-gray-900 mb-4"></h2> <!-- Message title -->
                 <p id="custom-message-content" class="text-xl text-gray-700 mb-6"></p> <!-- Message content -->
@@ -1448,32 +1448,22 @@
 
 
                 for (const playerDoc of playersDocs.docs) {
+                    const playerId = playerDoc.id; // Correctly define playerId here
                     const playerRef = playerDoc.ref;
                     const playerData = playerDoc.data();
                     
                     let scoreChange = 0;
-                    // Take the current input field value as the answer if not explicitly submitted
-                    // Note: This relies on the local DOM for *this client's* input value if this client is the host.
-                    // For other clients, `playerSubmittedAnswer` is what was explicitly sent.
-                    // To truly capture the "last typed value" for all players, clients would need to update
-                    // `playerSubmittedAnswer` continuously, which adds many writes.
-                    // The current interpretation will use `playerData.playerSubmittedAnswer` if it exists (meaning they clicked submit).
-                    // If `hasSubmittedAnswer` is false, it means they didn't click submit, so their `playerSubmittedAnswer` field
-                    // would be empty from `startNextQuestion` reset. This means they are treated as "did not answer".
-                    // The request "يجب اخذ المكتوب في الاجابة حتى ان لم يضغظ اللاعب على زر ارسال" implies the typed text *should be available*
-                    // for the host to read. If not explicitly submitted, it won't be in Firestore.
-                    // This can only be implemented robustly with frequent Firestore updates on input change, or a more complex server-side
-                    // "final answer capture" logic.
-                    // For now, I will interpret this as: if `hasSubmittedAnswer` is true, use that answer. If false, they didn't submit.
-
                     let submittedAnswerForRound = playerData.playerSubmittedAnswer;
+
+                    // If player hasn't submitted an answer and is the current host, capture their current input
                     if (!playerData.hasSubmittedAnswer && playerId === userId && gameGuessInput) {
-                        // This logic only applies to the HOST's own input if they didn't submit
-                        // It does NOT apply to other players, as their live input is not sent to Firestore automatically
                         submittedAnswerForRound = gameGuessInput.value.trim();
+                    } else if (!playerData.hasSubmittedAnswer) {
+                        // If not submitted and not the host, treat as "لم يجب"
+                        submittedAnswerForRound = 'لم يجب';
                     }
 
-                    if (playerData.hasSubmittedAnswer || submittedAnswerForRound) { // Consider it answered if explicitly submitted OR host has text
+                    if (submittedAnswerForRound !== 'لم يجب') { // Check if an answer was provided
                         const normalizedSubmittedAnswer = normalize(submittedAnswerForRound);
                         
                         if (isCorrectAnswer(normalizedSubmittedAnswer, currentCorrectAnswers)) {
@@ -1485,16 +1475,14 @@
                             scoreChange = -playerData.playerSelectedPoints; // Deduct points
                         }
                     }
-                    // If player didn't submit, scoreChange remains 0 (no points change) and submittedAnswer is empty.
-                    // This implicitly covers "taking the written answer" as "if no answer was submitted, no points change."
-
+                    
                     const newScore = (playerData.score || 0) + scoreChange;
                     
                     // Capture results for this round before resetting player document
                     tempPlayerResults.push({
                         id: playerId,
                         nickname: playerData.nickname,
-                        submittedAnswer: submittedAnswerForRound || 'لم يجب', // Use captured answer or 'لم يجب'
+                        submittedAnswer: submittedAnswerForRound, // Use captured answer
                         selectedPoints: playerData.playerSelectedPoints || 0,
                         scoreChange: scoreChange,
                         overallScore: newScore // This is the updated score after this question
@@ -1672,9 +1660,6 @@
                     
                     if (isCorrect) {
                         scoreChange = pointsBet;
-                        // DO NOT update currentQuestionGuessedAnswers in the game document here.
-                        // This will be handled by the host in reconcileQuestionScores.
-                        console.log("Correct guess:", guess, "Points:", pointsBet);
                         // Add to player's *local* correct guesses list (for temporary display if needed)
                         if (playerCorrectGuessesList) {
                             const listItem = document.createElement('li');
@@ -1683,7 +1668,6 @@
                         }
                     } else {
                         scoreChange = -pointsBet;
-                        console.log("Incorrect guess:", guess, "Points lost:", pointsBet);
                     }
 
                     // Update player's per-question data (score itself is updated later by reconcile)
