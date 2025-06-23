@@ -166,7 +166,7 @@
     </div>
 
     <!-- Countdown Screen -->
-    <div id="countdown-screen" class="fixed inset-0 bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 flex items-center justify-center text-white text-9xl font-extrabold z-50 hidden">
+    <div id="countdown-screen" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center text-yellow-400 text-9xl font-extrabold z-50 hidden">
         <span id="countdown-timer-display">5</span>
     </div>
 
@@ -209,6 +209,17 @@
                 <div id="selected-categories-tags" class="multiselect-selected-tags">
                     <!-- Selected tags will appear here -->
                 </div>
+            </div>
+
+            <div class="w-full mb-6">
+                <label for="total-questions-per-game-select" class="block text-xl font-semibold text-gray-700 mb-2">عدد الأسئلة الكلي في اللعبة:</label>
+                <select id="total-questions-per-game-select" class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50">
+                    <option value="5">5 أسئلة</option>
+                    <option value="10">10 أسئلة</option>
+                    <option value="15">15 سؤال</option>
+                    <option value="20">20 سؤال</option>
+                    <option value="30">30 سؤال</option>
+                </select>
             </div>
 
             <div class="w-full mb-6">
@@ -356,7 +367,7 @@
         <!-- Game End Screen (Final Results) -->
         <div id="game-end-screen" class="w-full hidden">
             <h2 class="text-3xl font-bold text-indigo-700 mb-6 text-center" id="end-title">النتائج النهائية للعبة!</h2> <!-- Game end title -->
-            <p class="text-xl text-gray-700 mb-6 text-center" id="end-message"></p> <!-- End message -->
+            <p class="text-xl text-gray-600 mb-6 text-center" id="end-message"></p> <!-- End message -->
 
             <h3 class="text-2xl font-semibold text-gray-800 mb-4 text-center">الترتيب النهائي:</h3> <!-- Final scores title -->
             <ul id="final-scores-list" class="w-full bg-gray-100 border border-gray-200 rounded-lg p-4 mb-8 shadow-inner text-lg max-h-64 overflow-y-auto">
@@ -399,7 +410,7 @@
         let playersSnapshotUnsubscribe = null; // Listener for players collection changes
         let timerInterval = null; // Interval for host's game timer
         let selectedPointsBet = 1; // Default selected points bet
-        let userUsedPointsBets = []; // NEW: Array to store points already used by the current player
+        let userUsedPointsBets = []; // Array to store points already used by the current player in the current GAME
 
         // Quiz data - IMPORTANT: Each object in quizzes now represents a CATEGORY with multiple questions.
         // Each question has a questionText and correctAnswers.
@@ -496,6 +507,7 @@
         const quizCategoryDropdown = document.getElementById('quiz-category-dropdown');
         const selectedCategoriesTags = document.getElementById('selected-categories-tags');
         const hostNicknameInput = document.getElementById('host-nickname-input'); // Host nickname input
+        const totalQuestionsPerGameSelect = document.getElementById('total-questions-per-game-select'); // New: total questions select
 
         // Function to populate and manage the multi-select dropdown
         // This now lists the category and an example question from it for clarity
@@ -677,7 +689,8 @@
                 'nextQuestionButton': nextQuestionButton,
                 'endGameFinalButton': endGameFinalButton,
                 'countdownScreen': countdownScreen,
-                'countdownTimerDisplay': countdownTimerDisplay
+                'countdownTimerDisplay': countdownTimerDisplay,
+                'totalQuestionsPerGameSelect': totalQuestionsPerGameSelect // New element
             };
 
             for (const id in requiredElements) {
@@ -928,15 +941,16 @@
                 userNickname = hostNickname; // Set host's nickname
                 localStorage.setItem('hostNickname', hostNickname); // Save host nickname locally
                 const timeLimit = parseInt(timeLimitSelect.value); // Get selected time limit
+                const totalQuestions = parseInt(totalQuestionsPerGameSelect.value); // NEW: Get total questions for game
 
                 // Prepare the quiz order for the game
                 // Flatten all questions from selected categories into a single array
-                const quizSetForGame = [];
+                let allPossibleQuestions = [];
                 selectedQuizIndices.forEach(catIndex => {
                     const category = quizzes[catIndex];
                     if (category && category.questions) {
                         category.questions.forEach(q => {
-                            quizSetForGame.push({
+                            allPossibleQuestions.push({
                                 category: category.category,
                                 question: q.questionText,
                                 correctAnswers: q.correctAnswers.map(normalizeString) // Normalize correct answers
@@ -945,14 +959,17 @@
                     }
                 });
 
-                // Shuffle the *flattened* quizSet (all questions from selected categories)
-                for (let i = quizSetForGame.length - 1; i > 0; i--) {
+                // Shuffle the *flattened* array of all possible questions
+                for (let i = allPossibleQuestions.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
-                    [quizSetForGame[i], quizSetForGame[j]] = [quizSetForGame[j], quizSetForGame[i]];
+                    [allPossibleQuestions[i], allPossibleQuestions[j]] = [allPossibleQuestions[j], allPossibleQuestions[i]];
                 }
                 
+                // Select only the required number of questions for this game
+                const quizSetForGame = allPossibleQuestions.slice(0, totalQuestions);
+
                 if (quizSetForGame.length === 0) {
-                    showCustomMessageBox("خطأ", "الفئات المختارة لا تحتوي على أي أسئلة.");
+                    showCustomMessageBox("خطأ", "الفئات المختارة لا تحتوي على أي أسئلة كافية.");
                     hideLoading();
                     return;
                 }
@@ -991,9 +1008,9 @@
                     playerSelectedPoints: 0, // Points selected for current question
                     playerScoreChange: 0, // Points change for current question
                     hasSubmittedAnswer: false, // Flag if player submitted for current question
-                    usedPointsBets: [] // NEW: Array to track points already used by this player in this game
+                    usedPointsBets: [] // Initialize used points for this player
                 });
-                // Ensure usedPointsBets for host is also initialized
+                // Ensure userUsedPointsBets for host is also initialized locally
                 userUsedPointsBets = [];
 
                 console.log("Game created with ID:", gameId);
@@ -1135,6 +1152,7 @@
                     currentCorrectAnswers: currentQuestion.correctAnswers,
                     currentQuestionGuessedAnswers: [], // Reset guessed answers for new question
                     questionStartTime: Date.now(), // New timestamp for question start
+                    timeLimitPerQuestion: gameData.timeLimitPerQuestion, // Use stored time limit
                     currentTime: gameData.timeLimitPerQuestion, // Reset timer
                 });
 
@@ -1162,7 +1180,7 @@
                 // Reset points button selection to default (1) and re-enable them
                 selectedPointsBet = 1;
                 populatePointsButtons(); // Re-render buttons to reset selection visually and enable
-                
+
                 console.log(`Starting question ${currentQuestionIndex + 1}: ${currentQuestion.category} - Question: ${currentQuestion.question}`);
 
             } catch (error) {
@@ -1255,7 +1273,7 @@
                     playerSelectedPoints: 0,
                     playerScoreChange: 0,
                     hasSubmittedAnswer: false,
-                    usedPointsBets: [] // NEW: Initialize used points for this player
+                    usedPointsBets: [] // Initialize used points for this player
                 }, { merge: true });
                 // If player is joining, reset their local used points
                 userUsedPointsBets = [];
@@ -1378,17 +1396,25 @@
                         playerSelectedPoints: pointsBet,
                         playerScoreChange: scoreChange,
                         hasSubmittedAnswer: true, // Mark as submitted
-                        usedPointsBets: firebase.firestore.FieldValue.arrayUnion(pointsBet) // NEW: Add used points to player's array
+                        usedPointsBets: firebase.firestore.FieldValue.arrayUnion(pointsBet) // Add used points to player's array
                     });
                 });
-                // No need to manually disable here, listenToPlayers will handle it reactively.
-                // It's already done before the transaction for immediate feedback to user.
+
+                // Disable input elements for the player after successful submission
+                // This is now handled by listenToPlayers when playerDoc updates, making it reactive.
+                // But keeping direct disable here for immediate feedback is fine.
+                if (gameGuessInput) gameGuessInput.disabled = true;
+                if (pointsButtonGroup) { // Disable all point buttons
+                    Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
+                }
+                if (submitAnswerButton) submitAnswerButton.disabled = true;
+
             } catch (error) {
                 console.error("Error submitting guess:", error);
                 // Check for specific Firestore errors (e.g., aborts from transaction logic)
                 if (error === "Player already submitted answer for this question.") {
                      showCustomMessageBox("تم الإجابة", "لقد أجبت بالفعل على هذا السؤال.");
-                } else if (error.includes("لقد استخدمت قيمة")) { // Specific check for the points re-use error
+                } else if (typeof error === 'string' && error.includes("لقد استخدمت قيمة")) { // Specific check for the points re-use error
                      showCustomMessageBox("نقاط مستخدمة", error); // Show the specific message
                 }
                 else {
@@ -1458,6 +1484,7 @@
                         if (gameQuestionDisplay) gameQuestionDisplay.textContent = gameData.currentQuestionText; // Display current question text
                         
                         // Handle input state for current player (including host) based on their submission status
+                        // This check is now robust and applies to all active players.
                         db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId).get().then(playerDoc => {
                             if (playerDoc.exists) { // Ensure player doc exists
                                 const currentPlayerData = playerDoc.data();
@@ -1465,7 +1492,7 @@
                                     // Player has not submitted, enable inputs
                                     if (gameGuessInput) gameGuessInput.disabled = false;
                                     // Re-populate points buttons to reflect used ones and enable available ones
-                                    populatePointsButtons(); 
+                                    populatePointsButtons(); // Call populate to update and enable/disable
                                     if (submitAnswerButton) submitAnswerButton.disabled = false;
                                 } else { 
                                     // Player has submitted, disable inputs
@@ -1525,9 +1552,8 @@
                                 sharedRoundGuessesList.appendChild(listItem);
                             });
                         }
-
-                        // IMPORTANT: Removed auto-advance logic if all answers are guessed by anyone.
-                        // Now, it waits for time or host to explicitly end.
+                        // IMPORTANT: Removed auto-advance logic if all correct answers are guessed.
+                        // Now, it strictly waits for time or host to explicitly end the question.
                     } 
                     // Phase: Showing Question Results
                     else if (gamePhase === 'question_results') {
@@ -1629,8 +1655,9 @@
                         // Update current player's overall score (only for self)
                         if (playerId === userId) {
                             currentPlayerOverallScore = playerData.score || 0;
-                            userUsedPointsBets = playerData.usedPointsBets || []; // NEW: Update local used points array
-                            populatePointsButtons(); // NEW: Re-render buttons based on updated usedPointsBets
+                            // NEW: Update local userUsedPointsBets from player data
+                            userUsedPointsBets = playerData.usedPointsBets || []; 
+                            populatePointsButtons(); // Re-render buttons with updated used points status
 
                             // Update player's correct answers for current question on UI if applicable
                             if (playerCorrectGuessesList) {
@@ -1872,6 +1899,8 @@
                     playersSnapshotUnsubscribe = null;
                 }
                 selectedQuizIndices = []; // Reset selected quizzes for host setup
+                userUsedPointsBets = []; // Reset locally used points
+                populatePointsButtons(); // Re-render points buttons
                 showScreen(roleSelectionScreen); // Return to role selection screen
                 window.history.pushState({}, '', window.location.pathname); // Clear gameId from URL
             });
