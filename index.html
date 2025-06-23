@@ -567,55 +567,6 @@
         // Fuzzy matching threshold: Max allowed edits for a match
         const FUZZY_THRESHOLD = 2; // Can be adjusted: 1 for very strict, 2-3 for more leniency
 
-        // 🔁 دوال تطبيع النص ومقارنة الإجابات (المقدمة من المستخدم)
-        function normalize(text) {
-            if (typeof text !== 'string') return ''; // Ensure it's a string
-            return text
-                .toLowerCase()
-                .replace(/\s+/g, '') // إزالة المسافات المتكررة
-                .replace(/أ|إ|آ/g, 'ا') // توحيد الألفات
-                .replace(/ى/g, 'ي') // توحيد الألف المقصورة
-                .replace(/ة/g, 'ه') // توحيد التاء المربوطة
-                .replace(/ؤ/g, 'و') // توحيد الهمزة على الواو
-                .replace(/ئ/g, 'ي') // توحيد الهمزة على الياء
-                .replace(/[^a-zA-Z0-9\u0600-\u06FF]/g, ''); // إزالة الرموز والأحرف الخاصة غير العربية والإنجليزية
-        }
-
-        function similarity(a, b) {
-            // Normalize both strings before calculating similarity
-            a = normalize(a);
-            b = normalize(b);
-
-            if (a.length === 0 && b.length === 0) return 1; // Both empty, considered 100% similar
-            if (a.length === 0 || b.length === 0) return 0; // One empty, no similarity
-
-            // Use Levenshtein distance, but adjust threshold for shorter words if needed
-            const maxLen = Math.max(a.length, b.length);
-            const dist = levenshteinDistance(a, b);
-            
-            // Calculate similarity score based on distance
-            // Higher similarity if distance is small relative to string length
-            return 1 - (dist / maxLen); 
-        }
-
-        function isCorrectAnswer(playerAnswer, correctAnswersArray) { // Changed to accept array
-            const normalizedPlayerAnswer = normalize(playerAnswer);
-            // Check for exact match first among normalized correct answers
-            for (const correct of correctAnswersArray) {
-                if (correct === normalizedPlayerAnswer) {
-                    return true;
-                }
-            }
-            
-            // If no exact match, check for fuzzy match
-            for (const correct of correctAnswersArray) {
-                if (similarity(normalizedPlayerAnswer, correct) >= 0.8) { // Using 0.8 as threshold for similarity
-                    return true;
-                }
-            }
-            return false;
-        }
-
         // Multi-select quiz categories logic
         let selectedQuizIndices = []; // Stores indices of selected CATEGORIES
         // Defensive check for elements - getElementById returns null if not found
@@ -626,6 +577,7 @@
         const totalQuestionsPerGameSelect = document.getElementById('total-questions-per-game-select'); // Total questions select
 
         // Function to populate and manage the multi-select dropdown
+        // This now lists the category and an example question from it for clarity
         function setupQuizCategorySelection() {
             if (!quizCategoryDropdown) {
                 console.error("Error: quizCategoryDropdown element not found.");
@@ -1056,46 +1008,10 @@
             return newGameId;
         }
 
-        // Normalizes a string (lowercase, trims whitespace, handles Arabic specific chars, removes non-alphanumeric)
-        function normalize(text) {
-            if (typeof text !== 'string') return ''; // Ensure it's a string
-            return text
-                .toLowerCase()
-                .replace(/\s+/g, '') // Remove all whitespace
-                .replace(/أ|إ|آ/g, 'ا') // Normalize alefs
-                .replace(/ى/g, 'ي') // Normalize alef maksura
-                .replace(/ة/g, 'ه') // Normalize taa marbouta
-                .replace(/ؤ/g, 'و') // Normalize hamza on waw
-                .replace(/ئ/g, 'ي') // Normalize hamza on yaa
-                .replace(/[^a-zA-Z0-9\u0600-\u06FF]/g, ''); // Remove non-alphanumeric (keep Arabic and English letters/numbers)
+        // Normalizes a string (lowercase, trims whitespace) for consistent comparison
+        function normalizeString(str) {
+            return str.toLowerCase().trim();
         }
-
-        // Calculates similarity based on Levenshtein distance
-        function similarity(a, b) {
-            // No need to normalize here, as it's done once in isCorrectAnswer
-            if (a.length === 0 && b.length === 0) return 1; // Both empty, considered 100% similar
-            if (a.length === 0 || b.length === 0) return 0; // One empty, no similarity
-
-            const maxLen = Math.max(a.length, b.length);
-            const dist = levenshteinDistance(a, b);
-            
-            return 1 - (dist / maxLen); 
-        }
-
-        // Checks if player's answer is correct using fuzzy matching
-        function isCorrectAnswer(playerAnswer, correctAnswersArray) {
-            const normalizedPlayerAnswer = normalize(playerAnswer);
-            // Check for exact match or fuzzy match against all correct answers
-            for (const correctNormalizedAnswer of correctAnswersArray) {
-                // Use the provided correctAnswers (already normalized when stored)
-                if (correctNormalizedAnswer === normalizedPlayerAnswer || 
-                    similarity(normalizedPlayerAnswer, correctNormalizedAnswer) >= 0.8) { 
-                    return true;
-                }
-            }
-            return false;
-        }
-
 
         // --- Host Specific Functions ---
         // Creates a new game instance in Firestore
@@ -1133,7 +1049,7 @@
                                 category: category.category,
                                 question: q.questionText,
                                 displayAnswer: q.displayAnswer, // Include displayAnswer
-                                correctAnswers: q.correctAnswers.map(normalize) // Normalize correct answers using custom normalize
+                                correctAnswers: q.correctAnswers.map(normalizeString) // Normalize correct answers
                             });
                         });
                     }
@@ -1174,8 +1090,7 @@
                     currentTime: timeLimit, // Initialize current time with full time limit
                     countdownStartTime: null, // For countdown before question
                     countdownDuration: 5, // Duration of countdown
-                    lastUpdate: Date.now(), // Timestamp for host's last update (for real-time timer sync)
-                    scoresReconciledForCurrentQuestion: false // Flag to ensure scores are reconciled only once per question
+                    lastUpdate: Date.now() // Timestamp for host's last update (for real-time timer sync)
                 });
 
                 // Add host as a player in the game's subcollection (Host can also play)
@@ -1334,7 +1249,6 @@
                     questionStartTime: Date.now(), // New timestamp for question start
                     timeLimitPerQuestion: gameData.timeLimitPerQuestion, // Use stored time limit
                     currentTime: gameData.timeLimitPerQuestion, // Reset timer
-                    scoresReconciledForCurrentQuestion: false // Reset reconciliation flag for the new question
                 });
 
                 // Crucially, reset players' per-question flags/data in their sub-documents
@@ -1379,14 +1293,10 @@
             showLoading();
             try {
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
-                // When ending early, set phase to question_results and trigger score reconciliation
                 await gameRef.update({
-                    gamePhase: 'question_results', 
-                    currentTime: 0,
-                    scoresReconciledForCurrentQuestion: false // Ensure this is false before reconciling
+                    gamePhase: 'question_results', // Move to showing question results
+                    currentTime: 0 // Ensure timer is at zero
                 });
-                // Host also triggers score reconciliation here, immediately after update
-                reconcileQuestionScores(); // Now called immediately when host ends early
                 console.log("Host ended question early.");
             } catch (error) {
                 console.error("Error ending question early:", error);
@@ -1422,7 +1332,7 @@
             const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
             const gameDoc = await gameRef.get();
             if (!gameDoc.exists || gameDoc.data().scoresReconciledForCurrentQuestion) {
-                console.log("Scores already reconciled for this question, or game data missing. Skipping reconciliation.");
+                console.log("Scores already reconciled for this question, or game data missing.");
                 return; // Prevent double reconciliation if listener triggers again
             }
 
@@ -1436,7 +1346,6 @@
                     const playerRef = playerDoc.ref;
                     const playerData = playerDoc.data();
                     
-                    // Only update if player has submitted an answer for this question
                     if (playerData.hasSubmittedAnswer && playerData.playerScoreChange !== undefined) {
                         const newScore = (playerData.score || 0) + (playerData.playerScoreChange);
                         batch.update(playerRef, {
@@ -1565,8 +1474,7 @@
             }
 
 
-            const guess = gameGuessInput.value; // Get player's raw guess
-            const normalizedGuess = normalize(guess); // Normalize guess for comparison
+            const guess = normalizeString(gameGuessInput.value); // Get and normalize player's guess
             const pointsBet = selectedPointsBet; // Get selected points from global variable
 
             if (guess === '') {
@@ -1613,14 +1521,25 @@
                     let scoreChange = 0; // Points change for this question
 
                     // Check if guess is correct using fuzzy matching
-                    let isCorrect = isCorrectAnswer(guess, currentCorrectAnswers); // Use the new fuzzy matching function
+                    let isCorrect = false;
+                    for (const correctAnswer of currentCorrectAnswers) {
+                        // Check for exact match first
+                        if (correctAnswer === guess) {
+                            isCorrect = true;
+                            break;
+                        }
+                        // Then check for fuzzy match
+                        if (levenshteinDistance(correctAnswer, guess) <= FUZZY_THRESHOLD) {
+                            isCorrect = true;
+                            break;
+                        }
+                    }
 
                     if (isCorrect) {
                         scoreChange = pointsBet;
                         // Add this correct guess to the game's shared list of guesses for this question
-                        // Use the normalized guess for storage in shared list for consistency with comparison
                         transaction.update(gameRef, {
-                            currentQuestionGuessedAnswers: firebase.firestore.FieldValue.arrayUnion(normalizedGuess) 
+                            currentQuestionGuessedAnswers: firebase.firestore.FieldValue.arrayUnion(guess) // Use player's original normalized guess for display in shared list
                         });
                         console.log("Correct guess:", guess, "Points:", pointsBet);
                     } else {
@@ -1630,9 +1549,10 @@
 
                     // Update player's per-question data (score itself is updated later by reconcile)
                     transaction.update(playerRef, {
+                        // score: playerOverallScore, // NOT updated here anymore
                         playerSubmittedAnswer: guess, // Store the actual normalized guess for display in results
                         playerSelectedPoints: pointsBet,
-                        playerScoreChange: scoreChange,
+                        playerScoreChange: scoreChange, // Store the calculated change
                         hasSubmittedAnswer: true, // Mark as submitted
                         usedPointsBets: firebase.firestore.FieldValue.arrayUnion(pointsBet) // Add used points to player's array
                     });
@@ -1650,16 +1570,13 @@
             } catch (error) {
                 console.error("Error submitting guess:", error);
                 // Catch specific errors thrown from transaction
-                if (typeof error === 'object' && error.message) { // Ensure error has a message
-                    if (error.message.includes("لقد أجبت بالفعل")) {
-                         showCustomMessageBox("تم الإجابة", error.message);
-                    } else if (error.message.includes("لقد استخدمت قيمة")) { 
-                         showCustomMessageBox("نقاط مستخدمة", error.message); // Show the specific message
-                    } else {
-                        showCustomMessageBox("خطأ في الإجابة", error.message);
-                    }
-                } else {
-                    showCustomMessageBox("خطأ في الإجابة", "حدث خطأ أثناء إرسال الإجابة.");
+                if (error.message.includes("لقد أجبت بالفعل")) {
+                     showCustomMessageBox("تم الإجابة", error.message);
+                } else if (typeof error === 'string' && error.message.includes("لقد استخدمت قيمة")) { 
+                     showCustomMessageBox("نقاط مستخدمة", error.message); // Show the specific message
+                }
+                else {
+                    showCustomMessageBox("خطأ في الإجابة", error.message || "حدث خطأ أثناء إرسال الإجابة.");
                 }
             } finally {
                 hideLoading(); // Hide loading spinner
@@ -1683,12 +1600,13 @@
                     if (questionCounterDisplay) {
                         // currentQuestionIndexInGame is already incremented for the NEXT question to be displayed,
                         // so to show current question, we use currentQuestionIndexInGame.
-                        // If phase is not 'question_active' or 'question_results', show 0/Total
-                        const currentQNum = gamePhase === 'question_active' || gamePhase === 'question_results'
-                                            ? gameData.currentQuestionIndexInGame : 0;
+                        const currentQNum = gameData.currentQuestionIndexInGame; 
                         const totalQs = gameData.quizSet ? gameData.quizSet.length : 0;
+                        // Display (current number - 1) if not in countdown/lobby, otherwise 0
+                        const displayQNum = gamePhase === 'game_countdown' || gamePhase === 'lobby' ? 0 : currentQNum;
+
                         if (totalQs > 0) {
-                             questionCounterDisplay.textContent = `${currentQNum} / ${totalQs}`;
+                             questionCounterDisplay.textContent = `${displayQNum} / ${totalQs}`;
                         } else {
                              questionCounterDisplay.textContent = `-- / --`;
                         }
@@ -1744,11 +1662,8 @@
                             if (playerDoc.exists) { // Ensure player doc exists
                                 const currentPlayerData = playerDoc.data();
                                 if (!currentPlayerData.hasSubmittedAnswer) {
-                                    // Player has not submitted, enable inputs and clear input field
-                                    if (gameGuessInput) {
-                                        gameGuessInput.value = ''; // Clear input field
-                                        gameGuessInput.disabled = false;
-                                    }
+                                    // Player has not submitted, enable inputs
+                                    if (gameGuessInput) gameGuessInput.disabled = false;
                                     populatePointsButtons(); // Re-populate buttons to enable/disable based on usedPointsBets
                                     if (submitAnswerButton) submitAnswerButton.disabled = false;
                                 } else { 
@@ -1835,7 +1750,7 @@
                             const listItem = document.createElement('li');
                             if (primaryCorrectAnswer) {
                                 // Check if the primary correct answer was guessed by anyone
-                                const wasPrimaryGuessed = (gameData.currentQuestionGuessedAnswers || []).includes(normalize(primaryCorrectAnswer)); // Check normalized
+                                const wasPrimaryGuessed = (gameData.currentQuestionGuessedAnswers || []).includes(normalizeString(primaryCorrectAnswer)); // Check normalized
                                 if (wasPrimaryGuessed) {
                                     listItem.innerHTML = `<i class="fas fa-check text-green-500 mr-2"></i> ${primaryCorrectAnswer}`;
                                 } else {
@@ -2020,9 +1935,9 @@
                         // Check if player's submitted answer is one of the correct answers (using fuzzy logic)
                         let isPlayerAnswerCorrect = false;
                         if (player.submittedAnswer !== 'لم يجب') {
-                            const normalizedSubmittedAnswer = normalize(player.submittedAnswer);
+                            const normalizedSubmittedAnswer = normalizeString(player.submittedAnswer);
                             for (const correctAnswer of currentCorrectAnswers) {
-                                if (isCorrectAnswer(normalizedSubmittedAnswer, [correctAnswer])) { // Use custom isCorrectAnswer
+                                if (levenshteinDistance(correctAnswer, normalizedSubmittedAnswer) <= FUZZY_THRESHOLD) {
                                     isPlayerAnswerCorrect = true;
                                     break;
                                 }
