@@ -2209,5 +2209,33 @@
         // --- Initial Load ---
         // DOMContentLoaded listener is already used at the bottom of the script for initial checks and Firebase init.
     </script>
+<!-- مكتبة QR Code -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<script>
+  function generateQRCode(link) {
+    const qrcodeContainer = document.getElementById("qrcode");
+    qrcodeContainer.innerHTML = ""; // ننظف القديم
+
+    new QRCode(qrcodeContainer, {
+      text: link,
+      width: 150,
+      height: 150,
+    });
+  }
+
+  // عند عرض رابط الغرفة
+  window.addEventListener('DOMContentLoaded', () => {
+    const link = window.location.href; // أو أي رابط الغرفة
+    const linkDisplay = document.getElementById("game-link-display");
+    if (linkDisplay) {
+      linkDisplay.textContent = link;
+    }
+    generateQRCode(link);
+  });
+</script>
+
+
+    
 </body>
 </html>
