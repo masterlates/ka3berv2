@@ -1090,10 +1090,8 @@
                 populatePointsButtons(); // Re-render buttons to reset selection visually and enable
 
                 // Re-enable input and select for current player (this is also handled by listenToChanges but good here too)
-                if (gameGuessInput) gameGuessInput.disabled = false;
-                if (submitAnswerButton) submitAnswerButton.disabled = false;
-                if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = false);
-
+                // This enabling/disabling is now handled by the hasSubmittedAnswer flag in listenToPlayers/gameChanges
+                
                 console.log(`Starting question ${nextQuestionIndex + 1}: ${nextQuestion.category} - Question: ${nextQuestion.question}`);
 
             } catch (error) {
@@ -1257,6 +1255,7 @@
                     const playerData = playerDoc.data();
 
                     const currentCorrectAnswers = gameData.currentCorrectAnswers || []; // All correct answers for the current question
+                    const currentQuestionGuessedAnswers = gameData.currentQuestionGuessedAnswers || []; // Answers guessed in THIS question by ANY player
                     const hasSubmittedAnswer = playerData.hasSubmittedAnswer || false;
 
                     if (hasSubmittedAnswer) {
@@ -1295,6 +1294,8 @@
                 });
 
                 // Disable input elements for the player after successful submission
+                // This is now handled by listenToPlayers when playerDoc updates, making it reactive.
+                // But keeping direct disable here for immediate feedback is fine.
                 if (gameGuessInput) gameGuessInput.disabled = true;
                 if (pointsButtonGroup) { // Disable all point buttons
                     Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
@@ -1347,17 +1348,27 @@
                         if (gameQuestionDisplay) gameQuestionDisplay.textContent = gameData.currentQuestionText; // Display current question text
                         
                         // Handle input state for current player (including host) based on their submission status
+                        // This check is now robust and applies to all active players.
                         db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId).get().then(playerDoc => {
-                            if (playerDoc.exists && !playerDoc.data().hasSubmittedAnswer) {
-                                if (gameGuessInput) gameGuessInput.disabled = false;
-                                if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = false);
-                                if (submitAnswerButton) submitAnswerButton.disabled = false;
-                            } else { // Player (or Host) has submitted for this question
+                            if (playerDoc.exists) { // Ensure player doc exists
+                                const currentPlayerData = playerDoc.data();
+                                if (!currentPlayerData.hasSubmittedAnswer) {
+                                    // Player has not submitted, enable inputs
+                                    if (gameGuessInput) gameGuessInput.disabled = false;
+                                    if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = false);
+                                    if (submitAnswerButton) submitAnswerButton.disabled = false;
+                                } else { 
+                                    // Player has submitted, disable inputs
+                                    if (gameGuessInput) gameGuessInput.disabled = true;
+                                    if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
+                                    if (submitAnswerButton) submitAnswerButton.disabled = true;
+                                }
+                            } else { // If player doc somehow doesn't exist, disable all to prevent errors
                                 if (gameGuessInput) gameGuessInput.disabled = true;
                                 if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
                                 if (submitAnswerButton) submitAnswerButton.disabled = true;
                             }
-                        }).catch(e => console.error("Error checking player submission status:", e));
+                        }).catch(e => console.error("Error checking player submission status on game changes:", e));
                         
                         if (gameGuessInput) gameGuessInput.focus(); // Keep focus
 
@@ -1404,14 +1415,8 @@
                                 sharedRoundGuessesList.appendChild(listItem);
                             });
                         }
-
-                        // Auto-advance if all correct answers for the current question are guessed by ANYONE
-                        if ((gameData.currentQuestionGuessedAnswers || []).length === (gameData.currentCorrectAnswers || []).length && (gameData.currentCorrectAnswers || []).length > 0) {
-                            if (gamePhase === 'question_active') { // Only auto-advance if currently in active question phase
-                                gameRef.update({ gamePhase: 'question_results' }); // Move to showing question results
-                            }
-                        }
-
+                        // IMPORTANT: Removed auto-advance if all answers are guessed by anyone.
+                        // Now, it waits for time or host to explicitly end.
                     } 
                     // Phase: Showing Question Results
                     else if (gamePhase === 'question_results') {
@@ -1516,6 +1521,7 @@
                             // Update player's correct answers for current question on UI if applicable
                             if (playerCorrectGuessesList) {
                                 playerCorrectGuessesList.innerHTML = ''; // Clear for fresh update
+                                // Defensive check, ensure playerCorrectAnswersForCurrentQuestion exists
                                 (playerData.playerCorrectAnswersForCurrentQuestion || []).forEach(guess => {
                                     const listItem = document.createElement('li');
                                     listItem.textContent = guess;
