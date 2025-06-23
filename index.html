@@ -16,9 +16,9 @@
     <style>
         /* Base font and direction for Arabic */
         body {
-            font-family: 'Cairo', sans-serif;
+            font-family: 'Cairo', sans-serif; /* Changed to Cairo font */
             direction: rtl; /* For Arabic text */
-            /* REMOVED: text-align: right; -- relying on Tailwind classes now */
+            text-align: right; /* For Arabic text */
         }
         /* Custom animation for list items - Tailwind's default doesn't have this exact one */
         @keyframes fadeInFromBottom {
@@ -181,29 +181,29 @@
 
         <!-- Role Selection Screen -->
         <div id="role-selection-screen" class="w-full flex flex-col items-center space-y-6">
-            <button id="create-host-button" class="w-full md:w-2/3 bg-blue-600 hover:bg-blue-700 text-white text-2xl font-bold py-5 rounded-lg shadow-xl transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center text-center gap-3">
+            <button id="create-host-button" class="w-full md:w-2/3 bg-blue-600 hover:bg-blue-700 text-white text-2xl font-bold py-5 rounded-lg shadow-xl transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
                 <i class="fas fa-crown"></i> إنشاء غرفة (مضيف) <!-- Create host room button -->
             </button>
-            <button id="join-player-button" class="w-full md:w-2/3 bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-5 rounded-lg shadow-xl transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center text-center gap-3">
+            <button id="join-player-button" class="w-full md:w-2/3 bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-5 rounded-lg shadow-xl transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
                 <i class="fas fa-gamepad"></i> الانضمام إلى غرفة (لاعب) <!-- Join player room button -->
             </button>
         </div>
 
         <!-- Host Room Setup Screen -->
         <div id="host-setup-screen" class="w-full flex flex-col items-center hidden">
-            <h2 class="text-3xl font-bold text-indigo-700 mb-6 text-center">إعداد غرفة اللعب</h2> <!-- Host setup title -->
+            <h2 class="text-3xl font-bold text-indigo-700 mb-6">إعداد غرفة اللعب</h2> <!-- Host setup title -->
 
             <div class="w-full mb-6">
-                <label for="host-nickname-input" class="block text-xl font-semibold text-gray-700 mb-2 text-right">اسمك المستعار (المضيف):</label>
+                <label for="host-nickname-input" class="block text-xl font-semibold text-gray-700 mb-2">اسمك المستعار (المضيف):</label>
                 <input type="text" id="host-nickname-input" placeholder="اسم المضيف"
-                        class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50 text-right">
+                        class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50">
             </div>
 
             <div class="w-full mb-6">
-                <label for="quiz-category-input" class="block text-xl font-semibold text-gray-700 mb-2 text-right">اختر فئات الأسئلة (يمكن اختيار أكثر من واحدة):</label>
+                <label for="quiz-category-input" class="block text-xl font-semibold text-gray-700 mb-2">اختر فئات الأسئلة (يمكن اختيار أكثر من واحدة):</label>
                 <div class="multiselect-container">
                     <input type="text" id="quiz-category-input" readonly placeholder="انقر هنا لاختيار الفئات..."
-                        class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50 cursor-pointer text-right">
+                        class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50 cursor-pointer">
                     <div id="quiz-category-dropdown" class="multiselect-dropdown hidden">
                         <!-- Checkboxes will be populated by JS -->
                     </div>
@@ -214,8 +214,8 @@
             </div>
 
             <div class="w-full mb-6">
-                <label for="total-questions-per-game-select" class="block text-xl font-semibold text-gray-700 mb-2 text-right">عدد الأسئلة الكلي في اللعبة:</label>
-                <select id="total-questions-per-game-select" class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50 text-right">
+                <label for="total-questions-per-game-select" class="block text-xl font-semibold text-gray-700 mb-2">عدد الأسئلة الكلي في اللعبة:</label>
+                <select id="total-questions-per-game-select" class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50">
                     <option value="5">5 أسئلة</option>
                     <option value="10">10 أسئلة</option>
                     <option value="15">15 سؤال</option>
@@ -225,8 +225,8 @@
             </div>
 
             <div class="w-full mb-6">
-                <label for="time-limit-select" class="block text-xl font-semibold text-gray-700 mb-2 text-right">الوقت المخصص لكل سؤال (بالثواني):</label> <!-- Time limit label -->
-                <select id="time-limit-select" class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50 text-right">
+                <label for="time-limit-select" class="block text-xl font-semibold text-gray-700 mb-2">الوقت المخصص لكل سؤال (بالثواني):</label> <!-- Time limit label -->
+                <select id="time-limit-select" class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50">
                     <option value="15">15 ثانية</option>
                     <option value="20">20 ثانية</option>
                     <option value="30">30 ثانية</option>
@@ -235,15 +235,15 @@
                 </select>
             </div>
 
-            <button id="create-game-button" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center text-center gap-3">
+            <button id="create-game-button" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
                 <i class="fas fa-plus-circle"></i> إنشاء اللعبة <!-- Create game button -->
             </button>
         </div>
 
         <!-- Waiting Room Screen (Host & Player) -->
         <div id="waiting-room-screen" class="w-full flex flex-col items-center hidden">
-            <h2 class="text-3xl font-bold text-indigo-700 mb-4 text-center" id="waiting-room-title">انتظر انضمام اللاعبين...</h2> <!-- Waiting room title -->
-            <p class="text-xl text-gray-700 mb-6 text-center">شارك هذا الرابط مع أصدقائك للانضمام:</p> <!-- Share link instruction -->
+            <h2 class="text-3xl font-bold text-indigo-700 mb-4" id="waiting-room-title">انتظر انضمام اللاعبين...</h2> <!-- Waiting room title -->
+            <p class="text-xl text-gray-700 mb-6">شارك هذا الرابط مع أصدقائك للانضمام:</p> <!-- Share link instruction -->
             <div class="bg-gray-100 p-4 rounded-lg shadow-inner mb-6 flex flex-col items-center">
                 <span id="game-link-display" class="text-md md:text-xl font-medium text-blue-600 break-all text-center"></span>
                 <div id="qrcode" class="mb-2 p-2 bg-white rounded-lg shadow-md flex justify-center items-center">
@@ -252,40 +252,40 @@
                         <!-- Fallback message for QR code -->
                     </div>
                 </div>
-                <button id="copy-link-button" class="copy-button mt-4 text-center">انسخ الرابط</button>
+                <button id="copy-link-button" class="copy-button mt-4">انسخ الرابط</button>
             </div>
             
-            <h3 class="text-2xl font-semibold text-gray-800 mb-4 text-center">اللاعبون المنضمون:</h3> <!-- Joined players list title -->
-            <ul id="joined-players-list" class="w-full bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8 h-40 overflow-y-auto shadow-inner text-right">
+            <h3 class="text-2xl font-semibold text-gray-800 mb-4">اللاعبون المنضمون:</h3> <!-- Joined players list title -->
+            <ul id="joined-players-list" class="w-full bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8 h-40 overflow-y-auto shadow-inner text-lg">
                 <!-- Players will be listed here by JavaScript -->
             </ul>
 
-            <button id="start-game-button" class="w-full bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center text-center hidden">
+            <button id="start-game-button" class="w-full bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out hidden">
                 <i class="fas fa-play"></i> بدء اللعب! <!-- Start game button (for host) -->
             </button>
         </div>
 
         <!-- Join Game Screen (Player) -->
         <div id="join-game-screen" class="w-full flex flex-col items-center hidden">
-            <h2 class="text-3xl font-bold text-indigo-700 mb-6 text-center">الانضمام إلى غرفة اللعب</h2> <!-- Join game title -->
+            <h2 class="text-3xl font-bold text-indigo-700 mb-6">الانضمام إلى غرفة اللعب</h2> <!-- Join game title -->
             <div class="w-full mb-6">
-                <label for="game-code-input" class="block text-xl font-semibold text-gray-700 mb-2 text-right">أدخل رمز الغرفة:</label> <!-- Game code input label -->
+                <label for="game-code-input" class="block text-xl font-semibold text-gray-700 mb-2">أدخل رمز الغرفة:</label> <!-- Game code input label -->
                 <input type="text" id="game-code-input" placeholder="مثال: ABCDE"
                         class="w-full p-4 mb-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50 uppercase text-center tracking-widest">
             </div>
              <div class="w-full mb-6">
-                <label for="player-nickname-input" class="block text-xl font-semibold text-gray-700 mb-2 text-right">أدخل اسمك المستعار:</label> <!-- Player nickname input label -->
+                <label for="player-nickname-input" class="block text-xl font-semibold text-gray-700 mb-2">أدخل اسمك المستعار:</label> <!-- Player nickname input label -->
                 <input type="text" id="player-nickname-input" placeholder="اسمك"
                         class="w-full p-4 mb-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50 text-center">
             </div>
-            <button id="join-room-button" class="w-full bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center text-center gap-3">
+            <button id="join-room-button" class="w-full bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
                 <i class="fas fa-door-open"></i> الانضمام <!-- Join button -->
             </button>
         </div>
 
         <!-- Game Play Screen (Host & Player) -->
         <div id="game-play-screen" class="w-full hidden">
-            <div class="flex flex-col md:flex-row justify-between items-center w-full mb-8 space-y-4 md:space-y-0 text-center">
+            <div class="flex flex-col md:flex-row justify-between items-center w-full mb-8 space-y-4 md:space-y-0">
                 <div class="flex items-center space-x-2 space-x-reverse text-2xl font-bold text-gray-700 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
                     <i class="fas fa-hourglass-half text-blue-500"></i>
                     <span>الوقت: <span id="game-timer" class="text-blue-600">--</span> ثانية</span> <!-- Game timer display -->
@@ -309,8 +309,8 @@
             <div class="flex items-center flex-wrap gap-2 w-full mb-4">
                 <label for="game-guess-input" class="sr-only">اكتب إجابتك هنا</label>
                 <input type="text" id="game-guess-input" placeholder="اكتب إجابتك هنا..."
-                    class="flex-grow p-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50 text-right">
-                <button id="submit-answer-button" class="bg-blue-500 hover:bg-blue-600 text-white text-xl font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out flex-shrink-0 text-center">
+                    class="flex-grow p-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50">
+                <button id="submit-answer-button" class="bg-blue-500 hover:bg-blue-600 text-white text-xl font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out flex-shrink-0">
                     <i class="fas fa-paper-plane"></i> إرسال
                 </button>
             </div>
@@ -323,14 +323,14 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 h-64 overflow-y-auto shadow-inner text-right">
-                    <h3 class="text-xl font-semibold text-blue-800 mb-3 text-right">إجاباتك الصحيحة (لهذا السؤال):</h3> <!-- Player's correct guesses title -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 h-64 overflow-y-auto shadow-inner">
+                    <h3 class="text-xl font-semibold text-blue-800 mb-3">إجاباتك الصحيحة (لهذا السؤال):</h3> <!-- Player's correct guesses title -->
                     <ul id="player-correct-guesses-list" class="list-disc pr-6 text-gray-700 text-lg space-y-2">
                         <!-- Player's correct guesses will be listed here -->
                     </ul>
                 </div>
-                <div class="bg-purple-50 border border-purple-200 rounded-lg p-6 h-64 overflow-y-auto shadow-inner text-right">
-                    <h3 class="text-xl font-semibold text-purple-800 mb-3 text-right">الإجابات المشتركة (لهذا السؤال):</h3> <!-- Shared correct guesses title -->
+                <div class="bg-purple-50 border border-purple-200 rounded-lg p-6 h-64 overflow-y-auto shadow-inner">
+                    <h3 class="text-xl font-semibold text-purple-800 mb-3">الإجابات المشتركة (لهذا السؤال):</h3> <!-- Shared correct guesses title -->
                     <ul id="shared-round-guesses-list" class="list-disc pr-6 text-gray-700 text-lg space-y-2">
                         <!-- All correct guesses across players for THIS QUESTION will be listed here -->
                     </ul>
@@ -339,11 +339,11 @@
             
             <!-- Host-only controls during game play -->
             <div id="host-gameplay-controls" class="w-full flex flex-col items-center gap-4 hidden">
-                <h3 class="text-xl font-semibold text-gray-800 mb-2 text-center">حالة إجابة اللاعبين (المضيف فقط):</h3>
-                <ul id="host-submission-status-list" class="w-full bg-gray-100 border border-gray-200 rounded-lg p-3 mb-4 shadow-inner text-base text-right max-h-32 overflow-y-auto">
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">حالة إجابة اللاعبين (المضيف فقط):</h3>
+                <ul id="host-submission-status-list" class="w-full bg-gray-100 border border-gray-200 rounded-lg p-3 mb-4 shadow-inner text-base max-h-32 overflow-y-auto">
                     <!-- Player submission status will be listed here -->
                 </ul>
-                <button id="end-question-early-button" class="w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center text-center">
+                <button id="end-question-early-button" class="w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out">
                     <i class="fas fa-flag-checkered"></i> إنهاء السؤال الآن <!-- End question early button -->
                 </button>
             </div>
@@ -356,21 +356,21 @@
             <p class="text-2xl font-semibold text-gray-800 mb-4 text-center">السؤال: <span id="results-question" class="font-bold text-gray-900"></span></p>
 
             <h3 class="text-2xl font-semibold text-gray-800 mb-4 text-center">الإجابة الصحيحة:</h3>
-            <ul id="round-correct-answers-list" class="w-full bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8 max-h-64 overflow-y-auto shadow-inner text-lg list-disc pr-6 text-right">
+            <ul id="round-correct-answers-list" class="w-full bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8 max-h-64 overflow-y-auto shadow-inner text-lg list-disc pr-6">
                 <!-- All correct answers for the question -->
             </ul>
 
             <h3 class="text-2xl font-semibold text-gray-800 mb-4 text-center">أداء اللاعبين في هذا السؤال:</h3>
-            <ul id="question-player-scores-list" class="w-full bg-gray-100 border border-gray-200 rounded-lg p-4 mb-8 shadow-inner text-lg max-h-64 overflow-y-auto text-right">
+            <ul id="question-player-scores-list" class="w-full bg-gray-100 border border-gray-200 rounded-lg p-4 mb-8 shadow-inner text-lg max-h-64 overflow-y-auto">
                 <!-- Player scores for this question -->
             </ul>
 
             <!-- Host controls for next question or end game -->
             <div id="question-results-host-controls" class="w-full flex flex-col items-center gap-4 hidden">
-                <button id="next-question-button" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center text-center gap-3">
+                <button id="next-question-button" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
                     <i class="fas fa-forward"></i> السؤال التالي
                 </button>
-                <button id="end-game-final-button" class="w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center text-center gap-3">
+                <button id="end-game-final-button" class="w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
                     <i class="fas fa-times-circle"></i> إنهاء اللعبة
                 </button>
             </div>
@@ -382,15 +382,13 @@
             <p class="text-xl text-gray-600 mb-6 text-center" id="end-message"></p> <!-- End message -->
 
             <h3 class="text-2xl font-semibold text-gray-800 mb-4 text-center">الترتيب النهائي:</h3> <!-- Final scores title -->
-            <ul id="final-scores-list" class="w-full bg-gray-100 border border-gray-200 rounded-lg p-4 mb-8 shadow-inner text-lg max-h-64 overflow-y-auto text-right">
+            <ul id="final-scores-list" class="w-full bg-gray-100 border border-gray-200 rounded-lg p-4 mb-8 shadow-inner text-lg max-h-64 overflow-y-auto">
                 <!-- Final scores will be listed here by JavaScript -->
             </ul>
 
-            <button id="play-again-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center text-center gap-3">
+            <button id="play-again-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
                 <i class="fas fa-redo"></i> العب مرة أخرى <!-- Play again button -->
             </button>
-            <!-- New: Button for players when host can restart -->
-            <p id="waiting-for-host-to-restart-message" class="text-lg text-gray-600 mt-4 text-center hidden">في انتظار أن يبدأ المضيف جولة جديدة...</p>
         </div>
 
         <!-- Custom Message Box - For alerts and confirmations -->
@@ -398,7 +396,7 @@
             <div class="bg-white rounded-xl p-8 text-center shadow-xl transform scale-90 transition-transform duration-300 ease-out">
                 <h2 id="custom-message-title" class="text-3xl font-bold text-gray-900 mb-4"></h2> <!-- Message title -->
                 <p id="custom-message-content" class="text-xl text-gray-700 mb-6"></p> <!-- Message content -->
-                <button id="custom-message-close-button" class="bg-blue-600 hover:bg-blue-700 text-white text-xl font-semibold py-3 px-8 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out text-center">
+                <button id="custom-message-close-button" class="bg-blue-600 hover:bg-blue-700 text-white text-xl font-semibold py-3 px-8 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out">
                     حسناً <!-- Close button -->
                 </button>
             </div>
@@ -427,9 +425,6 @@
         let userUsedPointsBets = []; // Array to store points already used by the current player in the current GAME
         let currentQuestionSoundInterval = null; // Interval for repeated sound effect
         let soundStarted = false; // Flag to control sound playback for time running out
-        let hostSelectedCategoriesForGame = []; // Store selected categories by host for replay
-        let hostTotalQuestionsSetting = 0; // Store total questions setting by host for replay
-        let hostTimeLimitSetting = 0; // Store time limit setting by host for replay
 
         // Quiz data - IMPORTANT: Each object in quizzes now represents a CATEGORY with multiple questions.
         // Each question has a questionText and correctAnswers.
@@ -537,64 +532,7 @@
                     { questionText: "اسم الملعب الوطني في تونس العاصمة؟", displayAnswer: "ملعب حمادي العقربي", correctAnswers: ["ملعب حمادي العقربي", "ملعب رادس", "رادس", "hamadi agerbi"] },
                     { questionText: "في أي ولاية تونسية توجد مدينة دقة الأثرية؟", displayAnswer: "باجة", correctAnswers: ["باجة", "beja"] }
                 ]
-            },
-            // New "شوفلي حل" category starts here
-            {
-                category: "شوفلي حل",
-                questions: [
-                    { questionText: "ما هو اسم الطبيب النفسي في مسلسل شوفلي حل؟", displayAnswer: "سليمان الأبيض", correctAnswers: ["سليمان الأبيض", "سليمان الابيض", "سليمان", "slimane labiedh", "slimene labiedh", "dr slimane", "دكتور سليمان"] },
-                    { questionText: "من هي والدة سليمان الأبيض؟", displayAnswer: "فضيلة", correctAnswers: ["فضيلة", "فضيلا", "fadhila", "fadila"] },
-                    { questionText: "ما هو اسم أخ سليمان غير الشقيق؟", displayAnswer: "سبوعي", correctAnswers: ["سبوعي", "سبوعي", "sbou3i", "sbooui"] },
-                    { questionText: "ما هو اسم زوجة سليمان الأبيض؟", displayAnswer: "زينب", correctAnswers: ["زينب", "زينب الابيض", "زينب الأبيض", "zaynab", "زينب كعبي"] },
-                    { questionText: "ما هو عمل جنات جارة عائلة لبيض؟", displayAnswer: "عرافة", correctAnswers: ["عرافة", "عرافه", "arafa"] },
-                    { questionText: "ما هو اسم ابنة سليمان الكبرى؟", displayAnswer: "أماني", correctAnswers: ["أماني", "اماني", "amani"] },
-                    { questionText: "ما اسم العرافة التي نافست جنات؟", displayAnswer: "خالتي ديامونتا", correctAnswers: ["خالتي ديامونتا", "ديامونتا", "diyamonta", "diamonta"] },
-                    { questionText: "ما اسم خطيب داندا في نهاية السلسلة؟", displayAnswer: "وسيم", correctAnswers: ["وسيم", "wassiem", "wassiem"] },
-                    { questionText: "ما اسم ابن خالد زينب الذي يعمل في كندا؟", displayAnswer: "فاكر", correctAnswers: ["فاكر", "faker"] },
-                    { questionText: "ما اسم زوج فضيلة الثاني ووالد سبوعي؟", displayAnswer: "عم الصادق", correctAnswers: ["عمي الصادق", "عم الصادق", "el sadeq", "sadeq"] },
-                    { questionText: "ما هو اسم المطعم الذي كان يملكه سبوعي؟", displayAnswer: "فاست فود السبوعي", correctAnswers: ["فاست فود السبوعي", "مطعم سبوعي", "fast food sbou3i"] },
-                    { questionText: "ما هي مهنة زينب في بداية المسلسل؟", displayAnswer: "تملك محل تحف", correctAnswers: ["محل تحف", "تبيع تحف", "تحف", "antik", "antiques shop"] },
-                    { questionText: "ما هو المشروع الذي قام به الباجي وجنات العرافة مع بعضهم البعض؟", displayAnswer: "كراء السطح للعروسات", correctAnswers: ["كراء السطح للعروسات", "سطح العروسات", "kiraa sateh", "سطح"] },
-                    { questionText: "ما هي العلاقة بين زينب وفوفة؟", displayAnswer: "صديقتا طفولة", correctAnswers: ["صديقتا طفولة", "صديقات", "اصدقاء", "صديقة"] },
-                    { questionText: "ما هو اسم ابن فوفة؟", displayAnswer: "حسونة", correctAnswers: ["حسونة", "hassouna"] },
-                    { questionText: "ما اسم خطيب أماني الأول الذي كان يسكن في نابل؟", displayAnswer: "أمين", correctAnswers: ["أمين", "amin"] },
-                    { questionText: "ما اسم المسلسل الذي كان يمثّل فيه سبوعي؟", displayAnswer: "خفايا الزمن", correctAnswers: ["خفايا الزمن", "khafaya zamen"] },
-                    { questionText: "ما هو عمل حسين (حوسي)؟", displayAnswer: "صاحب قهوة", correctAnswers: ["صاحب قهوة", "حوسي", "قهوجي", "قهوة"] },
-                    { questionText: "ما هو اسم سائق التاكسي الذي كان يتردد على العيادة؟", displayAnswer: "شبروش", correctAnswers: ["شبروش", "chabrouch"] },
-                    { questionText: "ما اسم عشيقة الباجي في إحدى الحلقات؟", displayAnswer: "مروة", correctAnswers: ["مروة", "marwa"] },
-                    { questionText: "ما هي جنسية المريض الذي كان يعاني من 'الخرشف'؟", displayAnswer: "إيطالي", correctAnswers: ["إيطالي", "ايطالي", "italien"] },
-                    { questionText: "ما هو اسم الشاوش الذي جاء بعد سبوعي؟", displayAnswer: "فلفل", correctAnswers: ["فلفل", "felfel"] },
-                    { questionText: "ما اسم خطيبة سبوعي الثانية التي كانت تعمل في مركز تجميل؟", displayAnswer: "بهيجة", correctAnswers: ["بهيجة", "behija"] },
-                    { questionText: "ما هو اسم الطبيب البديل لسليمان عندما غاب؟", displayAnswer: "الدكتور بن عمر", correctAnswers: ["الدكتور بن عمر", "بن عمر", "ben omar"] },
-                    { questionText: "من هي الشخصية التي لم تدخل أبداً منزل جنات العرافة؟", displayAnswer: "فاطمة", correctAnswers: ["فاطمة", "fatma"] },
-                    { questionText: "ما هي الهدية التي أحضرها سيدي داود لجنات في إحدى الحلقات؟", displayAnswer: "جرة كبيرة", correctAnswers: ["جرة كبيرة", "جرة"] },
-                    { questionText: "ما هو المشروع الذي أرادت جنات أن تقوم به في إحدى الحلقات لبيع منتجات التجميل؟", displayAnswer: "شركة فوفا كوزميتيك", correctAnswers: ["شركة فوفا كوزميتيك", "فوفا كوزميتيك", "fofa cosmetique"] },
-                    { questionText: "ما هي المشكلة النفسية التي كان يعاني منها سبوعي عندما ذهب إلى طبيب آخر؟", displayAnswer: "الهلوسة", correctAnswers: ["الهلوسة", "هلوسة", "hallucination"] },
-                    { questionText: "ما هي المدينة التي ذهب إليها سليمان وفضيلة في رحلة؟", displayAnswer: "طبرقة", correctAnswers: ["طبرقة", "tabarka"] },
-                    { questionText: "ما اسم الشرطي الذي كان يظهر بانتظام في المسلسل؟", displayAnswer: "السي الشريف", correctAnswers: ["السي الشريف", "الشريف", "si cherif"] },
-                    { questionText: "ما هي الجامعة التي كان يدرس فيها سليمان؟", displayAnswer: "جامعة منوبة", correctAnswers: ["جامعة منوبة", "منوبة"] },
-                    { questionText: "ما هي المهنة التي كان يزاولها والد زينب؟", displayAnswer: "فلاح", correctAnswers: ["فلاح", "fellah"] },
-                    { questionText: "ما هو اسم العروس التي احتفلت بخطوبتها على سطح الباجي؟", displayAnswer: "عزة", correctAnswers: ["عزة", "azza"] },
-                    { questionText: "ما هي الأكلة التي أعدتها زينب لأماني في أولى الحلقات؟", displayAnswer: "كسكسي بالكرنب", correctAnswers: ["كسكسي بالكرنب", "كسكسي", "couscous"] },
-                    { questionText: "ما هو اسم الحانوت الذي كان يشتغل فيه سامي؟", displayAnswer: "حانوت سامي الحلاق", correctAnswers: ["حانوت سامي الحلاق", "سامي الحلاق", "حلاق", "sami hallak"] },
-                    { questionText: "ما اسم السلسلة التي عرضت ليلة رأس السنة؟", displayAnswer: "شوفلي حل ليلة رأس السنة", correctAnswers: ["شوفلي حل ليلة رأس السنة", "ليلة رأس السنة"] },
-                    { questionText: "ما هي السنة التي بدأ فيها عرض مسلسل شوفلي حل؟", displayAnswer: "2005", correctAnswers: ["2005"] },
-                    { questionText: "كم عدد مواسم مسلسل شوفلي حل؟", displayAnswer: "6 مواسم", correctAnswers: ["6", "6 مواسم", "ستة", "ستة مواسم"] },
-                    { questionText: "ما اسم المحل الذي فتحته زينب بعد محل التحف؟", displayAnswer: "مركز تجميل", correctAnswers: ["مركز تجميل", "صالون تجميل"] },
-                    { questionText: "ما اسم الحيوان الأليف الذي كان عند جنات في إحدى الحلقات؟", displayAnswer: "قرد", correctAnswers: ["قرد", "monkey"] },
-                    { questionText: "ما اسم صديق سليمان المقرب الذي ظهر في عدة حلقات وكان يعمل مهندساً؟", displayAnswer: "الطيب", correctAnswers: ["الطيب", "tayeb", "طيّب"] },
-                    { questionText: "ما اسم الطبيبة التي كانت تعمل مع سليمان في عيادته لفترة؟", displayAnswer: "الدكتورة أسماء", correctAnswers: ["الدكتورة أسماء", "أسماء", "asmaa"] },
-                    { questionText: "ما هي الهواية التي حاول سبوعي ممارستها وأدت إلى مشاكل في العيادة؟", displayAnswer: "الغناء", correctAnswers: ["الغناء", "غناء", "singing"] },
-                    { questionText: "ما هو اسم المحقق الخاص الذي استأجره سليمان في إحدى القضايا؟", displayAnswer: "السي قمودي", correctAnswers: ["السي قمودي", "قمودي", "gamoudi"] },
-                    { questionText: "ما اسم الجارة الفضولية التي كانت تتدخل في شؤون العائلة؟", displayAnswer: "عزيزة", correctAnswers: ["عزيزة", "عزيزه", "aziza"] },
-                    { questionText: "ما هي مهنة زوج فوفة، الطيب؟", displayAnswer: "رجل أعمال ثري", correctAnswers: ["رجل أعمال ثري", "رجل اعمال", "ثري", "businessman"] },
-                    { questionText: "ما اسم العيادة التي يعمل فيها سليمان؟", displayAnswer: "عيادة الدكتور سليمان الأبيض", correctAnswers: ["عيادة الدكتور سليمان الأبيض", "عيادة سليمان", "عيادة الابيض"] },
-                    { questionText: "ما هو الشيء الذي كانت فضيلة تطلبه دائماً من سليمان؟", displayAnswer: "الزواج", correctAnswers: ["الزواج", "الزواج", "marriage"] },
-                    { questionText: "ما اسم الفتاة التي أحبها سبوعي بشدة في أحد المواسم لكنها لم تبادله الشعور؟", displayAnswer: "دندا", correctAnswers: ["دندا", "danda"] },
-                    { questionText: "ما هي الأكلة التي اشتهرت بها فضيلة وكانت تطبخها كثيراً؟", displayAnswer: "الملوخية", correctAnswers: ["الملوخية", "ملوخية", "mloukhiya"] }
-                ]
             }
-            // New "شوفلي حل" category ends here
         ];
         
         // 🔁 دالة تطبيع النص (New normalization function from user)
@@ -640,7 +578,6 @@
         const selectedCategoriesTags = document.getElementById('selected-categories-tags');
         const hostNicknameInput = document.getElementById('host-nickname-input'); // Host nickname input
         const totalQuestionsPerGameSelect = document.getElementById('total-questions-per-game-select'); // Total questions select
-        const waitingForHostToRestartMessage = document.getElementById('waiting-for-host-to-restart-message'); // New element
 
         // Function to populate and manage the multi-select dropdown
         // This now lists the category and an example question from it for clarity
@@ -795,7 +732,6 @@
         const endMessage = document.getElementById('end-message');
         const finalScoresList = document.getElementById('final-scores-list');
         const playAgainButton = document.getElementById('play-again-button');
-        const waitingForHostToRestartMsg = document.getElementById('waiting-for-host-to-restart-message'); 
         const customMessageBox = document.getElementById('custom-message-box');
         const customMessageTitle = document.getElementById('custom-message-title');
         const customMessageContent = document.getElementById('custom-message-content');
@@ -852,8 +788,7 @@
                 'totalQuestionsPerGameSelect': totalQuestionsPerGameSelect,
                 'questionCounterDisplay': questionCounterDisplay,
                 'hostSubmissionStatusList': hostSubmissionStatusList,  
-                'hostGameplayControls': hostGameplayControls,
-                'waitingForHostToRestartMessage': waitingForHostToRestartMsg 
+                'hostGameplayControls': hostGameplayControls  
             };
 
             for (const id in requiredElements) {
@@ -1014,7 +949,7 @@
 
         // Hides all game screens and shows the specified one
         function showScreen(screenElement) {
-            console.log("Calling showScreen with:", screenElement ? screenElement.id : "undefined/null screenElement");
+            console.log("Attempting to show screen:", screenElement ? screenElement.id : "undefined/null screenElement");
 
             // Ensure screenElement is a valid DOM element
             if (!screenElement || !(screenElement instanceof HTMLElement)) {
@@ -1123,11 +1058,6 @@
                 localStorage.setItem('hostNickname', hostNickname); // Save host nickname locally
                 const timeLimit = parseInt(timeLimitSelect.value); // Get selected time limit
                 const totalQuestions = parseInt(totalQuestionsPerGameSelect.value); // Get total questions for game
-                
-                // Store host settings for replay
-                hostSelectedCategoriesForGame = [...selectedQuizIndices]; 
-                hostTotalQuestionsSetting = totalQuestions;
-                hostTimeLimitSetting = timeLimit;
 
                 // Prepare the quiz order for the game
                 // Flatten all questions from selected categories into a single array
@@ -1176,13 +1106,12 @@
                     currentCorrectAnswers: [], // Will be set when question starts (for fuzzy matching)
                     currentDisplayAnswer: '', // The primary correct answer for display
                     currentQuestionGuessedAnswers: [], // Guesses for the current question (from all players) - This will be populated by host later
-                    lastQuestionPlayerResults: [], // New: to store results for the just-ended question
                     questionStartTime: null, // Timestamp when current question started
                     timeLimitPerQuestion: timeLimit, // Renamed for clarity
                     currentTime: timeLimit, // Initialize current time with full time limit
                     countdownStartTime: null, // For countdown before question
                     countdownDuration: 5, // Duration of countdown
-                    lastUpdate: Date.now()
+                    lastUpdate: Date.now() // Timestamp for host's last update (for real-time timer sync)
                 });
 
                 // Add host as a player in the game's subcollection (Host can also play)
@@ -1273,7 +1202,6 @@
 
         // Initiates the game start countdown (only once at the very beginning)
         async function initiateGameStartCountdown() {  
-            console.log("initiateGameStartCountdown called.");
             showLoading();
             try {
                 if (!gameId) throw new Error("لا يوجد معرف لعبة.");
@@ -1286,7 +1214,7 @@
                 const gameData = gameDoc.data();
                 // Check if it's already past lobby (game has started or is in countdown)
                 if (gameData.gamePhase !== 'lobby') {
-                    console.log("Game already started or in countdown phase. Not initiating countdown again.");
+                    console.log("Game already started or in countdown phase.");
                     hideLoading();
                     return;
                 }
@@ -1297,7 +1225,7 @@
                     countdownStartTime: Date.now(),
                     countdownDuration: 5 // 5 seconds countdown for game start
                 });
-                console.log("Firestore updated to game_countdown.");
+                console.log("Initiated game start countdown.");
 
             } catch (error) {
                 console.error("Error initiating game start countdown:", error);
@@ -1310,7 +1238,6 @@
 
         // Actually starts the next question (after initial countdown or from results screen)
         async function startNextQuestion() {
-            console.log("startNextQuestion called.");
             showLoading();
             try {
                 if (!gameId) throw new Error("لا يوجد معرف لعبة.");
@@ -1321,18 +1248,16 @@
                 if (!gameDoc.exists) throw new Error("اللعبة غير موجودة.");
 
                 const gameData = gameDoc.data();
-                const currentQuestionIndex = gameData.currentQuestionIndexInGame; 
+                const currentQuestionIndex = gameData.currentQuestionIndexInGame; // This is the index for the question we are starting NOW
                 const quizSet = gameData.quizSet;
 
-                console.log(`Current Question Index (before update): ${currentQuestionIndex}. Total Questions in quizSet: ${quizSet.length}`);
-
                 if (currentQuestionIndex >= quizSet.length) {
-                    console.log("All questions played in current quizSet. Transitioning to final_results.");
+                    // All questions played, end the game
                     await gameRef.update({ gamePhase: 'final_results' });
                     return;
                 }
 
-                const currentQuestion = quizSet[currentQuestionIndex]; 
+                const currentQuestion = quizSet[currentQuestionIndex]; // Get the question for THIS round
 
                 await gameRef.update({
                     gamePhase: 'question_active',
@@ -1341,14 +1266,11 @@
                     currentQuestionText: currentQuestion.question,
                     currentCorrectAnswers: currentQuestion.correctAnswers, // Already normalized
                     currentDisplayAnswer: currentQuestion.displayAnswer, // Set display answer
-                    currentQuestionGuessedAnswers: [], // Reset for new question - will be populated by host later
-                    lastQuestionPlayerResults: [], // Clear previous round's results
+                    currentQuestionGuessedAnswers: [], // Reset guessed answers for new question (will be populated by host later)
                     questionStartTime: Date.now(), // New timestamp for question start
                     timeLimitPerQuestion: gameData.timeLimitPerQuestion, // Use stored time limit
                     currentTime: gameData.timeLimitPerQuestion, // Reset timer
                 });
-                console.log("Firestore updated for next question. Game phase: question_active.");
-
 
                 // Crucially, reset players' per-question flags/data in their sub-documents
                 const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
@@ -1364,18 +1286,15 @@
                     });
                 });
                 await batch.commit();
-                console.log("Players' per-question data reset in Firestore.");
+                console.log("Reset player-specific question data for new question.");
 
                 // Reset player's local UI for the new question
                 if (gameGuessInput) {
                     gameGuessInput.value = ''; // Clear input field for ALL players
-                    gameGuessInput.disabled = false; // Ensure input is enabled
                 }
                 // Reset points button selection to default (1) and re-enable them
                 selectedPointsBet = 1;
-                populatePointsButtons(); // Re-render buttons to reset selection visually and enable them
-                if (submitAnswerButton) submitAnswerButton.disabled = false; // Re-enable submit button
-
+                populatePointsButtons(); // Re-render buttons to reset selection visually and enable
 
                 // Clear shared guesses list at the start of a new question
                 if (sharedRoundGuessesList) {
@@ -1403,7 +1322,6 @@
         // --- Host Specific Functions ---
         // Allows host to end the current question early
         async function endQuestionEarly() {  
-            console.log("endQuestionEarly called.");
             if (!isHost || !gameId) return;  
 
             showLoading();
@@ -1415,10 +1333,9 @@
                     currentTime: 0, // Ensure timer is at zero
                     scoresReconciledForCurrentQuestion: false // Mark for reconciliation
                 });
-                console.log("Firestore updated to question_results phase by host (early end).");
                 // Host also triggers score reconciliation here, after updating phase.
                 reconcileQuestionScores();
-                console.log("Host ended question early and triggered score reconciliation.");
+                console.log("Host ended question early.");
             } catch (error) {
                 console.error("Error ending question early:", error);
                 showCustomMessageBox("خطأ", "فشل إنهاء السؤال مبكراً.");
@@ -1429,7 +1346,6 @@
 
         // Ends the entire game
         async function endGame() {
-            console.log("endGame called.");
             if (!isHost || !gameId) return;
             showLoading();
             try {
@@ -1437,7 +1353,7 @@
                 await gameRef.update({
                     gamePhase: 'final_results' // Move to final results
                 });
-                console.log("Host ended the entire game. Firestore updated to final_results.");
+                console.log("Host ended the entire game.");
             } catch (error) {
                 console.error("Error ending game:", error);
                 showCustomMessageBox("خطأ", "فشل إنهاء اللعبة.");
@@ -1448,14 +1364,13 @@
 
         // Function to reconcile scores for all players after a question ends (called by host)
         async function reconcileQuestionScores() {
-            console.log("reconcileQuestionScores called.");
             if (!isHost || !gameId) return; // Only host performs this
-            console.log("Attempting to reconcile scores for the ended question...");
+            console.log("Reconciling scores for the ended question...");
             // Ensure this runs only once per question results phase
             const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
             const gameDoc = await gameRef.get();
             if (!gameDoc.exists || gameDoc.data().scoresReconciledForCurrentQuestion) {
-                console.log("Scores already reconciled for this question, or game data missing. Skipping reconciliation.");
+                console.log("Scores already reconciled for this question, or game data missing.");
                 return; // Prevent double reconciliation if listener triggers again
             }
 
@@ -1465,71 +1380,67 @@
                 const playersDocs = await playersCollectionRef.get();
                 
                 const batch = db.batch();
-                let roundCorrectGuesses = []; // To store UNIQUE correct guesses for this specific round (for shared list)
-                let tempPlayerResults = []; // To store player performance for this specific round (for results screen)
+                let roundCorrectGuesses = []; // To store correct guesses for this specific round
 
                 // Get the current correct answers for the question from game data (already normalized)
                 const gameData = gameDoc.data();
                 const currentCorrectAnswers = gameData.currentCorrectAnswers || [];
 
-                console.log("Starting player score reconciliation loop.");
-                for (const playerDoc of playersDocs.docs) {
-                    const playerId = playerDoc.id; 
+
+                for (const playerDoc of playersDocs.docs) { // Use for...of for await compatibility if needed, or simple forEach
                     const playerRef = playerDoc.ref;
                     const playerData = playerDoc.data();
                     
                     let scoreChange = 0;
-                    let submittedAnswerForRound = playerData.playerSubmittedAnswer; // This is the answer they explicitly sent
+                    let submittedAnswer = playerData.playerSubmittedAnswer;
 
-                    // Important: if the player did NOT click submit (hasSubmittedAnswer is false),
-                    // their playerSubmittedAnswer will be empty string, thus it counts as "لم يجب".
-                    // This behavior is now explicitly what the code reflects.
+                    // If player hasn't submitted an answer, consider their current input as their answer.
+                    // This is a client-side guess, and for a true multiplayer game, should be handled via server
+                    // or a continuous sync. For this client-side only context, we'll default to no answer if not submitted.
+                    // If you want to capture their last typed text *without* them pressing submit,
+                    // you would need to continuously update their `playerSubmittedAnswer` in Firestore.
+                    // As per requirement "يجب اخذ المكتوب في الاجابة حتى ان لم يضغظ اللاعب على زر ارسال",
+                    // This implies the client must have already saved the input.
+                    // For now, we rely on `playerSubmittedAnswer` which only updates on explicit submit.
+                    // To truly capture the *last typed* value, players would need to update Firestore on every input change,
+                    // which is very chatty. Given the current structure, if `hasSubmittedAnswer` is false,
+                    // it means no explicit submission was made. I will proceed with this interpretation.
 
-                    if (playerData.hasSubmittedAnswer && submittedAnswerForRound !== '') { // Only check correctness if an answer was provided
-                        const normalizedSubmittedAnswer = normalize(submittedAnswerForRound);
+                    if (playerData.hasSubmittedAnswer) {
+                        // Use the submitted answer (already stored in playerSubmittedAnswer)
+                        // This answer might not be normalized if the user typed non-normalized characters.
+                        // We must normalize it before passing to isCorrectAnswer.
+                        const normalizedSubmittedAnswer = normalize(submittedAnswer);
                         
                         if (isCorrectAnswer(normalizedSubmittedAnswer, currentCorrectAnswers)) {
                             scoreChange = playerData.playerSelectedPoints; // Award points
-                            if (!roundCorrectGuesses.includes(submittedAnswerForRound)) { // Add unique correct guess to round list
-                                roundCorrectGuesses.push(submittedAnswerForRound);
+                            if (!roundCorrectGuesses.includes(submittedAnswer)) { // Add unique correct guess to round list
+                                roundCorrectGuesses.push(submittedAnswer);
                             }
                         } else {
                             scoreChange = -playerData.playerSelectedPoints; // Deduct points
                         }
-                    } else if (!playerData.hasSubmittedAnswer) {
-                        submittedAnswerForRound = 'لم يجب'; // Explicitly set if no submission
                     }
-                    
-                    const newScore = (playerData.score || 0) + scoreChange;
-                    
-                    // Capture results for this round before resetting player document
-                    tempPlayerResults.push({
-                        id: playerId,
-                        nickname: playerData.nickname,
-                        submittedAnswer: submittedAnswerForRound, 
-                        selectedPoints: playerData.playerSelectedPoints || 0,
-                        scoreChange: scoreChange,
-                        overallScore: newScore 
-                    });
+                    // If player didn't submit, scoreChange remains 0 (no points change) and submittedAnswer is empty.
+                    // This implicitly covers "taking the written answer" as "if no answer was submitted, no points change."
 
+                    const newScore = (playerData.score || 0) + scoreChange;
                     batch.update(playerRef, {
-                        score: newScore, // Update actual score here
+                        score: newScore,
                         playerSubmittedAnswer: '', // Clear previous answer for next round
                         playerSelectedPoints: 0,
                         playerScoreChange: 0,
                         hasSubmittedAnswer: false // Reset submitted flag for next round
                     });
-                    console.log(`Player ${playerData.nickname} (${playerId}) - Answer: '${submittedAnswerForRound}', Score Change: ${scoreChange}, New Score: ${newScore}`);
                 }
 
-                // Update the game document with the collected correct guesses AND player results for this round
+                // Update the game document with the collected correct guesses for this round
                 batch.update(gameRef, { 
-                    currentQuestionGuessedAnswers: roundCorrectGuesses, 
-                    lastQuestionPlayerResults: tempPlayerResults, 
-                    scoresReconciledForCurrentQuestion: true 
+                    currentQuestionGuessedAnswers: roundCorrectGuesses, // Update shared guesses ONLY here (host controlled)
+                    scoresReconciledForCurrentQuestion: true // Mark as reconciled
                 });
                 await batch.commit();
-                console.log("Scores reconciled and player flags reset for the question. Shared guesses and player results updated by host.");
+                console.log("Scores reconciled and player flags reset for the question. Shared guesses updated by host.");
             } catch (error) {
                 console.error("Error reconciling scores:", error);
                 showCustomMessageBox("خطأ في تحديث النقاط", error.message || "حدث خطأ أثناء تحديث نقاط اللاعبين.");
@@ -1542,7 +1453,6 @@
         // --- Player Specific Functions ---
         // Allows a player to join an existing game
         async function joinGame(code, nickname) {
-            console.log("joinGame called with code:", code, "nickname:", nickname);
             showLoading(); // Show loading spinner
             try {
                 if (!code || !nickname) {
@@ -1621,7 +1531,6 @@
 
         // Submits a player's guess to Firestore
         async function submitGuess() {
-            console.log("submitGuess called.");
             // Only allow submission if gameId is set and we are on the game play screen.
             if (!gameId || (gamePlayScreen && gamePlayScreen.classList.contains('hidden'))) {
                  return; // Do nothing if not in active game play
@@ -1687,6 +1596,9 @@
                     
                     if (isCorrect) {
                         scoreChange = pointsBet;
+                        // DO NOT update currentQuestionGuessedAnswers in the game document here.
+                        // This will be handled by the host in reconcileQuestionScores.
+                        console.log("Correct guess:", guess, "Points:", pointsBet);
                         // Add to player's *local* correct guesses list (for temporary display if needed)
                         if (playerCorrectGuessesList) {
                             const listItem = document.createElement('li');
@@ -1695,16 +1607,8 @@
                         }
                     } else {
                         scoreChange = -pointsBet;
+                        console.log("Incorrect guess:", guess, "Points lost:", pointsBet);
                     }
-
-                    // Log data before updating in transaction for debugging
-                    console.log("Updating player data in transaction:", {
-                        playerSubmittedAnswer: guess,
-                        playerSelectedPoints: pointsBet,
-                        playerScoreChange: scoreChange,
-                        hasSubmittedAnswer: true,
-                        usedPointsBets: firebase.firestore.FieldValue.arrayUnion(pointsBet)
-                    });
 
                     // Update player's per-question data (score itself is updated later by reconcile)
                     transaction.update(playerRef, {
@@ -1715,9 +1619,6 @@
                         usedPointsBets: firebase.firestore.FieldValue.arrayUnion(pointsBet) // Add used points to player's array
                     });
                 });
-
-                // Log transaction success
-                console.log("Guess submission transaction completed successfully.");
 
                 // Disable input elements for the player after successful submission
                 if (gameGuessInput) gameGuessInput.disabled = true;
@@ -1754,10 +1655,6 @@
                 if (docSnap.exists) {
                     const gameData = docSnap.data();
                     const gamePhase = gameData.gamePhase;
-
-                    console.log("Snapshot received. Current Game Phase:", gamePhase);
-                    console.log("Game Data on Snapshot:", gameData);
-
 
                     // Update Question Counter (e.g., "السؤال 1 / 15")
                     if (questionCounterDisplay) {
@@ -1874,7 +1771,6 @@
                                     await gameRef.update({ currentTime: remainingTime, lastUpdate: now });
                                     if (gameTimerDisplay) gameTimerDisplay.textContent = remainingTime; // Update timer display
                                 } else {
-                                    console.log("Time ran out. Moving to question results.");
                                     clearInterval(timerInterval); // Stop timer
                                     clearInterval(currentQuestionSoundInterval); // Stop sound interval
                                     soundStarted = false; // Reset sound flag
@@ -1896,23 +1792,18 @@
                             // Game status change to 'question_results' or 'final_results' will trigger screen change for players
                         }
 
-                        // Shared guesses list should remain empty during active question phase as per requirements
+                        // Shared guesses list should remain empty during active question phase
                         if (sharedRoundGuessesList) {
                             sharedRoundGuessesList.innerHTML = ''; 
                         }
-                        // Player's correct guesses list should also be empty until reconciliation for this specific question's scope
+                        // This part of UI is now handled by reconcileQuestionScores in question_results phase
                         if (playerCorrectGuessesList) {
-                            playerCorrectGuessesList.innerHTML = ''; 
+                            // It will show only locally entered correct answers, not synchronized from Firebase until results
+                            // So its content will only reflect what this particular player typed and was locally recognized as correct.
                         }
-
                     }  
                     // Phase: Showing Question Results
                     else if (gamePhase === 'question_results') {
-                        console.log("In question_results phase. Is Host:", isHost);
-                        console.log("Current Question Index:", gameData.currentQuestionIndexInGame);
-                        console.log("Total Questions:", gameData.quizSet.length);
-                        console.log("More questions to play?", gameData.currentQuestionIndexInGame < gameData.quizSet.length);
-
                         // If host, ensure scores were reconciled before displaying results
                         if (isHost && !gameData.scoresReconciledForCurrentQuestion) { // Only reconcile if not already done
                             reconcileQuestionScores();  
@@ -1946,7 +1837,7 @@
                             roundCorrectAnswersList.appendChild(listItem);
                         }
 
-                        // Populate shared guesses list from gameData.currentQuestionGuessedAnswers (now populated by host only at results phase)
+                        // Populate shared guesses list from gameData.currentQuestionGuessedAnswers
                         if (sharedRoundGuessesList) {
                             sharedRoundGuessesList.innerHTML = ''; // Clear existing list
                             (gameData.currentQuestionGuessedAnswers || []).forEach(answer => {
@@ -1958,18 +1849,18 @@
                         }
 
 
-                        // Display player scores for this question (fetching from lastQuestionPlayerResults)
-                        showQuestionPlayerScoresDetailed(); 
+                        // Display player scores for this question (fetching live data from players subcollection)
+                        showQuestionPlayerScoresDetailed(); // Detailed scores for this question
 
                         // Host controls for next question or end game
                         if (isHost && questionResultsHostControls) {
                             questionResultsHostControls.classList.remove('hidden');
-                            // Check if there are more questions in the quizSet (current index points to the *next* question)
+                            // Check if there are more questions in the quizSet
+                            // gameData.currentQuestionIndexInGame holds the index of the *next* question to be played
                             if (gameData.currentQuestionIndexInGame < gameData.quizSet.length) {  
                                 if (nextQuestionButton) nextQuestionButton.classList.remove('hidden');
                                 if (endGameFinalButton) endGameFinalButton.classList.add('hidden'); // Hide end game button if more questions
                             } else { // No more questions, show end game button
-                                console.log("All questions done, showing End Game button.");
                                 if (nextQuestionButton) nextQuestionButton.classList.add('hidden'); // Hide next question button
                                 if (endGameFinalButton) endGameFinalButton.classList.remove('hidden'); // Show end game button
                             }
@@ -1979,7 +1870,6 @@
                     }
                     // Phase: Final Game Results
                     else if (gamePhase === 'final_results') {
-                        console.log("In final_results phase.");
                         clearInterval(timerInterval); // Stop any active timers
                         clearInterval(currentQuestionSoundInterval); // Stop sound interval
                         soundStarted = false; // Reset sound flag
@@ -2072,7 +1962,7 @@
                             userUsedPointsBets = playerData.usedPointsBets || [];  
                             populatePointsButtons(); // Re-render buttons with updated used points status
 
-                            // playerCorrectGuessesList is local and managed in submitGuess / startNextQuestion
+                            // playerCorrectGuessesList remains local and is cleared on new question
                         }
                     });
                     if (playerScoreDisplay) playerScoreDisplay.textContent = currentPlayerOverallScore; // Update UI with overall score
@@ -2098,19 +1988,26 @@
 
         // Displays detailed scores of players for the CURRENT QUESTION on the results screen
         async function showQuestionPlayerScoresDetailed() { // Renamed from showRoundPlayerScores
-            console.log("showQuestionPlayerScoresDetailed called.");
             if (questionPlayerScoresList) questionPlayerScoresList.innerHTML = ''; // Clear previous scores
             try {
-                // Fetch the main game document to get the stored results for the last question
-                const gameDoc = await db.collection(`artifacts/${appId}/public/data/games`).doc(gameId).get();
-                if (!gameDoc.exists) {
-                    console.error("Game document not found when trying to show detailed player scores.");
-                    showCustomMessageBox("خطأ", "لم يتم العثور على بيانات اللعبة لعرض النتائج.");
-                    return;
-                }
-                const gameData = gameDoc.data();
-                const questionScores = gameData.lastQuestionPlayerResults || []; // Get the stored results
-                console.log("Retrieved lastQuestionPlayerResults:", questionScores);
+                const playersRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
+                const playersSnapshot = await playersRef.get();
+                // Get main game data to retrieve the correct answers for the current question
+                const gameData = (await db.collection(`artifacts/${appId}/public/data/games`).doc(gameId).get()).data();
+                const currentCorrectAnswers = gameData.currentCorrectAnswers || []; // All valid answers for fuzzy matching
+
+
+                let questionScores = [];
+                playersSnapshot.forEach(doc => {
+                    const playerData = doc.data();
+                    questionScores.push({
+                        nickname: playerData.nickname,
+                        submittedAnswer: playerData.playerSubmittedAnswer || 'لم يجب',
+                        selectedPoints: playerData.playerSelectedPoints || 0,
+                        scoreChange: playerData.playerScoreChange || 0,
+                        overallScore: playerData.score || 0
+                    });
+                });
 
                 // Sort by overall score for this question (as requested)
                 questionScores.sort((a, b) => b.overallScore - a.overallScore);
@@ -2123,10 +2020,13 @@
                         let answerStatusIcon = '';
                         let answerColorClass = 'text-gray-700';
 
-                        // Check if player's submitted answer is correct based on stored data
-                        // The `scoreChange` being positive implies it was correct.
-                        let isPlayerAnswerCorrect = player.scoreChange > 0;
-                        
+                        // Check if player's submitted answer is one of the correct answers (using fuzzy logic)
+                        let isPlayerAnswerCorrect = false;
+                        if (player.submittedAnswer !== 'لم يجب') {
+                            // Using the new isCorrectAnswer function with the player's stored submitted answer
+                            isPlayerAnswerCorrect = isCorrectAnswer(player.submittedAnswer, currentCorrectAnswers);
+                        }
+
                         if (player.submittedAnswer !== 'لم يجب') {
                             if (isPlayerAnswerCorrect) {
                                 answerStatusIcon = `<i class="fas fa-check-circle text-green-500 mr-2"></i>`;
@@ -2163,7 +2063,6 @@
 
         // Displays the final overall scores screen and results
         async function showFinalScores() {
-            console.log("showFinalScores called.");
             showLoading(); // Show loading spinner
             try {
                 // Unsubscribe from real-time listeners to prevent further updates
@@ -2214,15 +2113,6 @@
                 }
 
                 showScreen(gameEndScreen); // Show the game end screen
-
-                // Handle "Play Again" button visibility based on host status
-                if (isHost) {
-                    if (playAgainButton) playAgainButton.classList.remove('hidden');
-                    if (waitingForHostToRestartMsg) waitingForHostToRestartMsg.classList.add('hidden');
-                } else {
-                    if (playAgainButton) playAgainButton.classList.add('hidden');
-                    if (waitingForHostToRestartMsg) waitingForHostToRestartMsg.classList.remove('hidden');
-                }
 
             } catch (error) {
                 console.error("Error showing final scores:", error);
@@ -2292,110 +2182,28 @@
             });
         }
 
-        // Button to play again after a game ends (Host initiates full game reset for new round)
+        // Button to play again after a game ends
         if (playAgainButton) {
-            playAgainButton.addEventListener('click', async () => {
-                console.log("Play Again button clicked. Is Host:", isHost, "Game ID:", gameId);
-                if (!isHost || !gameId) {
-                    console.warn("Play Again clicked by non-host or without gameId. Ignoring.");
-                    return;
+            playAgainButton.addEventListener('click', () => {
+                // Reset all game-related global variables and listeners
+                gameId = null;
+                isHost = false;
+                clearInterval(timerInterval); // Clear any active timer
+                clearInterval(currentQuestionSoundInterval); // Clear sound interval
+                soundStarted = false; // Reset sound flag
+                if (gameSnapshotUnsubscribe) { // Unsubscribe from Firestore listeners
+                    gameSnapshotUnsubscribe();
+                    gameSnapshotUnsubscribe = null;
                 }
-
-                showLoading();
-                try {
-                    const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
-                    
-                    // Re-generate quiz set from previously selected categories
-                    let allPossibleQuestions = [];
-                    // Ensure hostSelectedCategoriesForGame is populated (from previous game creation)
-                    if (!hostSelectedCategoriesForGame || hostSelectedCategoriesForGame.length === 0) {
-                        console.warn("hostSelectedCategoriesForGame is empty. Reverting to all categories or showing error.");
-                        // Fallback: if categories were not captured, use all, or prompt user.
-                        // For simplicity, let's assume it was captured during initial game creation.
-                        // If not, this could lead to an empty quizSet.
-                        // For a robust solution, you might store these in Firestore with the game settings.
-                    }
-
-                    hostSelectedCategoriesForGame.forEach(catIndex => { // Use saved categories
-                        const category = quizzes[catIndex];
-                        if (category && category.questions) {
-                            category.questions.forEach(q => {
-                                allPossibleQuestions.push({
-                                    category: category.category,
-                                    question: q.questionText,
-                                    displayAnswer: q.displayAnswer,
-                                    correctAnswers: q.correctAnswers.map(normalize)
-                                });
-                            });
-                        }
-                    });
-
-                    // Shuffle and slice for the new game round
-                    for (let i = allPossibleQuestions.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [allPossibleQuestions[i], allPossibleQuestions[j]] = [allPossibleQuestions[j], allPossibleQuestions[i]];
-                    }
-                    const totalQuestionsForNewRound = hostTotalQuestionsSetting || 10; // Use saved setting or default
-                    const timeLimitForNewRound = hostTimeLimitSetting || 20; // Use saved setting or default
-
-                    const newQuizSetForGame = allPossibleQuestions.slice(0, totalQuestionsForNewRound);
-
-                    if (newQuizSetForGame.length === 0) {
-                        throw new Error("لا توجد أسئلة كافية في الفئات المختارة لبدء جولة جديدة. يرجى اختيار المزيد من الفئات.");
-                    }
-
-                    // Reset game document state in Firestore for the new round
-                    await gameRef.update({
-                        gamePhase: 'lobby', // Go back to lobby phase
-                        quizSet: newQuizSetForGame, // New set of questions
-                        currentQuestionIndexInGame: 0,
-                        currentCategory: '',
-                        currentQuestionText: '',
-                        currentCorrectAnswers: [],
-                        currentDisplayAnswer: '',
-                        currentQuestionGuessedAnswers: [],
-                        lastQuestionPlayerResults: [],
-                        questionStartTime: null,
-                        timeLimitPerQuestion: timeLimitForNewRound, 
-                        currentTime: timeLimitForNewRound,
-                        countdownStartTime: null,
-                        scoresReconciledForCurrentQuestion: false,
-                        lastUpdate: Date.now()
-                    });
-                    console.log(`Game ${gameId} main document reset to lobby phase.`);
-
-
-                    // Reset all players' scores and states in the subcollection
-                    const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
-                    const playersDocs = await playersCollectionRef.get();
-                    const batch = db.batch();
-                    playersDocs.docs.forEach(playerDoc => {
-                        const playerRef = playerDoc.ref;
-                        batch.update(playerRef, {
-                            score: 0, // Reset overall score
-                            playerSubmittedAnswer: '',
-                            playerSelectedPoints: 0,
-                            playerScoreChange: 0,
-                            hasSubmittedAnswer: false,
-                            usedPointsBets: [] // Reset used points for the new game
-                        });
-                    });
-                    await batch.commit();
-                    console.log("All players' data reset for new round.");
-
-                    // Reset local state for the host
-                    userUsedPointsBets = [];
-                    populatePointsButtons(); // Re-render point buttons for new game
-                    console.log(`Game ${gameId} restarted for a new round within the same room.`);
-
-                    // The listeners will automatically pick up the 'lobby' phase change and update UI.
-
-                } catch (error) {
-                    console.error("Error restarting game for new round:", error);
-                    showCustomMessageBox("خطأ في إعادة تشغيل اللعبة", error.message || "فشل إعادة تشغيل اللعبة.");
-                } finally {
-                    hideLoading();
+                if (playersSnapshotUnsubscribe) { // Unsubscribe from Firestore listeners
+                    playersSnapshotUnsubscribe();
+                    playersSnapshotUnsubscribe = null;
                 }
+                selectedQuizIndices = []; // Reset selected quizzes for host setup
+                userUsedPointsBets = []; // Reset locally used points
+                populatePointsButtons(); // Re-render points buttons
+                showScreen(roleSelectionScreen); // Return to role selection screen
+                window.history.pushState({}, '', window.location.pathname); // Clear gameId from URL
             });
         }
 
