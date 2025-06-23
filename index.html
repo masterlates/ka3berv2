@@ -423,7 +423,8 @@
         let timerInterval = null; // Interval for host's game timer
         let selectedPointsBet = 1; // Default selected points bet
         let userUsedPointsBets = []; // Array to store points already used by the current player in the current GAME
-        let currentQuestionSoundPlayed = false; // Flag to ensure sound plays only once per question's end-timer
+        let currentQuestionSoundInterval = null; // Interval for repeated sound effect
+        let soundStarted = false; // Flag to control sound playback for time running out
 
         // Quiz data - IMPORTANT: Each object in quizzes now represents a CATEGORY with multiple questions.
         // Each question has a questionText and correctAnswers.
@@ -737,15 +738,26 @@
         const customMessageCloseButton = document.getElementById('custom-message-close-button');
 
         // Initialize Tone.js synth for sound effects
-        const synth = new Tone.Synth().toDestination();
+        const synth = new Tone.Synth({
+            oscillator: {
+                type: "sine" // Simple sine wave
+            },
+            envelope: {
+                attack: 0.01,
+                decay: 0.1,
+                sustain: 0.1,
+                release: 0.5
+            }
+        }).toDestination();
         
-        // Function to play a simple sound effect
-        function playSoundEffect() {
+        // Function to play a simple sound effect for the timer
+        function playTimerSound() {
             // Only play if Tone.js is ready (user interaction has occurred)
             if (Tone.context.state !== 'running') {
-                Tone.start();
+                Tone.start(); // Start audio context on first play attempt
             }
-            synth.triggerAttackRelease("C5", "8n"); // Play a C5 note for an 8th note duration
+            // Play a slightly higher note repeatedly for urgency
+            synth.triggerAttackRelease("C4", "16n"); // A quick beep
         }
 
         // Initial check for all important DOM elements
@@ -785,7 +797,7 @@
                     // Display a persistent error message to the user if a critical element is missing
                     document.body.innerHTML = `
                         <div style="text-align: center; color: red; font-size: 1.5em; margin-top: 50px;">
-                            خطأ فادح: لم يتم العثور على مكونات أساسية في الصفحة. يرجى إبلاغ مطور اللعبة.
+                            خطأ فادح: لم يتم العثور على مكونات أساسية في الصفحة. يرجاء إبلاغ مطور اللعبة.
                             <br>المكون المفقود: ${id}
                         </div>
                     `;
@@ -1022,12 +1034,6 @@
             return newGameId;
         }
 
-        // Normalizes a string (lowercase, trims whitespace) for consistent comparison
-        // This function is no longer used for answer checking directly but might be useful elsewhere
-        function normalizeString(str) {
-            return str.toLowerCase().trim();
-        }
-
         // --- Host Specific Functions ---
         // Creates a new game instance in Firestore
         async function createGame() {
@@ -1064,7 +1070,7 @@
                                 category: category.category,
                                 question: q.questionText,
                                 displayAnswer: q.displayAnswer, // Include displayAnswer
-                                correctAnswers: q.correctAnswers.map(normalize) // *** Using the NEW normalize function here ***
+                                correctAnswers: q.correctAnswers.map(normalize) // Using the NEW normalize function here
                             });
                         });
                     }
@@ -1099,7 +1105,7 @@
                     currentQuestionText: '', // Will be set when question starts
                     currentCorrectAnswers: [], // Will be set when question starts (for fuzzy matching)
                     currentDisplayAnswer: '', // The primary correct answer for display
-                    currentQuestionGuessedAnswers: [], // Guesses for the current question (from all players)
+                    currentQuestionGuessedAnswers: [], // Guesses for the current question (from all players) - This will be populated by host later
                     questionStartTime: null, // Timestamp when current question started
                     timeLimitPerQuestion: timeLimit, // Renamed for clarity
                     currentTime: timeLimit, // Initialize current time with full time limit
@@ -1260,7 +1266,7 @@
                     currentQuestionText: currentQuestion.question,
                     currentCorrectAnswers: currentQuestion.correctAnswers, // Already normalized
                     currentDisplayAnswer: currentQuestion.displayAnswer, // Set display answer
-                    currentQuestionGuessedAnswers: [], // Reset guessed answers for new question
+                    currentQuestionGuessedAnswers: [], // Reset guessed answers for new question (will be populated by host later)
                     questionStartTime: Date.now(), // New timestamp for question start
                     timeLimitPerQuestion: gameData.timeLimitPerQuestion, // Use stored time limit
                     currentTime: gameData.timeLimitPerQuestion, // Reset timer
@@ -1276,7 +1282,7 @@
                         playerSubmittedAnswer: '',
                         playerSelectedPoints: 0,
                         playerScoreChange: 0,
-                        hasSubmittedAnswer: false
+                        hasSubmittedAnswer: false // Reset submitted flag for new question
                     });
                 });
                 await batch.commit();
@@ -1289,7 +1295,19 @@
                 // Reset points button selection to default (1) and re-enable them
                 selectedPointsBet = 1;
                 populatePointsButtons(); // Re-render buttons to reset selection visually and enable
-                currentQuestionSoundPlayed = false; // Reset sound flag for new question
+
+                // Clear shared guesses list at the start of a new question
+                if (sharedRoundGuessesList) {
+                    sharedRoundGuessesList.innerHTML = '';
+                }
+                // Clear player's correct guesses list at the start of a new question
+                if (playerCorrectGuessesList) {
+                    playerCorrectGuessesList.innerHTML = '';
+                }
+
+                // Reset sound related flags/intervals
+                clearInterval(currentQuestionSoundInterval);
+                soundStarted = false;
 
                 console.log(`Starting question ${currentQuestionIndex + 1}: ${currentQuestion.category} - Question: ${currentQuestion.question}`);
 
@@ -1309,10 +1327,14 @@
             showLoading();
             try {
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
+                // When host ends question early, also trigger score reconciliation
                 await gameRef.update({
                     gamePhase: 'question_results', // Move to showing question results
-                    currentTime: 0 // Ensure timer is at zero
+                    currentTime: 0, // Ensure timer is at zero
+                    scoresReconciledForCurrentQuestion: false // Mark for reconciliation
                 });
+                // Host also triggers score reconciliation here, after updating phase.
+                reconcileQuestionScores();
                 console.log("Host ended question early.");
             } catch (error) {
                 console.error("Error ending question early:", error);
@@ -1358,33 +1380,67 @@
                 const playersDocs = await playersCollectionRef.get();
                 
                 const batch = db.batch();
-                playersDocs.docs.forEach(playerDoc => {
+                let roundCorrectGuesses = []; // To store correct guesses for this specific round
+
+                // Get the current correct answers for the question from game data (already normalized)
+                const gameData = gameDoc.data();
+                const currentCorrectAnswers = gameData.currentCorrectAnswers || [];
+
+
+                for (const playerDoc of playersDocs.docs) { // Use for...of for await compatibility if needed, or simple forEach
                     const playerRef = playerDoc.ref;
                     const playerData = playerDoc.data();
                     
-                    if (playerData.hasSubmittedAnswer && playerData.playerScoreChange !== undefined) {
-                        const newScore = (playerData.score || 0) + (playerData.playerScoreChange);
-                        batch.update(playerRef, {
-                            score: newScore,
-                            playerSubmittedAnswer: '', // Clear previous answer
-                            playerSelectedPoints: 0,
-                            playerScoreChange: 0,
-                            hasSubmittedAnswer: false
-                        });
-                    } else {
-                        // If player didn't submit an answer, just reset their flags
-                        batch.update(playerRef, {
-                            playerSubmittedAnswer: '',
-                            playerSelectedPoints: 0,
-                            playerScoreChange: 0,
-                            hasSubmittedAnswer: false
-                        });
+                    let scoreChange = 0;
+                    let submittedAnswer = playerData.playerSubmittedAnswer;
+
+                    // If player hasn't submitted an answer, consider their current input as their answer.
+                    // This is a client-side guess, and for a true multiplayer game, should be handled via server
+                    // or a continuous sync. For this client-side only context, we'll default to no answer if not submitted.
+                    // If you want to capture their last typed text *without* them pressing submit,
+                    // you would need to continuously update their `playerSubmittedAnswer` in Firestore.
+                    // As per requirement "يجب اخذ المكتوب في الاجابة حتى ان لم يضغظ اللاعب على زر ارسال",
+                    // This implies the client must have already saved the input.
+                    // For now, we rely on `playerSubmittedAnswer` which only updates on explicit submit.
+                    // To truly capture the *last typed* value, players would need to update Firestore on every input change,
+                    // which is very chatty. Given the current structure, if `hasSubmittedAnswer` is false,
+                    // it means no explicit submission was made. I will proceed with this interpretation.
+
+                    if (playerData.hasSubmittedAnswer) {
+                        // Use the submitted answer (already stored in playerSubmittedAnswer)
+                        // This answer might not be normalized if the user typed non-normalized characters.
+                        // We must normalize it before passing to isCorrectAnswer.
+                        const normalizedSubmittedAnswer = normalize(submittedAnswer);
+                        
+                        if (isCorrectAnswer(normalizedSubmittedAnswer, currentCorrectAnswers)) {
+                            scoreChange = playerData.playerSelectedPoints; // Award points
+                            if (!roundCorrectGuesses.includes(submittedAnswer)) { // Add unique correct guess to round list
+                                roundCorrectGuesses.push(submittedAnswer);
+                            }
+                        } else {
+                            scoreChange = -playerData.playerSelectedPoints; // Deduct points
+                        }
                     }
+                    // If player didn't submit, scoreChange remains 0 (no points change) and submittedAnswer is empty.
+                    // This implicitly covers "taking the written answer" as "if no answer was submitted, no points change."
+
+                    const newScore = (playerData.score || 0) + scoreChange;
+                    batch.update(playerRef, {
+                        score: newScore,
+                        playerSubmittedAnswer: '', // Clear previous answer for next round
+                        playerSelectedPoints: 0,
+                        playerScoreChange: 0,
+                        hasSubmittedAnswer: false // Reset submitted flag for next round
+                    });
+                }
+
+                // Update the game document with the collected correct guesses for this round
+                batch.update(gameRef, { 
+                    currentQuestionGuessedAnswers: roundCorrectGuesses, // Update shared guesses ONLY here (host controlled)
+                    scoresReconciledForCurrentQuestion: true // Mark as reconciled
                 });
-                // Mark scores as reconciled for this question in the main game document
-                batch.update(gameRef, { scoresReconciledForCurrentQuestion: true });
                 await batch.commit();
-                console.log("Scores reconciled and player flags reset for the question.");
+                console.log("Scores reconciled and player flags reset for the question. Shared guesses updated by host.");
             } catch (error) {
                 console.error("Error reconciling scores:", error);
                 showCustomMessageBox("خطأ في تحديث النقاط", error.message || "حدث خطأ أثناء تحديث نقاط اللاعبين.");
@@ -1489,11 +1545,11 @@
                 return;
             }
 
-            // Get player's guess without normalizing it here, pass it as is to isCorrectAnswer
-            const guess = gameGuessInput.value; 
+            // Get player's guess as typed, it will be normalized by isCorrectAnswer
+            const guess = gameGuessInput.value.trim(); 
             const pointsBet = selectedPointsBet; // Get selected points from global variable
 
-            if (guess.trim() === '') {
+            if (guess === '') {
                 showCustomMessageBox("خطأ في الإدخال", "الرجاء كتابة إجابتك قبل الإرسال.");
                 return;
             }
@@ -1540,11 +1596,15 @@
                     
                     if (isCorrect) {
                         scoreChange = pointsBet;
-                        // Add this correct guess to the game's shared list of guesses for this question
-                        transaction.update(gameRef, {
-                            currentQuestionGuessedAnswers: firebase.firestore.FieldValue.arrayUnion(guess) // Use player's original guess for display in shared list
-                        });
+                        // DO NOT update currentQuestionGuessedAnswers in the game document here.
+                        // This will be handled by the host in reconcileQuestionScores.
                         console.log("Correct guess:", guess, "Points:", pointsBet);
+                        // Add to player's *local* correct guesses list (for temporary display if needed)
+                        if (playerCorrectGuessesList) {
+                            const listItem = document.createElement('li');
+                            listItem.textContent = guess;
+                            playerCorrectGuessesList.appendChild(listItem);
+                        }
                     } else {
                         scoreChange = -pointsBet;
                         console.log("Incorrect guess:", guess, "Points lost:", pointsBet);
@@ -1552,7 +1612,7 @@
 
                     // Update player's per-question data (score itself is updated later by reconcile)
                     transaction.update(playerRef, {
-                        playerSubmittedAnswer: guess, // Store the actual guess for display in results
+                        playerSubmittedAnswer: guess, // Store the actual submitted guess
                         playerSelectedPoints: pointsBet,
                         playerScoreChange: scoreChange, // Store the calculated change
                         hasSubmittedAnswer: true, // Mark as submitted
@@ -1561,8 +1621,6 @@
                 });
 
                 // Disable input elements for the player after successful submission
-                // This is now handled by listenToPlayers when playerDoc updates, making it reactive.
-                // But keeping direct disable here for immediate feedback is fine.
                 if (gameGuessInput) gameGuessInput.disabled = true;
                 if (pointsButtonGroup) { // Disable all point buttons
                     Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
@@ -1636,6 +1694,8 @@
                     else if (gamePhase === 'game_countdown') {  
                         showScreen(gameCountdownScreen); // Show the dedicated countdown screen
                         clearInterval(timerInterval); // Clear any existing timer
+                        clearInterval(currentQuestionSoundInterval); // Clear sound interval
+                        soundStarted = false; // Reset sound flag
                         const countdownDuration = gameData.countdownDuration || 5;
                         const countdownStartTime = gameData.countdownStartTime;
 
@@ -1693,6 +1753,8 @@
                         // Host-specific timer logic: Host updates time in Firestore
                         if (isHost) {
                             clearInterval(timerInterval); // Clear any old timer
+                            clearInterval(currentQuestionSoundInterval); // Clear any old sound interval
+                            soundStarted = false; // Reset sound flag
                             timerInterval = setInterval(async () => {
                                 const now = Date.now();
                                 // Calculate elapsed time since question started
@@ -1701,15 +1763,17 @@
                                 
                                 if (remainingTime >= 0) {
                                     // Trigger sound effect when time is running out (e.g., last 5 seconds)
-                                    if (remainingTime <= 5 && !currentQuestionSoundPlayed) {
-                                        playSoundEffect();
-                                        currentQuestionSoundPlayed = true; // Set flag to prevent repeated sounds
+                                    if (remainingTime <= 5 && !soundStarted) {
+                                        currentQuestionSoundInterval = setInterval(playTimerSound, 500); // Play every half second
+                                        soundStarted = true; // Set flag to prevent starting multiple intervals
                                     }
                                     // Update Firestore with current time and last update timestamp
                                     await gameRef.update({ currentTime: remainingTime, lastUpdate: now });
                                     if (gameTimerDisplay) gameTimerDisplay.textContent = remainingTime; // Update timer display
                                 } else {
                                     clearInterval(timerInterval); // Stop timer
+                                    clearInterval(currentQuestionSoundInterval); // Stop sound interval
+                                    soundStarted = false; // Reset sound flag
                                     // If time runs out, move to question results phase and reconcile scores
                                     await gameRef.update({ gamePhase: 'question_results', currentTime: 0, scoresReconciledForCurrentQuestion: false }); // Reset reconciliation flag
                                     // Host also triggers score reconciliation here
@@ -1721,26 +1785,22 @@
                             const timeFromHost = gameData.currentTime;
                             if (gameTimerDisplay) gameTimerDisplay.textContent = timeFromHost;
                              // Trigger sound effect for players when time is running out (sync with host)
-                            if (timeFromHost <= 5 && !currentQuestionSoundPlayed) {
-                                playSoundEffect();
-                                currentQuestionSoundPlayed = true; // Set flag
+                            if (timeFromHost <= 5 && !soundStarted) {
+                                currentQuestionSoundInterval = setInterval(playTimerSound, 500); // Play every half second
+                                soundStarted = true; // Set flag
                             }
                             // Game status change to 'question_results' or 'final_results' will trigger screen change for players
                         }
 
-                        // Update shared correct guesses list for the CURRENT QUESTION for all players
+                        // Shared guesses list should remain empty during active question phase
                         if (sharedRoundGuessesList) {
-                            sharedRoundGuessesList.innerHTML = ''; // Clear existing list
-                            // Populate with answers from gameData.currentQuestionGuessedAnswers
-                            (gameData.currentQuestionGuessedAnswers || []).forEach(answer => {
-                                const listItem = document.createElement('li');
-                                listItem.textContent = answer;
-                                listItem.classList.add('text-purple-700', 'font-semibold', 'opacity-0', 'animate-fade-in-up');
-                                sharedRoundGuessesList.appendChild(listItem);
-                            });
+                            sharedRoundGuessesList.innerHTML = ''; 
                         }
-                        // IMPORTANT: Removed auto-advance logic if all correct answers are guessed.
-                        // Now, it strictly waits for time or host to explicitly end the question.
+                        // This part of UI is now handled by reconcileQuestionScores in question_results phase
+                        if (playerCorrectGuessesList) {
+                            // It will show only locally entered correct answers, not synchronized from Firebase until results
+                            // So its content will only reflect what this particular player typed and was locally recognized as correct.
+                        }
                     }  
                     // Phase: Showing Question Results
                     else if (gamePhase === 'question_results') {
@@ -1750,7 +1810,8 @@
                         }
                         showScreen(questionResultsScreen); // Reusing questionResultsScreen
                         clearInterval(timerInterval); // Stop any timer
-                        currentQuestionSoundPlayed = false; // Reset sound flag for the next question
+                        clearInterval(currentQuestionSoundInterval); // Stop sound interval
+                        soundStarted = false; // Reset sound flag
 
                         if (resultsCategory) resultsCategory.textContent = gameData.currentCategory;
                         if (resultsQuestion) resultsQuestion.textContent = gameData.currentQuestionText; // Display current question in results
@@ -1763,24 +1824,30 @@
                             const listItem = document.createElement('li');
                             if (primaryCorrectAnswer) {
                                 // Check if the primary correct answer was guessed by anyone using the new isCorrectAnswer
-                                const wasPrimaryGuessed = isCorrectAnswer(primaryCorrectAnswer, gameData.currentQuestionGuessedAnswers || []);
+                                // Note: gameData.currentQuestionGuessedAnswers now contains ONLY the correct unique answers
+                                const wasPrimaryGuessed = (gameData.currentQuestionGuessedAnswers || []).some(guessed => isCorrectAnswer(primaryCorrectAnswer, [guessed]));
                                 if (wasPrimaryGuessed) {
                                     listItem.innerHTML = `<i class="fas fa-check text-green-500 mr-2"></i> ${primaryCorrectAnswer}`;
                                 } else {
-                                    // If not guessed, check if any of the fuzzy answers were guessed (these are normalized answers)
-                                    // This logic is mostly for comprehensive check, but for display, we show displayAnswer
-                                    const anyFuzzyGuessed = (gameData.currentCorrectAnswers || []).some(ans => (gameData.currentQuestionGuessedAnswers || []).some(guessed => isCorrectAnswer(guessed, [ans]))); // Check if any submitted guess (even if not primary) is fuzzy correct
-                                    if (anyFuzzyGuessed) {
-                                        listItem.innerHTML = `<i class="fas fa-check-circle text-green-500 mr-2"></i> ${primaryCorrectAnswer} (بإجابة مشابهة)`;
-                                    } else {
-                                        listItem.innerHTML = `<i class="fas fa-times text-red-500 mr-2"></i> ${primaryCorrectAnswer}`;
-                                    }
+                                    listItem.innerHTML = `<i class="fas fa-times text-red-500 mr-2"></i> ${primaryCorrectAnswer}`;
                                 }
                             } else {
                                 listItem.textContent = "لا توجد إجابة صحيحة أساسية محددة لهذا السؤال.";
                             }
                             roundCorrectAnswersList.appendChild(listItem);
                         }
+
+                        // Populate shared guesses list from gameData.currentQuestionGuessedAnswers
+                        if (sharedRoundGuessesList) {
+                            sharedRoundGuessesList.innerHTML = ''; // Clear existing list
+                            (gameData.currentQuestionGuessedAnswers || []).forEach(answer => {
+                                const listItem = document.createElement('li');
+                                listItem.textContent = answer;
+                                listItem.classList.add('text-purple-700', 'font-semibold', 'opacity-0', 'animate-fade-in-up');
+                                sharedRoundGuessesList.appendChild(listItem);
+                            });
+                        }
+
 
                         // Display player scores for this question (fetching live data from players subcollection)
                         showQuestionPlayerScoresDetailed(); // Detailed scores for this question
@@ -1804,7 +1871,8 @@
                     // Phase: Final Game Results
                     else if (gamePhase === 'final_results') {
                         clearInterval(timerInterval); // Stop any active timers
-                        currentQuestionSoundPlayed = false; // Reset sound flag
+                        clearInterval(currentQuestionSoundInterval); // Stop sound interval
+                        soundStarted = false; // Reset sound flag
                         showFinalScores(); // Display final overall scores
                     }
                 } else {
@@ -1828,7 +1896,6 @@
 
             playersSnapshotUnsubscribe = q.onSnapshot((snapshot) => {
                 if (joinedPlayersList) joinedPlayersList.innerHTML = ''; // Clear current list of joined players
-                // Do not clear playerCorrectGuessesList here, it will be updated based on playerSubmittedAnswer in gameData
                 
                 let currentPlayerOverallScore = 0;
                 
@@ -1895,12 +1962,7 @@
                             userUsedPointsBets = playerData.usedPointsBets || [];  
                             populatePointsButtons(); // Re-render buttons with updated used points status
 
-                            // Update player's correct answers for current question on UI if applicable
-                            // This list only shows *your* correct guesses for the CURRENT question.
-                            if (playerCorrectGuessesList) {
-                                // No change to its display logic; it's meant to be cleared and re-populated
-                                // when a new question starts, and updated dynamically as *this* player guesses.
-                            }
+                            // playerCorrectGuessesList remains local and is cleared on new question
                         }
                     });
                     if (playerScoreDisplay) playerScoreDisplay.textContent = currentPlayerOverallScore; // Update UI with overall score
@@ -1961,7 +2023,7 @@
                         // Check if player's submitted answer is one of the correct answers (using fuzzy logic)
                         let isPlayerAnswerCorrect = false;
                         if (player.submittedAnswer !== 'لم يجب') {
-                            // Using the new isCorrectAnswer function
+                            // Using the new isCorrectAnswer function with the player's stored submitted answer
                             isPlayerAnswerCorrect = isCorrectAnswer(player.submittedAnswer, currentCorrectAnswers);
                         }
 
@@ -2012,6 +2074,8 @@
                     playersSnapshotUnsubscribe();
                     playersSnapshotUnsubscribe = null;
                 }
+                clearInterval(currentQuestionSoundInterval); // Stop sound interval
+                soundStarted = false; // Reset sound flag
 
                 // Fetch all player data one last time to get final scores
                 const playersRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
@@ -2125,6 +2189,8 @@
                 gameId = null;
                 isHost = false;
                 clearInterval(timerInterval); // Clear any active timer
+                clearInterval(currentQuestionSoundInterval); // Clear sound interval
+                soundStarted = false; // Reset sound flag
                 if (gameSnapshotUnsubscribe) { // Unsubscribe from Firestore listeners
                     gameSnapshotUnsubscribe();
                     gameSnapshotUnsubscribe = null;
