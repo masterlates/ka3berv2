@@ -438,8 +438,8 @@
                     { questionText: "ما هي عاصمة الأردن؟", displayAnswer: "عمان", correctAnswers: ["عمان", "amman"] },
                     { questionText: "ما هي عاصمة لبنان؟", displayAnswer: "بيروت", correctAnswers: ["بيروت", "beirut"] },
                     { questionText: "ما هي عاصمة المغرب؟", displayAnswer: "الرباط", correctAnswers: ["الرباط", "rabat"] },
-                    { questionText: "ما هي عاصمة الجزائر؟", displayAnswer: "الجزائر", correctAnswers: ["الجزائر", "algiers"] },
-                    { questionText: "ما هي عاصمة السودان؟", displayAnswer: "الخرطوم", correctAnswers: ["الخرطوم", "khartoum"] },
+                    { questionText: "ما هي عاصمة الجزائر؟", correctAnswers: ["الجزائر", "algiers"] },
+                    { questionText: "ما هي عاصمة السودان؟", correctAnswers: ["الخرطوم", "khartoum"] },
                     { questionText: "ما هي عاصمة اليمن؟", displayAnswer: "صنعاء", correctAnswers: ["صنعاء", "sanaa"] },
                     { questionText: "ما هي عاصمة الإمارات؟", displayAnswer: "أبو ظبي", correctAnswers: ["ابوظبي", "أبو ظبي", "abu dhabi"] },
                     { questionText: "ما هي عاصمة قطر؟", displayAnswer: "الدوحة", correctAnswers: ["الدوحة", "doha"] },
@@ -1845,7 +1845,7 @@
                 questionScores.sort((a, b) => b.overallScore - a.overallScore);
 
                 if (questionPlayerScoresList) {
-                    questionScores.forEach(player => {
+                    questionScores.forEach((player, index) => { // Added index for rank
                         const listItem = document.createElement('li');
                         listItem.classList.add('py-2', 'px-4', 'rounded-lg', 'mb-2', 'bg-gray-50');
                         
@@ -1879,7 +1879,7 @@
 
 
                         listItem.innerHTML = `
-                            <span class="font-bold">${player.nickname}:</span> 
+                            <span class="font-bold">المركز ${index + 1}: ${player.nickname}:</span> 
                             <span class="${answerColorClass}">${answerStatusIcon} ${player.submittedAnswer}</span> 
                             (راهن بـ ${player.selectedPoints} نقطة، 
                             ${player.scoreChange >= 0 ? '+' : ''}${player.scoreChange} نقطة، 
@@ -1988,7 +1988,7 @@
         if (endQuestionEarlyButton) endQuestionEarlyButton.addEventListener('click', endQuestionEarly); 
 
         // Host clicks to proceed to the next question from question results screen
-        if (nextQuestionButton) nextQuestionButton.addEventListener('click', startNextQuestion); 
+        if (nextQuestionButton) nextQuestionButton.addEventListener('click', startNextQuestion); // Calls startNextQuestion directly
 
         // Host clicks to end the entire game from question results screen
         if (endGameFinalButton) endGameFinalButton.addEventListener('click', endGame);
