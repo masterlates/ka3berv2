@@ -10,9 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- QRCode.js for generating QR codes -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode.js/1.0.0/qrcode.min.js"></script>
-
+    
     <style>
         /* Base font and direction for Arabic */
         body {
@@ -40,6 +38,21 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+        /* Styles for the copy button */
+        .copy-button {
+            background-color: #4CAF50; /* Green */
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+        .copy-button:hover {
+            background-color: #45a049;
         }
     </style>
 </head>
@@ -99,12 +112,12 @@
         <!-- Waiting Room Screen (Host & Player) -->
         <div id="waiting-room-screen" class="w-full flex flex-col items-center hidden">
             <h2 class="text-3xl font-bold text-indigo-700 mb-4" id="waiting-room-title">انتظر انضمام اللاعبين...</h2> <!-- Waiting room title -->
-            <p class="text-xl text-gray-700 mb-6">شارك هذا الرمز مع أصدقائك للانضمام:</p> <!-- Share code instruction -->
-            <div class="bg-gray-100 p-4 rounded-lg shadow-inner mb-6">
-                <span id="game-code-display" class="text-4xl font-extrabold text-blue-600 tracking-wider"></span>
+            <p class="text-xl text-gray-700 mb-6">شارك هذا الرابط مع أصدقائك للانضمام:</p> <!-- Share link instruction -->
+            <div class="bg-gray-100 p-4 rounded-lg shadow-inner mb-6 flex flex-col items-center">
+                <span id="game-link-display" class="text-md md:text-xl font-medium text-blue-600 break-all text-center"></span>
+                <button id="copy-link-button" class="copy-button mt-4">انسخ الرابط</button>
             </div>
-            <div id="qrcode" class="mb-8 p-2 bg-white rounded-lg shadow-md"></div> <!-- QR code will be rendered here -->
-
+            
             <h3 class="text-2xl font-semibold text-gray-800 mb-4">اللاعبون المنضمون:</h3> <!-- Joined players list title -->
             <ul id="joined-players-list" class="w-full bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8 h-40 overflow-y-auto shadow-inner text-lg">
                 <!-- Players will be listed here by JavaScript -->
@@ -194,10 +207,16 @@
         </div>
     </div>
 
+    <!-- Firebase CDN Scripts - MUST be included BEFORE main game script for global `firebase` object -->
+    <!-- These load the Firebase library globally, making `firebase.initializeApp`, etc., available -->
+    <script type="text/javascript" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
     <!-- Main JavaScript Logic -->
     <script type="text/javascript">
         // Global variables for Firebase and App
-        let app, db, auth, userId, userNickname;
+        let app, db, auth, userId, userNickname, appId;
         let gameId = null;
         let isHost = false;
         let gameSnapshotUnsubscribe = null; // Listener for game document changes
@@ -239,8 +258,11 @@
         const quizCategorySelect = document.getElementById('quiz-category-select');
         const timeLimitSelect = document.getElementById('time-limit-select');
         const createGameButton = document.getElementById('create-game-button');
-        const gameCodeDisplay = document.getElementById('game-code-display');
-        const qrcodeDiv = document.getElementById('qrcode');
+        // Renamed from gameCodeDisplay to gameLinkDisplay
+        const gameLinkDisplay = document.getElementById('game-link-display');
+        // Removed qrcodeDiv as QR generation is now external
+        const copyLinkButton = document.getElementById('copy-link-button');
+
         const joinedPlayersList = document.getElementById('joined-players-list');
         const startGameButton = document.getElementById('start-game-button');
         const gameCodeInput = document.getElementById('game-code-input');
@@ -283,10 +305,9 @@
                 // Log the Firebase config to console to help debugging if there's an issue
                 console.log("Using Firebase Config:", firebaseConfig);
 
-                // For Firestore paths, we use projectId as the unique application ID.
-                // This 'appId' needs to match the 'projectId' from your Firebase config
-                const appId = firebaseConfig.projectId;
-                console.log("Derived App ID for Firestore path:", appId);
+                // IMPORTANT: Assign to the GLOBAL appId variable declared at the top.
+                appId = firebaseConfig.projectId;
+                console.log("Derived App ID for Firestore path (Global):", appId);
 
 
                 app = firebase.initializeApp(firebaseConfig); // Initialize Firebase app
@@ -294,8 +315,9 @@
                 auth = firebase.auth(app); // Get Auth instance
 
                 // Sign in anonymously for game functionality.
-                // In Render deployment, `__initial_auth_token` is not defined,
-                // so it will always fall back to anonymous authentication which is fine.
+                // This is the primary authentication method for this public game on Render.
+                // The __initial_auth_token check is removed as it's specific to the Canvas environment
+                // and causes issues in external deployments.
                 await auth.signInAnonymously();
 
                 // Listen for authentication state changes
@@ -456,17 +478,27 @@
                 userNickname = "المضيف"; // Set current user's nickname
 
                 console.log("Game created with ID:", gameId);
-                gameCodeDisplay.textContent = gameId; // Display game ID on screen
-                qrcodeDiv.innerHTML = ''; // Clear any existing QR code
-                // Generate QR code for easy joining
-                new QRCode(qrcodeDiv, {
-                    text: `${window.location.origin}${window.location.pathname}?gameId=${gameId}`,
-                    width: 128,
-                    height: 128,
-                    colorDark: "#000000",
-                    colorLight: "#ffffff",
-                    correctLevel: QRCode.CorrectLevel.H
-                });
+                // Display the direct link to the game room
+                const gameRoomLink = `${window.location.origin}${window.location.pathname}?gameId=${gameId}`;
+                gameLinkDisplay.textContent = gameRoomLink; // Display the full link
+                gameLinkDisplay.href = gameRoomLink; // Make it clickable (if needed, though copy is main)
+                
+                // Add an event listener to copy the link to clipboard
+                copyLinkButton.onclick = () => {
+                    // Use document.execCommand('copy') for better compatibility in iframes
+                    const textArea = document.createElement("textarea");
+                    textArea.value = gameRoomLink;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        showCustomMessageBox("تم النسخ!", "تم نسخ رابط الغرفة إلى الحافظة.");
+                    } catch (err) {
+                        console.error('Failed to copy text: ', err);
+                        showCustomMessageBox("خطأ في النسخ", "فشل نسخ الرابط، يرجى نسخه يدوياً.");
+                    }
+                    document.body.removeChild(textArea);
+                };
 
                 showScreen(waitingRoomScreen); // Show waiting room screen
                 listenToGameChanges(); // Start listening to the game document for real-time updates
@@ -544,10 +576,10 @@
 
                 showScreen(waitingRoomScreen); // Show waiting room screen
                 document.getElementById('waiting-room-title').textContent = `في انتظار بدء اللعبة...`; // Player-specific waiting message
-                gameCodeDisplay.textContent = gameId; // Show game code to player
-                qrcodeDiv.innerHTML = ''; // Clear QR code as players don't need it
-                startGameButton.classList.add('hidden'); // Hide start button for players
-
+                // For players, the game code display will just show the ID
+                gameLinkDisplay.textContent = `رمز الغرفة: ${gameId}`;
+                if (copyLinkButton) copyLinkButton.classList.add('hidden'); // Hide copy button for players
+                
                 listenToGameChanges(); // Start listening to game document
                 listenToPlayers(); // Start listening to players in the room
             } catch (error) {
@@ -867,11 +899,5 @@
         // Initialize Firebase when the DOM content is fully loaded
         document.addEventListener('DOMContentLoaded', initializeFirebase);
     </script>
-
-    <!-- Firebase CDN Scripts - MUST be included at the end of <body> for global access -->
-    <!-- These load the Firebase library globally, making `firebase.initializeApp`, etc., available -->
-    <script type="text/javascript" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script type="text/javascript" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script type="text/javascript" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 </body>
 </html>
