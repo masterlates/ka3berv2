@@ -438,8 +438,8 @@
                     { questionText: "ما هي عاصمة الأردن؟", displayAnswer: "عمان", correctAnswers: ["عمان", "amman"] },
                     { questionText: "ما هي عاصمة لبنان؟", displayAnswer: "بيروت", correctAnswers: ["بيروت", "beirut"] },
                     { questionText: "ما هي عاصمة المغرب؟", displayAnswer: "الرباط", correctAnswers: ["الرباط", "rabat"] },
-                    { questionText: "ما هي عاصمة الجزائر؟", correctAnswers: ["الجزائر", "algiers"] },
-                    { questionText: "ما هي عاصمة السودان؟", correctAnswers: ["الخرطوم", "khartoum"] },
+                    { questionText: "ما هي عاصمة الجزائر؟", displayAnswer: "الجزائر", correctAnswers: ["الجزائر", "algiers"] },
+                    { questionText: "ما هي عاصمة السودان؟", displayAnswer: "الخرطوم", correctAnswers: ["الخرطوم", "khartoum"] },
                     { questionText: "ما هي عاصمة اليمن؟", displayAnswer: "صنعاء", correctAnswers: ["صنعاء", "sanaa"] },
                     { questionText: "ما هي عاصمة الإمارات؟", displayAnswer: "أبو ظبي", correctAnswers: ["ابوظبي", "أبو ظبي", "abu dhabi"] },
                     { questionText: "ما هي عاصمة قطر؟", displayAnswer: "الدوحة", correctAnswers: ["الدوحة", "doha"] },
@@ -1231,7 +1231,7 @@
                     currentTime: gameData.timeLimitPerQuestion, // Reset timer
                 });
 
-                // Crucially, reset players' per-question flags/data in their sub-documents
+                // Reset players' per-question flags/data in their sub-documents
                 const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
                 const playersDocs = await playersCollectionRef.get();
                 const batch = db.batch();
@@ -1299,6 +1299,51 @@
             } catch (error) {
                 console.error("Error ending game:", error);
                 showCustomMessageBox("خطأ", "فشل إنهاء اللعبة.");
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // NEW: Function to reconcile scores for all players after a question
+        // This function is called by the host when a question phase ends.
+        async function reconcileQuestionScores() {
+            if (!isHost || !gameId) return; // Only host performs this
+            console.log("Reconciling scores for the ended question...");
+            showLoading();
+            try {
+                const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
+                const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
+                const playersDocs = await playersCollectionRef.get();
+                
+                const batch = db.batch();
+                playersDocs.docs.forEach(playerDoc => {
+                    const playerRef = playerDoc.ref;
+                    const playerData = playerDoc.data();
+                    
+                    if (playerData.hasSubmittedAnswer && playerData.playerScoreChange !== undefined) {
+                        const newScore = (playerData.score || 0) + (playerData.playerScoreChange);
+                        batch.update(playerRef, {
+                            score: newScore,
+                            playerSubmittedAnswer: '', // Clear previous answer
+                            playerSelectedPoints: 0,
+                            playerScoreChange: 0,
+                            hasSubmittedAnswer: false
+                        });
+                    } else {
+                        // If player didn't submit or didn't answer correctly, just reset their flags
+                        batch.update(playerRef, {
+                            playerSubmittedAnswer: '',
+                            playerSelectedPoints: 0,
+                            playerScoreChange: 0,
+                            hasSubmittedAnswer: false
+                        });
+                    }
+                });
+                await batch.commit();
+                console.log("Scores reconciled and player flags reset for the question.");
+            } catch (error) {
+                console.error("Error reconciling scores:", error);
+                showCustomMessageBox("خطأ في تحديث النقاط", error.message || "حدث خطأ أثناء تحديث نقاط اللاعبين.");
             } finally {
                 hideLoading();
             }
@@ -1442,7 +1487,6 @@
                     }
 
 
-                    let playerOverallScore = playerData.score || 0; // Player's overall score
                     let scoreChange = 0; // Points change for this question
 
                     // Check if guess is correct using fuzzy matching
@@ -1462,7 +1506,6 @@
 
                     if (isCorrect) {
                         scoreChange = pointsBet;
-                        playerOverallScore += pointsBet; // Add points
                         // Add this correct guess to the game's shared list of guesses for this question
                         transaction.update(gameRef, {
                             currentQuestionGuessedAnswers: firebase.firestore.FieldValue.arrayUnion(guess) // Use player's original normalized guess for display in shared list
@@ -1470,16 +1513,14 @@
                         console.log("Correct guess:", guess, "Points:", pointsBet);
                     } else {
                         scoreChange = -pointsBet;
-                        playerOverallScore -= pointsBet; // Subtract points
                         console.log("Incorrect guess:", guess, "Points lost:", pointsBet);
                     }
 
-                    // Update player's overall score and per-question data
+                    // Update player's per-question data (score itself is updated later by reconcile)
                     transaction.update(playerRef, {
-                        score: playerOverallScore,
                         playerSubmittedAnswer: guess, // Store the actual normalized guess for display in results
                         playerSelectedPoints: pointsBet,
-                        playerScoreChange: scoreChange,
+                        playerScoreChange: scoreChange, // Store the calculated change
                         hasSubmittedAnswer: true, // Mark as submitted
                         usedPointsBets: firebase.firestore.FieldValue.arrayUnion(pointsBet) // Add used points to player's array
                     });
@@ -1527,7 +1568,7 @@
                     if (questionCounterDisplay) {
                         // currentQuestionIndexInGame is already incremented for the NEXT question to be displayed,
                         // so to show current question, we use currentQuestionIndexInGame.
-                        const currentQNum = gameData.currentQuestionIndexInGame; 
+                        const currentQNum = gameData.currentQuestionIndexInGame > 0 ? gameData.currentQuestionIndexInGame : 1; // Start from 1
                         const totalQs = gameData.quizSet ? gameData.quizSet.length : 0;
                         if (totalQs > 0) {
                              questionCounterDisplay.textContent = `${currentQNum} / ${totalQs}`;
@@ -1627,8 +1668,10 @@
                                     if (gameTimerDisplay) gameTimerDisplay.textContent = remainingTime; // Update timer display
                                 } else {
                                     clearInterval(timerInterval); // Stop timer
-                                    // If time runs out, move to question results phase
+                                    // If time runs out, move to question results phase and reconcile scores
                                     await gameRef.update({ gamePhase: 'question_results', currentTime: 0 });
+                                    // Host also triggers score reconciliation here
+                                    reconcileQuestionScores(); 
                                 }
                             }, 1000); // Update every second
                         } else {
@@ -1654,6 +1697,10 @@
                     } 
                     // Phase: Showing Question Results
                     else if (gamePhase === 'question_results') {
+                        // If host, ensure scores were reconciled before displaying results
+                        if (isHost) {
+                            reconcileQuestionScores(); // Call again just in case (e.g., if host refreshes)
+                        }
                         showScreen(questionResultsScreen); // Reusing questionResultsScreen
                         clearInterval(timerInterval); // Stop any timer
 
@@ -1988,7 +2035,7 @@
         if (endQuestionEarlyButton) endQuestionEarlyButton.addEventListener('click', endQuestionEarly); 
 
         // Host clicks to proceed to the next question from question results screen
-        if (nextQuestionButton) nextQuestionButton.addEventListener('click', startNextQuestion); // Calls startNextQuestion directly
+        if (nextQuestionButton) nextQuestionButton.addEventListener('click', startNextQuestion); 
 
         // Host clicks to end the entire game from question results screen
         if (endGameFinalButton) endGameFinalButton.addEventListener('click', endGame);
