@@ -508,6 +508,26 @@
                     { questionText: "ما هي عاصمة الصين؟", displayAnswer: "بكين", correctAnswers: ["بكين", "beijing"] },
                     { questionText: "ما هي عاصمة الهند؟", displayAnswer: "نيودلهي", correctAnswers: ["نيودلهي", "new delhi"] }
                 ]
+            },
+            {
+                category: "أسئلة تونسية",
+                questions: [
+                    { questionText: "شنوة عاصمة تونس؟", displayAnswer: "تونس", correctAnswers: ["تونس", "tunis", "tounes"] },
+                    { questionText: "شنوة اسم العملة التونسية؟", displayAnswer: "دينار", correctAnswers: ["دينار", "dinar", "دنيار"] },
+                    { questionText: "شكون ربح كاس افريقيا 2004؟", displayAnswer: "تونس", correctAnswers: ["تونس", "المنتخب التونسي", "tounes", "منتخب تونس"] },
+                    { questionText: "شنوة اسم أطول واد في تونس؟", displayAnswer: "واد مجردة", correctAnswers: ["واد مجردة", "مجردة", "وادي مجردة", "oued mejerdah"] },
+                    { questionText: "شكون الرئيس الأول لتونس؟", displayAnswer: "الحبيب بورقيبة", correctAnswers: ["الحبيب بورقيبة", "بورقيبة", "حبيب بورقيبة", "bourguiba"] },
+                    { questionText: "شنوة اسم مدينة تونسية مشهورة بالحمامات الطبيعية؟", displayAnswer: "حمام الأنف", correctAnswers: ["حمام الأنف", "حمام الانف", "hammam linf", "hamam lanf"] },
+                    { questionText: "شنوة الأكلة التونسية المشهورة اللي فيها كسكسي وخضرة ولحم؟", displayAnswer: "كسكسي", correctAnswers: ["كسكسي", "كسكس", "couscous"] },
+                    { questionText: "شنوة العاصمة الثقافية لتونس؟", displayAnswer: "القيروان", correctAnswers: ["القيروان", "kairouan", "kayrawan"] },
+                    { questionText: "شنوة اسم أشهر طبق حلويات تونسي في الأعياد؟", displayAnswer: "المقروض", correctAnswers: ["المقروض", "مقروض", "makroudh"] },
+                    { questionText: "أكبر جزيرة تونسية؟", displayAnswer: "جربة", correctAnswers: ["جربة", "djerba", "jareba"] },
+                    { questionText: "شنوة اسم الجبل الأعلى في تونس؟", displayAnswer: "جبل الشعانبي", correctAnswers: ["جبل الشعانبي", "الشعانبي", "chambi"] },
+                    { questionText: "فنان تونسي مشهور بأغنية 'يا ليلى يا ليلة'؟", displayAnswer: "صابر الرباعي", correctAnswers: ["صابر الرباعي", "رباعي", "saber rebai"] },
+                    { questionText: "شنوة اسم بحيرة تونسية مشهورة بالطيور المهاجرة؟", displayAnswer: "بحيرة إشكل", correctAnswers: ["بحيرة إشكل", "إشكل", "ichkeul"] },
+                    { questionText: "اسم الملعب الوطني في تونس العاصمة؟", displayAnswer: "ملعب حمادي العقربي", correctAnswers: ["ملعب حمادي العقربي", "ملعب رادس", "رادس", "hamadi agerbi"] },
+                    { questionText: "في أي ولاية تونسية توجد مدينة دقة الأثرية؟", displayAnswer: "باجة", correctAnswers: ["باجة", "beja"] }
+                ]
             }
         ];
         
@@ -1231,7 +1251,7 @@
                     currentTime: gameData.timeLimitPerQuestion, // Reset timer
                 });
 
-                // Reset players' per-question flags/data in their sub-documents
+                // Crucially, reset players' per-question flags/data in their sub-documents
                 const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
                 const playersDocs = await playersCollectionRef.get();
                 const batch = db.batch();
@@ -1273,10 +1293,13 @@
             showLoading();
             try {
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
+                // When ending early, set phase to question_results and trigger score reconciliation
                 await gameRef.update({
-                    gamePhase: 'question_results', // Move to showing question results
-                    currentTime: 0 // Ensure timer is at zero
+                    gamePhase: 'question_results', 
+                    currentTime: 0 
                 });
+                // Host also triggers score reconciliation here, immediately after update
+                reconcileQuestionScores(); // Now called immediately when host ends early
                 console.log("Host ended question early.");
             } catch (error) {
                 console.error("Error ending question early:", error);
@@ -1304,8 +1327,7 @@
             }
         }
 
-        // NEW: Function to reconcile scores for all players after a question
-        // This function is called by the host when a question phase ends.
+        // NEW: Function to reconcile scores for all players after a question ends (called by host)
         async function reconcileQuestionScores() {
             if (!isHost || !gameId) return; // Only host performs this
             console.log("Reconciling scores for the ended question...");
@@ -1320,6 +1342,7 @@
                     const playerRef = playerDoc.ref;
                     const playerData = playerDoc.data();
                     
+                    // Only update if player has submitted an answer for this question
                     if (playerData.hasSubmittedAnswer && playerData.playerScoreChange !== undefined) {
                         const newScore = (playerData.score || 0) + (playerData.playerScoreChange);
                         batch.update(playerRef, {
@@ -1330,7 +1353,7 @@
                             hasSubmittedAnswer: false
                         });
                     } else {
-                        // If player didn't submit or didn't answer correctly, just reset their flags
+                        // If player didn't submit an answer, just reset their flags
                         batch.update(playerRef, {
                             playerSubmittedAnswer: '',
                             playerSelectedPoints: 0,
@@ -1520,7 +1543,7 @@
                     transaction.update(playerRef, {
                         playerSubmittedAnswer: guess, // Store the actual normalized guess for display in results
                         playerSelectedPoints: pointsBet,
-                        playerScoreChange: scoreChange, // Store the calculated change
+                        playerScoreChange: scoreChange,
                         hasSubmittedAnswer: true, // Mark as submitted
                         usedPointsBets: firebase.firestore.FieldValue.arrayUnion(pointsBet) // Add used points to player's array
                     });
@@ -1568,7 +1591,7 @@
                     if (questionCounterDisplay) {
                         // currentQuestionIndexInGame is already incremented for the NEXT question to be displayed,
                         // so to show current question, we use currentQuestionIndexInGame.
-                        const currentQNum = gameData.currentQuestionIndexInGame > 0 ? gameData.currentQuestionIndexInGame : 1; // Start from 1
+                        const currentQNum = gameData.currentQuestionIndexInGame; 
                         const totalQs = gameData.quizSet ? gameData.quizSet.length : 0;
                         if (totalQs > 0) {
                              questionCounterDisplay.textContent = `${currentQNum} / ${totalQs}`;
@@ -2035,7 +2058,7 @@
         if (endQuestionEarlyButton) endQuestionEarlyButton.addEventListener('click', endQuestionEarly); 
 
         // Host clicks to proceed to the next question from question results screen
-        if (nextQuestionButton) nextQuestionButton.addEventListener('click', startNextQuestion); 
+        if (nextQuestionButton) nextQuestionButton.addEventListener('click', startNextQuestion); // Calls startNextQuestion directly
 
         // Host clicks to end the entire game from question results screen
         if (endGameFinalButton) endGameFinalButton.addEventListener('click', endGame);
