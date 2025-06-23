@@ -235,7 +235,7 @@
                 </select>
             </div>
 
-            <button id="create-game-button" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
+            <button id="create-game-button" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-content-center gap-3">
                 <i class="fas fa-plus-circle"></i> إنشاء اللعبة <!-- Create game button -->
             </button>
         </div>
@@ -246,7 +246,7 @@
             <p class="text-xl text-gray-700 mb-6">شارك هذا الرابط مع أصدقائك للانضمام:</p> <!-- Share link instruction -->
             <div class="bg-gray-100 p-4 rounded-lg shadow-inner mb-6 flex flex-col items-center">
                 <span id="game-link-display" class="text-md md:text-xl font-medium text-blue-600 break-all text-center"></span>
-                <div id="qrcode" class="mb-2 p-2 bg-white rounded-lg shadow-md flex justify-center items-center">
+                <div id="qrcode" class="mb-2 p-2 bg-white rounded-lg shadow-md flex justify-content-center align-items-center">
                     <!-- QR code will be rendered here by JavaScript -->
                     <div id="qrcode-fallback-message" class="text-gray-500 text-sm text-center">
                         <!-- Fallback message for QR code -->
@@ -278,23 +278,23 @@
                 <input type="text" id="player-nickname-input" placeholder="اسمك"
                         class="w-full p-4 mb-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50 text-center">
             </div>
-            <button id="join-room-button" class="w-full bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
+            <button id="join-room-button" class="w-full bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-content-center gap-3">
                 <i class="fas fa-door-open"></i> الانضمام <!-- Join button -->
             </button>
         </div>
 
         <!-- Game Play Screen (Host & Player) -->
         <div id="game-play-screen" class="w-full hidden">
-            <div class="flex flex-col md:flex-row justify-between items-center w-full mb-8 space-y-4 md:space-y-0">
-                <div class="flex items-center space-x-2 space-x-reverse text-2xl font-bold text-gray-700 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
+            <div class="flex flex-col md:flex-row justify-content-between align-items-center w-full mb-8 space-y-4 md:space-y-0">
+                <div class="flex align-items-center space-x-2 space-x-reverse text-2xl font-bold text-gray-700 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
                     <i class="fas fa-hourglass-half text-blue-500"></i>
                     <span>الوقت: <span id="game-timer" class="text-blue-600">--</span> ثانية</span> <!-- Game timer display -->
                 </div>
-                <div class="flex items-center space-x-2 space-x-reverse text-2xl font-bold text-gray-700 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
+                <div class="flex align-items-center space-x-2 space-x-reverse text-2xl font-bold text-gray-700 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
                     <i class="fas fa-star text-yellow-500"></i>
                     <span>نقاطك: <span id="player-score" class="text-yellow-600">0</span></span> <!-- Player's score display -->
                 </div>
-                <div class="flex items-center space-x-2 space-x-reverse text-2xl font-bold text-gray-700 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
+                <div class="flex align-items-center space-x-2 space-x-reverse text-2xl font-bold text-gray-700 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
                     <i class="fas fa-question-circle text-purple-500"></i>
                     <span>السؤال: <span id="question-counter" class="text-purple-600">-- / --</span></span> <!-- Question counter -->
                 </div>
@@ -306,7 +306,7 @@
                 <p class="text-3xl font-extrabold text-gray-900" id="game-question"></p> <!-- Current question display -->
             </div>
 
-            <div class="flex items-center flex-wrap gap-2 w-full mb-4">
+            <div class="flex align-items-center flex-wrap gap-2 w-full mb-4">
                 <label for="game-guess-input" class="sr-only">اكتب إجابتك هنا</label>
                 <input type="text" id="game-guess-input" placeholder="اكتب إجابتك هنا..."
                     class="flex-grow p-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50">
@@ -338,7 +338,7 @@
             </div>
             
             <!-- Host-only controls during game play -->
-            <div id="host-gameplay-controls" class="w-full flex flex-col items-center gap-4 hidden">
+            <div id="host-gameplay-controls" class="w-full flex flex-col align-items-center gap-4 hidden">
                 <h3 class="text-xl font-semibold text-gray-800 mb-2">حالة إجابة اللاعبين (المضيف فقط):</h3>
                 <ul id="host-submission-status-list" class="w-full bg-gray-100 border border-gray-200 rounded-lg p-3 mb-4 shadow-inner text-base max-h-32 overflow-y-auto">
                     <!-- Player submission status will be listed here -->
@@ -366,11 +366,11 @@
             </ul>
 
             <!-- Host controls for next question or end game -->
-            <div id="question-results-host-controls" class="w-full flex flex-col items-center gap-4 hidden">
-                <button id="next-question-button" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
+            <div id="question-results-host-controls" class="w-full flex flex-col align-items-center gap-4 hidden">
+                <button id="next-question-button" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex align-items-center justify-content-center gap-3">
                     <i class="fas fa-forward"></i> السؤال التالي
                 </button>
-                <button id="end-game-final-button" class="w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
+                <button id="end-game-final-button" class="w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex align-items-center justify-content-center gap-3">
                     <i class="fas fa-times-circle"></i> إنهاء اللعبة
                 </button>
             </div>
@@ -386,13 +386,13 @@
                 <!-- Final scores will be listed here by JavaScript -->
             </ul>
 
-            <button id="play-again-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-content-center gap-3">
+            <button id="play-again-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex align-items-center justify-content-center gap-3">
                 <i class="fas fa-redo"></i> العب مرة أخرى <!-- Play again button -->
             </button>
         </div>
 
         <!-- Custom Message Box - For alerts and confirmations -->
-        <div id="custom-message-box" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-content-center p-4 z-40 hidden transition-opacity duration-300 ease-out opacity-0">
+        <div id="custom-message-box" class="fixed inset-0 bg-black bg-opacity-70 flex align-items-center justify-content-center p-4 z-40 hidden transition-opacity duration-300 ease-out opacity-0">
             <div class="bg-white rounded-xl p-8 text-center shadow-xl transform scale-90 transition-transform duration-300 ease-out">
                 <h2 id="custom-message-title" class="text-3xl font-bold text-gray-900 mb-4"></h2> <!-- Message title -->
                 <p id="custom-message-content" class="text-xl text-gray-700 mb-6"></p> <!-- Message content -->
@@ -575,7 +575,7 @@
                     { questionText: "ما اسم السلسلة التي عرضت ليلة رأس السنة؟", displayAnswer: "شوفلي حل ليلة رأس السنة", correctAnswers: ["شوفلي حل ليلة رأس السنة", "ليلة رأس السنة"] },
                     { questionText: "ما هي السنة التي بدأ فيها عرض مسلسل شوفلي حل؟", displayAnswer: "2005", correctAnswers: ["2005"] },
                     { questionText: "كم عدد مواسم مسلسل شوفلي حل؟", displayAnswer: "6 مواسم", correctAnswers: ["6", "6 مواسم", "ستة", "ستة مواسم"] },
-                    { questionText: "ما اسم المحل الذي فتحته زينب بعد محل التحف؟", displayAnswer: "مركز تجميل", correctAnswers: ["مركز تجميل", "صالون تجميل"] },
+                    { questionText: "ما اسم المحل الذي فتحته زينب بعد محل التحف؟", display: "مركز تجميل", correctAnswers: ["مركز تجميل", "صالون تجميل"] },
                     { questionText: "ما اسم الحيوان الأليف الذي كان عند جنات في إحدى الحلقات؟", displayAnswer: "قرد", correctAnswers: ["قرد", "monkey"] },
                     { questionText: "ما اسم صديق سليمان المقرب الذي ظهر في عدة حلقات وكان يعمل مهندساً؟", displayAnswer: "الطيب", correctAnswers: ["الطيب", "tayeb", "طيّب"] },
                     { questionText: "ما اسم الطبيبة التي كانت تعمل مع سليمان في عيادته لفترة؟", displayAnswer: "الدكتورة أسماء", correctAnswers: ["الدكتورة أسماء", "أسماء", "asmaa"] },
@@ -1455,15 +1455,16 @@
                     let scoreChange = 0;
                     let submittedAnswerForRound = playerData.playerSubmittedAnswer;
 
-                    // If player hasn't submitted an answer and is the current host, capture their current input
+                    // If player hasn't submitted an answer, AND if it's the host's own client,
+                    // take the current input value. Otherwise, if no explicit submission, it's 'لم يجب'.
                     if (!playerData.hasSubmittedAnswer && playerId === userId && gameGuessInput) {
                         submittedAnswerForRound = gameGuessInput.value.trim();
                     } else if (!playerData.hasSubmittedAnswer) {
-                        // If not submitted and not the host, treat as "لم يجب"
+                        // If not submitted by player, and not the host's own live input
                         submittedAnswerForRound = 'لم يجب';
                     }
 
-                    if (submittedAnswerForRound !== 'لم يجب') { // Check if an answer was provided
+                    if (submittedAnswerForRound !== 'لم يجب') { // Only check correctness if an answer was provided
                         const normalizedSubmittedAnswer = normalize(submittedAnswerForRound);
                         
                         if (isCorrectAnswer(normalizedSubmittedAnswer, currentCorrectAnswers)) {
@@ -1670,6 +1671,15 @@
                         scoreChange = -pointsBet;
                     }
 
+                    // Log data before updating in transaction for debugging
+                    console.log("Updating player data in transaction:", {
+                        playerSubmittedAnswer: guess,
+                        playerSelectedPoints: pointsBet,
+                        playerScoreChange: scoreChange,
+                        hasSubmittedAnswer: true,
+                        usedPointsBets: firebase.firestore.FieldValue.arrayUnion(pointsBet)
+                    });
+
                     // Update player's per-question data (score itself is updated later by reconcile)
                     transaction.update(playerRef, {
                         playerSubmittedAnswer: guess, // Store the actual submitted guess
@@ -1679,6 +1689,9 @@
                         usedPointsBets: firebase.firestore.FieldValue.arrayUnion(pointsBet) // Add used points to player's array
                     });
                 });
+
+                // Log transaction success
+                console.log("Guess submission transaction completed successfully.");
 
                 // Disable input elements for the player after successful submission
                 if (gameGuessInput) gameGuessInput.disabled = true;
@@ -1715,6 +1728,10 @@
                 if (docSnap.exists) {
                     const gameData = docSnap.data();
                     const gamePhase = gameData.gamePhase;
+
+                    console.log("Snapshot received. Current Game Phase:", gamePhase);
+                    console.log("Game Data on Snapshot:", gameData);
+
 
                     // Update Question Counter (e.g., "السؤال 1 / 15")
                     if (questionCounterDisplay) {
@@ -1864,6 +1881,11 @@
                     }  
                     // Phase: Showing Question Results
                     else if (gamePhase === 'question_results') {
+                        console.log("In question_results phase. Is Host:", isHost);
+                        console.log("Current Question Index:", gameData.currentQuestionIndexInGame);
+                        console.log("Total Questions:", gameData.quizSet.length);
+                        console.log("More questions to play?", gameData.currentQuestionIndexInGame < gameData.quizSet.length);
+
                         // If host, ensure scores were reconciled before displaying results
                         if (isHost && !gameData.scoresReconciledForCurrentQuestion) { // Only reconcile if not already done
                             reconcileQuestionScores();  
@@ -1911,6 +1933,22 @@
 
                         // Display player scores for this question (fetching from lastQuestionPlayerResults)
                         showQuestionPlayerScoresDetailed(); 
+
+                        // Host controls for next question or end game
+                        if (isHost && questionResultsHostControls) {
+                            questionResultsHostControls.classList.remove('hidden');
+                            // Check if there are more questions in the quizSet
+                            // gameData.currentQuestionIndexInGame holds the index of the *next* question to be played
+                            if (gameData.currentQuestionIndexInGame < gameData.quizSet.length) {  
+                                if (nextQuestionButton) nextQuestionButton.classList.remove('hidden');
+                                if (endGameFinalButton) endGameFinalButton.classList.add('hidden'); // Hide end game button if more questions
+                            } else { // No more questions, show end game button
+                                if (nextQuestionButton) nextQuestionButton.classList.add('hidden'); // Hide next question button
+                                if (endGameFinalButton) endGameFinalButton.classList.remove('hidden'); // Show end game button
+                            }
+                        } else {
+                            if (questionResultsHostControls) questionResultsHostControls.classList.add('hidden'); // Hide host controls for players
+                        }
                     }
                     // Phase: Final Game Results
                     else if (gamePhase === 'final_results') {
