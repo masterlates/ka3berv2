@@ -424,88 +424,89 @@
 
         // Quiz data - IMPORTANT: Each object in quizzes now represents a CATEGORY with multiple questions.
         // Each question has a questionText and correctAnswers.
-        // Ensure correctAnswers are unique within each question for proper arrayUnion/removal.
+        // `displayAnswer` is the primary correct answer shown in results.
+        // `correctAnswers` is a list of normalized answers for fuzzy matching.
         const quizzes = [
             {
                 category: "عواصم الدول العربية",
                 questions: [
-                    { questionText: "ما هي عاصمة تونس؟", correctAnswers: ["تونس", "tunis"] },
-                    { questionText: "ما هي عاصمة مصر؟", correctAnswers: ["القاهرة", "cairo"] },
-                    { questionText: "ما هي عاصمة السعودية؟", correctAnswers: ["الرياض", "riyadh"] },
-                    { questionText: "ما هي عاصمة العراق؟", correctAnswers: ["بغداد", "baghdad"] },
-                    { questionText: "ما هي عاصمة سوريا؟", correctAnswers: ["دمشق", "damascus"] },
-                    { questionText: "ما هي عاصمة الأردن؟", correctAnswers: ["عمان", "amman"] },
-                    { questionText: "ما هي عاصمة لبنان؟", correctAnswers: ["بيروت", "beirut"] },
-                    { questionText: "ما هي عاصمة المغرب؟", correctAnswers: ["الرباط", "rabat"] },
-                    { questionText: "ما هي عاصمة الجزائر؟", correctAnswers: ["الجزائر", "algiers"] },
-                    { questionText: "ما هي عاصمة السودان؟", correctAnswers: ["الخرطوم", "khartoum"] },
-                    { questionText: "ما هي عاصمة اليمن؟", correctAnswers: ["صنعاء", "sanaa"] },
-                    { questionText: "ما هي عاصمة الإمارات؟", correctAnswers: ["ابوظبي", "أبو ظبي", "abu dhabi"] },
-                    { questionText: "ما هي عاصمة قطر؟", correctAnswers: ["الدوحة", "doha"] },
-                    { questionText: "ما هي عاصمة الكويت؟", correctAnswers: ["الكويت", "kuwait"] },
-                    { questionText: "ما هي عاصمة البحرين؟", correctAnswers: ["المنامة", "manama"] },
-                    { questionText: "ما هي عاصمة الصومال؟", correctAnswers: ["مقديشو", "mogadishu"] },
-                    { questionText: "ما هي عاصمة جيبوتي؟", correctAnswers: ["جيبوتي", "djibouti"] },
-                    { questionText: "ما هي عاصمة جزر القمر؟", correctAnswers: ["موروني", "moroni"] },
-                    { questionText: "ما هي عاصمة ليبيا؟", correctAnswers: ["طرابلس", "tripoli"] },
-                    { questionText: "ما هي عاصمة موريتانيا؟", correctAnswers: ["نواكشوط", "nouakchott"] },
-                    { questionText: "ما هي عاصمة سلطنة عمان؟", correctAnswers: ["مسقط", "muscat"] },
-                    { questionText: "ما هي عاصمة فلسطين؟", correctAnswers: ["القدس", "jerusalem"] }
+                    { questionText: "ما هي عاصمة تونس؟", displayAnswer: "تونس", correctAnswers: ["تونس", "tunis"] },
+                    { questionText: "ما هي عاصمة مصر؟", displayAnswer: "القاهرة", correctAnswers: ["القاهرة", "cairo"] },
+                    { questionText: "ما هي عاصمة السعودية؟", displayAnswer: "الرياض", correctAnswers: ["الرياض", "riyadh"] },
+                    { questionText: "ما هي عاصمة العراق؟", displayAnswer: "بغداد", correctAnswers: ["بغداد", "baghdad"] },
+                    { questionText: "ما هي عاصمة سوريا؟", displayAnswer: "دمشق", correctAnswers: ["دمشق", "damascus"] },
+                    { questionText: "ما هي عاصمة الأردن؟", displayAnswer: "عمان", correctAnswers: ["عمان", "amman"] },
+                    { questionText: "ما هي عاصمة لبنان؟", displayAnswer: "بيروت", correctAnswers: ["بيروت", "beirut"] },
+                    { questionText: "ما هي عاصمة المغرب؟", displayAnswer: "الرباط", correctAnswers: ["الرباط", "rabat"] },
+                    { questionText: "ما هي عاصمة الجزائر؟", displayAnswer: "الجزائر", correctAnswers: ["الجزائر", "algiers"] },
+                    { questionText: "ما هي عاصمة السودان؟", displayAnswer: "الخرطوم", correctAnswers: ["الخرطوم", "khartoum"] },
+                    { questionText: "ما هي عاصمة اليمن؟", displayAnswer: "صنعاء", correctAnswers: ["صنعاء", "sanaa"] },
+                    { questionText: "ما هي عاصمة الإمارات؟", displayAnswer: "أبو ظبي", correctAnswers: ["ابوظبي", "أبو ظبي", "abu dhabi"] },
+                    { questionText: "ما هي عاصمة قطر؟", displayAnswer: "الدوحة", correctAnswers: ["الدوحة", "doha"] },
+                    { questionText: "ما هي عاصمة الكويت؟", displayAnswer: "الكويت", correctAnswers: ["الكويت", "kuwait"] },
+                    { questionText: "ما هي عاصمة البحرين؟", displayAnswer: "المنامة", correctAnswers: ["المنامة", "manama"] },
+                    { questionText: "ما هي عاصمة الصومال؟", displayAnswer: "مقديشو", correctAnswers: ["مقديشو", "mogadishu"] },
+                    { questionText: "ما هي عاصمة جيبوتي؟", displayAnswer: "جيبوتي", correctAnswers: ["جيبوتي", "djibouti"] },
+                    { questionText: "ما هي عاصمة جزر القمر؟", displayAnswer: "موروني", correctAnswers: ["موروني", "moroni"] },
+                    { questionText: "ما هي عاصمة ليبيا؟", displayAnswer: "طرابلس", correctAnswers: ["طرابلس", "tripoli"] },
+                    { questionText: "ما هي عاصمة موريتانيا؟", displayAnswer: "نواكشوط", correctAnswers: ["نواكشوط", "nouakchott"] },
+                    { questionText: "ما هي عاصمة سلطنة عمان؟", displayAnswer: "مسقط", correctAnswers: ["مسقط", "muscat"] },
+                    { questionText: "ما هي عاصمة فلسطين؟", displayAnswer: "القدس", correctAnswers: ["القدس", "jerusalem"] }
                 ]
             },
             {
                 category: "الفواكه",
                 questions: [
-                    { questionText: "فاكهة حمراء وصغيرة غالباً ما تستخدم في الحلويات؟", correctAnswers: ["فراولة", "كرز", "توت"] },
-                    { questionText: "فاكهة صفراء تنمو في مجموعات وغنية بالبوتاسيوم؟", correctAnswers: ["موز"] },
-                    { questionText: "فاكهة برتقالية اللون، غنية بفيتامين سي؟", correctAnswers: ["برتقال", "يوسفي", "مانجو"] },
-                    { questionText: "فاكهة استوائية كبيرة ذات قشرة خضراء شائكة ولحم أصفر حلو جداً؟", correctAnswers: ["أناناس"] },
-                    { questionText: "فاكهة صيفية كبيرة الحجم، خضراء من الخارج وحمراء من الداخل مع بذور سوداء؟", correctAnswers: ["بطيخ"] }
+                    { questionText: "فاكهة حمراء وصغيرة غالباً ما تستخدم في الحلويات؟", displayAnswer: "فراولة", correctAnswers: ["فراولة", "كرز", "توت"] },
+                    { questionText: "فاكهة صفراء تنمو في مجموعات وغنية بالبوتاسيوم؟", displayAnswer: "موز", correctAnswers: ["موز"] },
+                    { questionText: "فاكهة برتقالية اللون، غنية بفيتامين سي؟", displayAnswer: "برتقال", correctAnswers: ["برتقال", "يوسفي", "مانجو"] },
+                    { questionText: "فاكهة استوائية كبيرة ذات قشرة خضراء شائكة ولحم أصفر حلو جداً؟", displayAnswer: "أناناس", correctAnswers: ["أناناس"] },
+                    { questionText: "فاكهة صيفية كبيرة الحجم، خضراء من الخارج وحمراء من الداخل مع بذور سوداء؟", displayAnswer: "بطيخ", correctAnswers: ["بطيخ"] }
                 ]
             },
             {
                 category: "عواصم دول أوروبية",
                 questions: [
-                    { questionText: "ما هي عاصمة ألمانيا؟", correctAnswers: ["برلين", "berlin"] },
-                    { questionText: "ما هي عاصمة فرنسا؟", correctAnswers: ["باريس", "paris"] },
-                    { questionText: "ما هي عاصمة إيطاليا؟", correctAnswers: ["روما", "rome"] },
-                    { questionText: "ما هي عاصمة إسبانيا؟", correctAnswers: ["مدريد", "madrid"] },
-                    { questionText: "ما هي عاصمة المملكة المتحدة؟", correctAnswers: ["لندن", "london"] },
-                    { questionText: "ما هي عاصمة بولندا؟", correctAnswers: ["وارسو", "warsaw"] },
-                    { questionText: "ما هي عاصمة أوكرانيا؟", correctAnswers: ["كييف", "kiev"] },
-                    { questionText: "ما هي عاصمة رومانيا؟", correctAnswers: ["بوخارست", "bucharest"] },
-                    { questionText: "ما هي عاصمة هولندا؟", correctAnswers: ["أمستردام", "amsterdam"] },
-                    { questionText: "ما هي عاصمة بلجيكا؟", correctAnswers: ["بروكسل", "brussels"] },
-                    { questionText: "ما هي عاصمة اليونان؟", correctAnswers: ["أثينا", "athens"] },
-                    { questionText: "ما هي عاصمة البرتغال؟", correctAnswers: ["لشبونة", "lisbon"] },
-                    { questionText: "ما هي عاصمة السويد؟", correctAnswers: ["ستوكهولم", "stockholm"] },
-                    { questionText: "ما هي عاصمة النمسا؟", correctAnswers: ["فيينا", "vienna"] },
-                    { questionText: "ما هي عاصمة سويسرا؟", correctAnswers: ["برن", "bern"] },
-                    { questionText: "ما هي عاصمة الدنمارك؟", correctAnswers: ["كوبنهاغن", "copenhagen"] },
-                    { questionText: "ما هي عاصمة فنلندا؟", correctAnswers: ["هلسنكي", "helsinki"] },
-                    { questionText: "ما هي عاصمة النرويج؟", correctAnswers: ["أوسلو", "oslo"] },
-                    { questionText: "ما هي عاصمة إيرلندا؟", correctAnswers: ["دبلن", "dublin"] },
-                    { questionText: "ما هي عاصمة كرواتيا؟", correctAnswers: ["زغرب", "zagreb"] }
+                    { questionText: "ما هي عاصمة ألمانيا؟", displayAnswer: "برلين", correctAnswers: ["برلين", "berlin"] },
+                    { questionText: "ما هي عاصمة فرنسا؟", displayAnswer: "باريس", correctAnswers: ["باريس", "paris"] },
+                    { questionText: "ما هي عاصمة إيطاليا؟", displayAnswer: "روما", correctAnswers: ["روما", "rome"] },
+                    { questionText: "ما هي عاصمة إسبانيا؟", displayAnswer: "مدريد", correctAnswers: ["مدريد", "madrid"] },
+                    { questionText: "ما هي عاصمة المملكة المتحدة؟", displayAnswer: "لندن", correctAnswers: ["لندن", "london"] },
+                    { questionText: "ما هي عاصمة بولندا؟", displayAnswer: "وارسو", correctAnswers: ["وارسو", "warsaw"] },
+                    { questionText: "ما هي عاصمة أوكرانيا؟", displayAnswer: "كييف", correctAnswers: ["كييف", "kiev"] },
+                    { questionText: "ما هي عاصمة رومانيا؟", displayAnswer: "بوخارست", correctAnswers: ["بوخارست", "bucharest"] },
+                    { questionText: "ما هي عاصمة هولندا؟", displayAnswer: "أمستردام", correctAnswers: ["أمستردام", "amsterdam"] },
+                    { questionText: "ما هي عاصمة بلجيكا؟", displayAnswer: "بروكسل", correctAnswers: ["بروكسل", "brussels"] },
+                    { questionText: "ما هي عاصمة اليونان؟", displayAnswer: "أثينا", correctAnswers: ["أثينا", "athens"] },
+                    { questionText: "ما هي عاصمة البرتغال؟", displayAnswer: "لشبونة", correctAnswers: ["لشبونة", "lisbon"] },
+                    { questionText: "ما هي عاصمة السويد؟", displayAnswer: "ستوكهولم", correctAnswers: ["ستوكهولم", "stockholm"] },
+                    { questionText: "ما هي عاصمة النمسا؟", displayAnswer: "فيينا", correctAnswers: ["فيينا", "vienna"] },
+                    { questionText: "ما هي عاصمة سويسرا؟", displayAnswer: "برن", correctAnswers: ["برن", "bern"] },
+                    { questionText: "ما هي عاصمة الدنمارك؟", displayAnswer: "كوبنهاغن", correctAnswers: ["كوبنهاغن", "copenhagen"] },
+                    { questionText: "ما هي عاصمة فنلندا؟", displayAnswer: "هلسنكي", correctAnswers: ["هلسنكي", "helsinki"] },
+                    { questionText: "ما هي عاصمة النرويج؟", displayAnswer: "أوسلو", correctAnswers: ["أوسلو", "oslo"] },
+                    { questionText: "ما هي عاصمة إيرلندا؟", displayAnswer: "دبلن", correctAnswers: ["دبلن", "dublin"] },
+                    { questionText: "ما هي عاصمة كرواتيا؟", displayAnswer: "زغرب", correctAnswers: ["زغرب", "zagreb"] }
                 ]
             },
             {
                 category: "حيوانات الغابة",
                 questions: [
-                    { questionText: "ملك الغابة؟", correctAnswers: ["أسد", "اسد"] },
-                    { questionText: "حيوان مخطط بالأبيض والأسود يشبه الحصان؟", correctAnswers: ["حمار وحشي", "حماروحشي"] },
-                    { questionText: "أكبر حيوان بري على وجه الأرض، بخرطوم طويل وأذنين كبيرتين؟", correctAnswers: ["فيل", "الفيل"] },
-                    { questionText: "حيوان طويل العنق ذو بقع بنية، يتغذى على أوراق الأشجار العالية؟", correctAnswers: ["زرافة", "الزرافة"] },
-                    { questionText: "حيوان ذكي يعيش في الغابات يأكل الموز ويتأرجح بين الأشجار؟", correctAnswers: ["قرد", "القرد"] }
+                    { questionText: "ملك الغابة؟", displayAnswer: "أسد", correctAnswers: ["أسد", "اسد"] },
+                    { questionText: "حيوان مخطط بالأبيض والأسود يشبه الحصان؟", displayAnswer: "حمار وحشي", correctAnswers: ["حمار وحشي", "حماروحشي"] },
+                    { questionText: "أكبر حيوان بري على وجه الأرض، بخرطوم طويل وأذنين كبيرتين؟", displayAnswer: "فيل", correctAnswers: ["فيل", "الفيل"] },
+                    { questionText: "حيوان طويل العنق ذو بقع بنية، يتغذى على أوراق الأشجار العالية؟", displayAnswer: "زرافة", correctAnswers: ["زرافة", "الزرافة"] },
+                    { questionText: "حيوان ذكي يعيش في الغابات يأكل الموز ويتأرجح بين الأشجار؟", displayAnswer: "قرد", correctAnswers: ["قرد", "القرد"] }
                 ]
             },
             {
                 category: "عواصم دول العالم (غير العربية)",
                 questions: [
-                    { questionText: "ما هي عاصمة اليابان؟", correctAnswers: ["طوكيو", "tokyo"] },
-                    { questionText: "ما هي عاصمة الولايات المتحدة الأمريكية؟", correctAnswers: ["واشنطن", "washington"] },
-                    { questionText: "ما هي عاصمة روسيا؟", correctAnswers: ["موسكو", "moscow"] },
-                    { questionText: "ما هي عاصمة الصين؟", correctAnswers: ["بكين", "beijing"] },
-                    { questionText: "ما هي عاصمة الهند؟", correctAnswers: ["نيودلهي", "new delhi"] }
+                    { questionText: "ما هي عاصمة اليابان؟", displayAnswer: "طوكيو", correctAnswers: ["طوكيو", "tokyo"] },
+                    { questionText: "ما هي عاصمة الولايات المتحدة الأمريكية؟", displayAnswer: "واشنطن", correctAnswers: ["واشنطن", "washington"] },
+                    { questionText: "ما هي عاصمة روسيا؟", displayAnswer: "موسكو", correctAnswers: ["موسكو", "moscow"] },
+                    { questionText: "ما هي عاصمة الصين؟", displayAnswer: "بكين", correctAnswers: ["بكين", "beijing"] },
+                    { questionText: "ما هي عاصمة الهند؟", displayAnswer: "نيودلهي", correctAnswers: ["نيودلهي", "new delhi"] }
                 ]
             }
         ];
@@ -1006,6 +1007,7 @@
                             allPossibleQuestions.push({
                                 category: category.category,
                                 question: q.questionText,
+                                displayAnswer: q.displayAnswer, // Include displayAnswer
                                 correctAnswers: q.correctAnswers.map(normalizeString) // Normalize correct answers
                             });
                         });
@@ -1039,7 +1041,8 @@
                     currentQuestionIndexInGame: 0, // Index of the current question in the quizSet (0-indexed)
                     currentCategory: '', // Will be set when question starts
                     currentQuestionText: '', // Will be set when question starts
-                    currentCorrectAnswers: [], // Will be set when question starts
+                    currentCorrectAnswers: [], // Will be set when question starts (for fuzzy matching)
+                    currentDisplayAnswer: '', // NEW: The primary correct answer for display
                     currentQuestionGuessedAnswers: [], // Guesses for the current question (from all players)
                     questionStartTime: null, // Timestamp when current question started
                     timeLimitPerQuestion: timeLimit, // Renamed for clarity
@@ -1200,13 +1203,14 @@
                     currentCategory: currentQuestion.category,
                     currentQuestionText: currentQuestion.question,
                     currentCorrectAnswers: currentQuestion.correctAnswers, // Already normalized
+                    currentDisplayAnswer: currentQuestion.displayAnswer, // NEW: Set display answer
                     currentQuestionGuessedAnswers: [], // Reset guessed answers for new question
                     questionStartTime: Date.now(), // New timestamp for question start
                     timeLimitPerQuestion: gameData.timeLimitPerQuestion, // Use stored time limit
                     currentTime: gameData.timeLimitPerQuestion, // Reset timer
                 });
 
-                // Reset players' per-question flags/data in their sub-documents
+                // Crucially, reset players' per-question flags/data in their sub-documents
                 const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
                 const playersDocs = await playersCollectionRef.get();
                 const batch = db.batch();
@@ -1402,7 +1406,7 @@
                     const gameData = gameDoc.data();
                     const playerData = playerDoc.data();
 
-                    const currentCorrectAnswers = gameData.currentCorrectAnswers || []; // All correct answers for the current question
+                    const currentCorrectAnswers = gameData.currentCorrectAnswers || []; // All correct answers for the current question (normalized)
                     const currentQuestionGuessedAnswers = gameData.currentQuestionGuessedAnswers || []; // Answers guessed in THIS question by ANY player
                     const hasSubmittedAnswer = playerData.hasSubmittedAnswer || false;
                     const playerUsedPointsBets = playerData.usedPointsBets || [];
@@ -1440,7 +1444,7 @@
                         playerOverallScore += pointsBet; // Add points
                         // Add this correct guess to the game's shared list of guesses for this question
                         transaction.update(gameRef, {
-                            currentQuestionGuessedAnswers: firebase.firestore.FieldValue.arrayUnion(guess) // Use original guess for display
+                            currentQuestionGuessedAnswers: firebase.firestore.FieldValue.arrayUnion(guess) // Use player's original normalized guess for display in shared list
                         });
                         console.log("Correct guess:", guess, "Points:", pointsBet);
                     } else {
@@ -1452,7 +1456,7 @@
                     // Update player's overall score and per-question data
                     transaction.update(playerRef, {
                         score: playerOverallScore,
-                        playerSubmittedAnswer: guess, // Store the actual guess for display in results
+                        playerSubmittedAnswer: guess, // Store the actual normalized guess for display in results
                         playerSelectedPoints: pointsBet,
                         playerScoreChange: scoreChange,
                         hasSubmittedAnswer: true, // Mark as submitted
@@ -1530,7 +1534,7 @@
                         }
                     }
                     // Phase: Initial Game Countdown (only once at start of game)
-                    else if (gamePhase === 'game_countdown') { // NEW phase for initial countdown
+                    else if (gamePhase === 'game_countdown') { 
                         showScreen(gameCountdownScreen); // Show the dedicated countdown screen
                         clearInterval(timerInterval); // Clear any existing timer
                         const countdownDuration = gameData.countdownDuration || 5;
@@ -1545,7 +1549,6 @@
                                 clearInterval(timerInterval);
                                 if (isHost) {
                                     // Host initiates the actual first question after countdown
-                                    // This assumes startNextQuestion handles setting phase to 'question_active'
                                     startNextQuestion(); 
                                 }
                             }
@@ -1558,15 +1561,13 @@
                         if (gameQuestionDisplay) gameQuestionDisplay.textContent = gameData.currentQuestionText; // Display current question text
                         
                         // Handle input state for current player (including host) based on their submission status
-                        // This check is now robust and applies to all active players.
                         db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId).get().then(playerDoc => {
                             if (playerDoc.exists) { // Ensure player doc exists
                                 const currentPlayerData = playerDoc.data();
                                 if (!currentPlayerData.hasSubmittedAnswer) {
                                     // Player has not submitted, enable inputs
                                     if (gameGuessInput) gameGuessInput.disabled = false;
-                                    // Re-populate points buttons to reflect used ones and enable available ones
-                                    populatePointsButtons(); // Call populate to update and enable/disable
+                                    populatePointsButtons(); // Re-populate buttons to enable/disable based on usedPointsBets
                                     if (submitAnswerButton) submitAnswerButton.disabled = false;
                                 } else { 
                                     // Player has submitted, disable inputs
@@ -1641,16 +1642,27 @@
                         // Display all correct answers for this specific question
                         if (roundCorrectAnswersList) {
                             roundCorrectAnswersList.innerHTML = '';
-                            (gameData.currentCorrectAnswers || []).forEach(answer => { // Use currentCorrectAnswers for this question
-                                const listItem = document.createElement('li');
-                                // Highlight if it was guessed by anyone
-                                if ((gameData.currentQuestionGuessedAnswers || []).includes(answer)) {
-                                    listItem.innerHTML = `<i class="fas fa-check text-green-500 mr-2"></i> ${answer}`;
+                            // Display ONLY the displayAnswer (the primary correct one)
+                            const primaryCorrectAnswer = gameData.currentDisplayAnswer;
+                            const listItem = document.createElement('li');
+                            if (primaryCorrectAnswer) {
+                                // Check if the primary correct answer was guessed by anyone
+                                const wasPrimaryGuessed = (gameData.currentQuestionGuessedAnswers || []).includes(primaryCorrectAnswer);
+                                if (wasPrimaryGuessed) {
+                                    listItem.innerHTML = `<i class="fas fa-check text-green-500 mr-2"></i> ${primaryCorrectAnswer}`;
                                 } else {
-                                    listItem.innerHTML = `<i class="fas fa-times text-red-500 mr-2"></i> ${answer}`;
+                                    // If not guessed, check if any of the fuzzy answers were guessed
+                                    const anyFuzzyGuessed = (gameData.currentCorrectAnswers || []).some(ans => (gameData.currentQuestionGuessedAnswers || []).includes(ans));
+                                    if (anyFuzzyGuessed) {
+                                        listItem.innerHTML = `<i class="fas fa-check-circle text-green-500 mr-2"></i> ${primaryCorrectAnswer} (بإجابة مشابهة)`;
+                                    } else {
+                                        listItem.innerHTML = `<i class="fas fa-times text-red-500 mr-2"></i> ${primaryCorrectAnswer}`;
+                                    }
                                 }
-                                roundCorrectAnswersList.appendChild(listItem);
-                            });
+                            } else {
+                                listItem.textContent = "لا توجد إجابة صحيحة أساسية محددة لهذا السؤال.";
+                            }
+                            roundCorrectAnswersList.appendChild(listItem);
                         }
 
                         // Display player scores for this question (fetching live data from players subcollection)
@@ -1792,7 +1804,7 @@
                 const playersSnapshot = await playersRef.get();
                 // Get main game data to retrieve the correct answers for the current question
                 const gameData = (await db.collection(`artifacts/${appId}/public/data/games`).doc(gameId).get()).data();
-                const currentCorrectAnswers = gameData.currentCorrectAnswers || [];
+                const currentCorrectAnswers = gameData.currentCorrectAnswers || []; // All valid answers for fuzzy matching
 
 
                 let questionScores = [];
@@ -1818,9 +1830,17 @@
                         let answerStatusIcon = '';
                         let answerColorClass = 'text-gray-700';
 
-                        // Check if player's submitted answer is one of the correct answers
-                        // Normalize the player's submitted answer before checking against correct answers
-                        const isPlayerAnswerCorrect = player.submittedAnswer !== 'لم يجب' && currentCorrectAnswers.includes(normalizeString(player.submittedAnswer));
+                        // Check if player's submitted answer is one of the correct answers (using fuzzy logic)
+                        let isPlayerAnswerCorrect = false;
+                        if (player.submittedAnswer !== 'لم يجب') {
+                            const normalizedSubmittedAnswer = normalizeString(player.submittedAnswer);
+                            for (const correctAnswer of currentCorrectAnswers) {
+                                if (levenshteinDistance(correctAnswer, normalizedSubmittedAnswer) <= FUZZY_THRESHOLD) {
+                                    isPlayerAnswerCorrect = true;
+                                    break;
+                                }
+                            }
+                        }
 
                         if (player.submittedAnswer !== 'لم يجب') {
                             if (isPlayerAnswerCorrect) {
@@ -1946,7 +1966,7 @@
         if (endQuestionEarlyButton) endQuestionEarlyButton.addEventListener('click', endQuestionEarly); 
 
         // Host clicks to proceed to the next question from question results screen
-        if (nextQuestionButton) nextQuestionButton.addEventListener('click', startNextQuestion); // Calls startNextQuestion directly
+        if (nextQuestionButton) nextQuestionButton.addEventListener('click', startNextQuestion); 
 
         // Host clicks to end the entire game from question results screen
         if (endGameFinalButton) endGameFinalButton.addEventListener('click', endGame);
