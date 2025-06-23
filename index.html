@@ -491,11 +491,11 @@
             {
                 category: "حيوانات الغابة",
                 questions: [
-                    { questionText: "ملك الغابة؟", correctAnswers: ["أسد"] },
-                    { questionText: "حيوان مخطط بالأبيض والأسود يشبه الحصان؟", correctAnswers: ["حمار وحشي"] },
-                    { questionText: "أكبر حيوان بري على وجه الأرض، بخرطوم طويل وأذنين كبيرتين؟", correctAnswers: ["فيل"] },
-                    { questionText: "حيوان طويل العنق ذو بقع بنية، يتغذى على أوراق الأشجار العالية؟", correctAnswers: ["زرافة"] },
-                    { questionText: "حيوان ذكي يعيش في الغابات يأكل الموز ويتأرجح بين الأشجار؟", correctAnswers: ["قرد"] }
+                    { questionText: "ملك الغابة؟", correctAnswers: ["أسد", "اسد"] },
+                    { questionText: "حيوان مخطط بالأبيض والأسود يشبه الحصان؟", correctAnswers: ["حمار وحشي", "حماروحشي"] },
+                    { questionText: "أكبر حيوان بري على وجه الأرض، بخرطوم طويل وأذنين كبيرتين؟", correctAnswers: ["فيل", "الفيل"] },
+                    { questionText: "حيوان طويل العنق ذو بقع بنية، يتغذى على أوراق الأشجار العالية؟", correctAnswers: ["زرافة", "الزرافة"] },
+                    { questionText: "حيوان ذكي يعيش في الغابات يأكل الموز ويتأرجح بين الأشجار؟", correctAnswers: ["قرد", "القرد"] }
                 ]
             },
             {
@@ -510,6 +510,42 @@
             }
         ];
         
+        // --- Levenshtein Distance Function for Fuzzy Matching ---
+        // This function calculates the Levenshtein distance between two strings.
+        // It's used to determine how "close" a player's answer is to a correct answer.
+        function levenshteinDistance(a, b) {
+            const an = a.length;
+            const bn = b.length;
+        
+            if (an === 0) return bn;
+            if (bn === 0) return an;
+        
+            const matrix = [];
+        
+            for (let i = 0; i <= an; i++) {
+                matrix[i] = [i];
+            }
+        
+            for (let j = 1; j <= bn; j++) {
+                matrix[0][j] = j;
+            }
+        
+            for (let i = 1; i <= an; i++) {
+                for (let j = 1; j <= bn; j++) {
+                    const cost = (a[i - 1] === b[j - 1]) ? 0 : 1;
+                    matrix[i][j] = Math.min(
+                        matrix[i - 1][j] + 1,      // deletion
+                        matrix[i][j - 1] + 1,      // insertion
+                        matrix[i - 1][j - 1] + cost // substitution
+                    );
+                }
+            }
+            return matrix[an][bn];
+        }
+
+        // Fuzzy matching threshold: Max allowed edits for a match
+        const FUZZY_THRESHOLD = 2; // Can be adjusted: 1 for very strict, 2-3 for more leniency
+
         // Multi-select quiz categories logic
         let selectedQuizIndices = []; // Stores indices of selected CATEGORIES
         // Defensive check for elements - getElementById returns null if not found
@@ -863,7 +899,7 @@
 
         // Hides the loading spinner overlay
         function hideLoading() {
-            if (loadingOverlay) loading.classList.add('hidden');
+            if (loadingOverlay) loadingOverlay.classList.add('hidden');
         }
 
         // Hides all game screens and shows the specified one
@@ -1384,14 +1420,27 @@
                     let playerOverallScore = playerData.score || 0; // Player's overall score
                     let scoreChange = 0; // Points change for this question
 
-                    // Check if guess is correct
-                    const isCorrect = currentCorrectAnswers.includes(guess);
+                    // Check if guess is correct using fuzzy matching
+                    let isCorrect = false;
+                    for (const correctAnswer of currentCorrectAnswers) {
+                        // Check for exact match first
+                        if (correctAnswer === guess) {
+                            isCorrect = true;
+                            break;
+                        }
+                        // Then check for fuzzy match
+                        if (levenshteinDistance(correctAnswer, guess) <= FUZZY_THRESHOLD) {
+                            isCorrect = true;
+                            break;
+                        }
+                    }
+
                     if (isCorrect) {
                         scoreChange = pointsBet;
                         playerOverallScore += pointsBet; // Add points
                         // Add this correct guess to the game's shared list of guesses for this question
                         transaction.update(gameRef, {
-                            currentQuestionGuessedAnswers: firebase.firestore.FieldValue.arrayUnion(guess)
+                            currentQuestionGuessedAnswers: firebase.firestore.FieldValue.arrayUnion(guess) // Use original guess for display
                         });
                         console.log("Correct guess:", guess, "Points:", pointsBet);
                     } else {
@@ -1403,7 +1452,7 @@
                     // Update player's overall score and per-question data
                     transaction.update(playerRef, {
                         score: playerOverallScore,
-                        playerSubmittedAnswer: guess,
+                        playerSubmittedAnswer: guess, // Store the actual guess for display in results
                         playerSelectedPoints: pointsBet,
                         playerScoreChange: scoreChange,
                         hasSubmittedAnswer: true, // Mark as submitted
@@ -1425,8 +1474,8 @@
                 // Catch specific errors thrown from transaction
                 if (error.message.includes("لقد أجبت بالفعل")) {
                      showCustomMessageBox("تم الإجابة", error.message);
-                } else if (error.message.includes("لقد استخدمت قيمة")) { 
-                     showCustomMessageBox("نقاط مستخدمة", error.message);
+                } else if (typeof error === 'string' && error.includes("لقد استخدمت قيمة")) { 
+                     showCustomMessageBox("نقاط مستخدمة", error); // Show the specific message
                 }
                 else {
                     showCustomMessageBox("خطأ في الإجابة", error.message || "حدث خطأ أثناء إرسال الإجابة.");
@@ -1451,7 +1500,9 @@
 
                     // Update Question Counter (e.g., "السؤال 1 / 15")
                     if (questionCounterDisplay) {
-                        const currentQNum = gameData.currentQuestionIndexInGame; // This is already incremented for next question
+                        // currentQuestionIndexInGame is already incremented for the NEXT question to be displayed,
+                        // so to show current question, we use currentQuestionIndexInGame.
+                        const currentQNum = gameData.currentQuestionIndexInGame; 
                         const totalQs = gameData.quizSet ? gameData.quizSet.length : 0;
                         if (totalQs > 0) {
                              questionCounterDisplay.textContent = `${currentQNum} / ${totalQs}`;
@@ -1494,6 +1545,7 @@
                                 clearInterval(timerInterval);
                                 if (isHost) {
                                     // Host initiates the actual first question after countdown
+                                    // This assumes startNextQuestion handles setting phase to 'question_active'
                                     startNextQuestion(); 
                                 }
                             }
@@ -1531,7 +1583,7 @@
                         
                         if (gameGuessInput) gameGuessInput.focus(); // Keep focus
 
-                        // Show/hide "End Question Early" button for host only during game play
+                        // Show/hide "End Question Early" button and host status for host only during game play
                         if (isHost) {
                             if (hostGameplayControls) hostGameplayControls.classList.remove('hidden'); // Show host controls
                         } else {
@@ -1658,9 +1710,9 @@
                         hostIdFromGame = gameDoc.data().hostId;
                     }
 
-                    // NEW: Update host submission status list
-                    if (hostSubmissionStatusList && isHost) { // Only update if current user is host
-                        hostSubmissionStatusList.innerHTML = '';
+                    // Update host submission status list (if current user is host)
+                    if (hostSubmissionStatusList && isHost) { 
+                        hostSubmissionStatusList.innerHTML = ''; // Clear for fresh update
                     }
 
 
@@ -1681,12 +1733,12 @@
                             joinedPlayersList.appendChild(listItem);
                         }
 
-                        // NEW: Update host's view of player submission status
+                        // Update host's view of player submission status
                         if (hostSubmissionStatusList && isHost) {
                             const statusItem = document.createElement('li');
                             let statusIcon = playerData.hasSubmittedAnswer 
-                                ? '<i class="fas fa-check-circle text-green-500 ml-2"></i>' 
-                                : '<i class="fas fa-hourglass-half text-gray-500 ml-2"></i>';
+                                ? '<i class="fas fa-check-circle text-green-500 ml-2"></i> أجاب' 
+                                : '<i class="fas fa-hourglass-half text-gray-500 ml-2"></i> لم يجب';
                             statusItem.innerHTML = `${playerData.nickname || 'لاعب مجهول'}: ${statusIcon}`;
                             hostSubmissionStatusList.appendChild(statusItem);
                         }
@@ -1888,7 +1940,7 @@
         if (submitAnswerButton) submitAnswerButton.addEventListener('click', submitGuess);
 
         // Host clicks to start the game (initiates countdown for first question) from waiting room
-        if (startGameButton) startGameButton.addEventListener('click', initiateGameStartCountdown); // Correctly starts initial countdown
+        if (startGameButton) startGameButton.addEventListener('click', initiateGameStartCountdown); 
 
         // Host clicks to end the current question early
         if (endQuestionEarlyButton) endQuestionEarlyButton.addEventListener('click', endQuestionEarly); 
