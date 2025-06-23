@@ -194,7 +194,7 @@
             <div class="w-full mb-6">
                 <label for="host-nickname-input" class="block text-xl font-semibold text-gray-700 mb-2">اسمك المستعار (المضيف):</label>
                 <input type="text" id="host-nickname-input" placeholder="اسم المضيف"
-                       class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50">
+                        class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50">
             </div>
 
             <div class="w-full mb-6">
@@ -269,12 +269,12 @@
             <div class="w-full mb-6">
                 <label for="game-code-input" class="block text-xl font-semibold text-gray-700 mb-2">أدخل رمز الغرفة:</label> <!-- Game code input label -->
                 <input type="text" id="game-code-input" placeholder="مثال: ABCDE"
-                       class="w-full p-4 mb-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50 uppercase text-center tracking-widest">
+                        class="w-full p-4 mb-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50 uppercase text-center tracking-widest">
             </div>
              <div class="w-full mb-6">
                 <label for="player-nickname-input" class="block text-xl font-semibold text-gray-700 mb-2">أدخل اسمك المستعار:</label> <!-- Player nickname input label -->
                 <input type="text" id="player-nickname-input" placeholder="اسمك"
-                       class="w-full p-4 mb-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50 text-center">
+                        class="w-full p-4 mb-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50 text-center">
             </div>
             <button id="join-room-button" class="w-full bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
                 <i class="fas fa-door-open"></i> الانضمام <!-- Join button -->
@@ -297,6 +297,8 @@
                     <span>السؤال: <span id="question-counter" class="text-purple-600">-- / --</span></span> <!-- Question counter -->
                 </div>
             </div>
+            <!-- Player feedback message for correct/incorrect answer -->
+            <div id="player-feedback-message" class="text-center text-3xl font-extrabold mb-4 hidden"></div>
 
             <p class="text-2xl font-bold text-gray-800 mb-4 text-center">الفئة: <span id="game-category" class="text-indigo-600"></span></p> <!-- Current category display -->
             
@@ -422,6 +424,41 @@
         let selectedPointsBet = 1; // Default selected points bet
         let userUsedPointsBets = []; // Array to store points already used by the current player in the current GAME
 
+        // 🔁 دالة تطبيع النص - New normalization function from user
+        function normalize(text) {
+            return text
+                .toLowerCase()
+                .replace(/\s+/g, '')
+                .replace(/أ|إ|آ/g, 'ا')
+                .replace(/ى/g, 'ي')
+                .replace(/ة/g, 'ه')
+                .replace(/ؤ/g, 'و')
+                .replace(/ئ/g, 'ي')
+                .replace(/[^a-zA-Z0-9\u0600-\u06FF]/g, ''); // Keep Arabic and English alphanumeric
+        }
+
+        // 🔁 دالة التشابه بين كلمتين - New similarity function from user
+        function similarity(a, b) {
+            a = normalize(a);
+            b = normalize(b);
+            let matches = 0;
+            const len = Math.max(a.length, b.length);
+            // Handle case where one string is empty after normalization
+            if (len === 0) return 1; 
+
+            for (let i = 0; i < len; i++) {
+                if (a[i] === b[i]) matches++;
+            }
+            return matches / len;
+        }
+
+        // ✅ التحقق من صحة الإجابة - New correctness check function from user
+        function isCorrectAnswer(playerAnswer, acceptedAnswers) {
+            // Ensure playerAnswer is normalized before passing to similarity
+            const normalizedPlayerAnswer = normalize(playerAnswer);
+            return acceptedAnswers.some(ans => similarity(normalizedPlayerAnswer, ans) >= 0.8);
+        }
+
         // Quiz data - IMPORTANT: Each object in quizzes now represents a CATEGORY with multiple questions.
         // Each question has a questionText and correctAnswers.
         // `displayAnswer` is the primary correct answer shown in results.
@@ -531,42 +568,6 @@
             }
         ];
         
-        // --- Levenshtein Distance Function for Fuzzy Matching ---
-        // This function calculates the Levenshtein distance between two strings.
-        // It's used to determine how "close" a player's answer is to a correct answer.
-        function levenshteinDistance(a, b) {
-            const an = a.length;
-            const bn = b.length;
-        
-            if (an === 0) return bn;
-            if (bn === 0) return an;
-        
-            const matrix = [];
-        
-            for (let i = 0; i <= an; i++) {
-                matrix[i] = [i];
-            }
-        
-            for (let j = 1; j <= bn; j++) {
-                matrix[0][j] = j;
-            }
-        
-            for (let i = 1; i <= an; i++) {
-                for (let j = 1; j <= bn; j++) {
-                    const cost = (a[i - 1] === b[j - 1]) ? 0 : 1;
-                    matrix[i][j] = Math.min(
-                        matrix[i - 1][j] + 1,      // deletion
-                        matrix[i][j - 1] + 1,      // insertion
-                        matrix[i - 1][j - 1] + cost // substitution
-                    );
-                }
-            }
-            return matrix[an][bn];
-        }
-
-        // Fuzzy matching threshold: Max allowed edits for a match
-        const FUZZY_THRESHOLD = 2; // Can be adjusted: 1 for very strict, 2-3 for more leniency
-
         // Multi-select quiz categories logic
         let selectedQuizIndices = []; // Stores indices of selected CATEGORIES
         // Defensive check for elements - getElementById returns null if not found
@@ -575,6 +576,7 @@
         const selectedCategoriesTags = document.getElementById('selected-categories-tags');
         const hostNicknameInput = document.getElementById('host-nickname-input'); // Host nickname input
         const totalQuestionsPerGameSelect = document.getElementById('total-questions-per-game-select'); // Total questions select
+        const playerFeedbackMessage = document.getElementById('player-feedback-message'); // New feedback message element
 
         // Function to populate and manage the multi-select dropdown
         // This now lists the category and an example question from it for clarity
@@ -596,7 +598,7 @@
 
                 label.appendChild(checkbox);
                 // Display category name only
-                const displayText = quiz.category; 
+                const displayText = quiz.category;  
                 label.appendChild(document.createTextNode(displayText));
                 quizCategoryDropdown.appendChild(label);
 
@@ -678,51 +680,51 @@
         const loadingOverlay = document.getElementById('loading-overlay');
         const roleSelectionScreen = document.getElementById('role-selection-screen');
         const hostSetupScreen = document.getElementById('host-setup-screen');
-        const waitingRoomScreen = document.getElementById('waiting-room-screen');
+        const waitingRoomScreen = document = document.getElementById('waiting-room-screen');
         const joinGameScreen = document.getElementById('join-game-screen');
         const gamePlayScreen = document.getElementById('game-play-screen');
-        const questionResultsScreen = document.getElementById('question-results-screen'); 
+        const questionResultsScreen = document.getElementById('question-results-screen');  
         const gameEndScreen = document.getElementById('game-end-screen');
 
         const createHostButton = document.getElementById('create-host-button');
         const joinPlayerButton = document.getElementById('join-player-button');
         const timeLimitSelect = document.getElementById('time-limit-select');
         const createGameButton = document.getElementById('create-game-button');
-        const gameLinkDisplay = document.getElementById('game-link-display'); 
-        const qrcodeDiv = document.getElementById('qrcode'); 
-        const qrcodeFallbackMessage = document.getElementById('qrcode-fallback-message'); 
+        const gameLinkDisplay = document.getElementById('game-link-display');  
+        const qrcodeDiv = document.getElementById('qrcode');  
+        const qrcodeFallbackMessage = document.getElementById('qrcode-fallback-message');  
         const copyLinkButton = document.getElementById('copy-link-button');
 
         const joinedPlayersList = document.getElementById('joined-players-list');
-        const startGameButton = document.getElementById('start-game-button'); 
+        const startGameButton = document.getElementById('start-game-button');  
         const gameCodeInput = document.getElementById('game-code-input');
         const playerNicknameInput = document.getElementById('player-nickname-input');
         const joinRoomButton = document.getElementById('join-room-button');
         const gameTimerDisplay = document.getElementById('game-timer');
         const playerScoreDisplay = document.getElementById('player-score');
         const gameCategoryDisplay = document.getElementById('game-category');
-        const gameQuestionDisplay = document.getElementById('game-question'); 
-        const pointsButtonGroup = document.getElementById('points-button-group'); 
+        const gameQuestionDisplay = document.getElementById('game-question');  
+        const pointsButtonGroup = document.getElementById('points-button-group');  
         const gameGuessInput = document.getElementById('game-guess-input');
-        const submitAnswerButton = document.getElementById('submit-answer-button'); 
+        const submitAnswerButton = document.getElementById('submit-answer-button');  
         const playerCorrectGuessesList = document.getElementById('player-correct-guesses-list');
-        const sharedRoundGuessesList = document.getElementById('shared-round-guesses-list'); 
-        const endQuestionEarlyButton = document.getElementById('end-question-early-button'); 
+        const sharedRoundGuessesList = document.getElementById('shared-round-guesses-list');  
+        const endQuestionEarlyButton = document.getElementById('end-question-early-button');  
 
         const resultsCategory = document.getElementById('results-category');
-        const resultsQuestion = document.getElementById('results-question'); 
-        const roundCorrectAnswersList = document.getElementById('round-correct-answers-list'); 
-        const questionPlayerScoresList = document.getElementById('question-player-scores-list'); 
-        const questionResultsHostControls = document.getElementById('question-results-host-controls'); 
-        const nextQuestionButton = document.getElementById('next-question-button'); 
+        const resultsQuestion = document.getElementById('results-question');  
+        const roundCorrectAnswersList = document.getElementById('round-correct-answers-list');  
+        const questionPlayerScoresList = document.getElementById('question-player-scores-list');  
+        const questionResultsHostControls = document.getElementById('question-results-host-controls');  
+        const nextQuestionButton = document.getElementById('next-question-button');  
         const endGameFinalButton = document.getElementById('end-game-final-button');
 
-        const gameCountdownScreen = document.getElementById('game-countdown-screen'); 
-        const countdownTimerDisplay = document.getElementById('countdown-timer-display'); 
-        const questionCounterDisplay = document.getElementById('question-counter'); 
+        const gameCountdownScreen = document.getElementById('game-countdown-screen');  
+        const countdownTimerDisplay = document.getElementById('countdown-timer-display');  
+        const questionCounterDisplay = document.getElementById('question-counter');  
 
-        const hostSubmissionStatusList = document.getElementById('host-submission-status-list'); 
-        const hostGameplayControls = document.getElementById('host-gameplay-controls'); 
+        const hostSubmissionStatusList = document.getElementById('host-submission-status-list');  
+        const hostGameplayControls = document.getElementById('host-gameplay-controls');  
 
 
         const endTitle = document.getElementById('end-title');
@@ -757,12 +759,13 @@
                 'questionPlayerScoresList': questionPlayerScoresList,
                 'nextQuestionButton': nextQuestionButton,
                 'endGameFinalButton': endGameFinalButton,
-                'gameCountdownScreen': gameCountdownScreen, 
+                'gameCountdownScreen': gameCountdownScreen,  
                 'countdownTimerDisplay': countdownTimerDisplay,
                 'totalQuestionsPerGameSelect': totalQuestionsPerGameSelect,
                 'questionCounterDisplay': questionCounterDisplay,
-                'hostSubmissionStatusList': hostSubmissionStatusList, 
-                'hostGameplayControls': hostGameplayControls 
+                'hostSubmissionStatusList': hostSubmissionStatusList,  
+                'hostGameplayControls': hostGameplayControls,
+                'playerFeedbackMessage': playerFeedbackMessage // New element to check
             };
 
             for (const id in requiredElements) {
@@ -812,7 +815,7 @@
 
                 button.addEventListener('click', (event) => {
                     // Prevent selection of disabled buttons
-                    if (event.target.disabled) return; 
+                    if (event.target.disabled) return;  
 
                     // Unselect previous button
                     const currentSelected = pointsButtonGroup.querySelector('.points-button.selected');
@@ -980,6 +983,19 @@
             }
         }
 
+        // Displays a temporary feedback message to the player (e.g., "Correct!", "Incorrect!")
+        function showPlayerFeedback(message, isCorrect) {
+            if (playerFeedbackMessage) {
+                playerFeedbackMessage.textContent = message;
+                playerFeedbackMessage.classList.remove('hidden', 'text-green-500', 'text-red-500');
+                playerFeedbackMessage.classList.add(isCorrect ? 'text-green-500' : 'text-red-500');
+                // Temporarily show message, then hide it after 2 seconds
+                setTimeout(() => {
+                    playerFeedbackMessage.classList.add('hidden');
+                }, 2000);
+            }
+        }
+
         // --- Game Helper Functions ---
         // Generates a random 3-digit numeric game code and ensures its uniqueness
         async function generateUniqueGameCode() {
@@ -1006,11 +1022,6 @@
                 throw new Error("فشل توليد رمز غرفة فريد بعد عدة محاولات. الرجاء المحاولة مرة أخرى.");
             }
             return newGameId;
-        }
-
-        // Normalizes a string (lowercase, trims whitespace) for consistent comparison
-        function normalizeString(str) {
-            return str.toLowerCase().trim();
         }
 
         // --- Host Specific Functions ---
@@ -1049,7 +1060,7 @@
                                 category: category.category,
                                 question: q.questionText,
                                 displayAnswer: q.displayAnswer, // Include displayAnswer
-                                correctAnswers: q.correctAnswers.map(normalizeString) // Normalize correct answers
+                                correctAnswers: q.correctAnswers.map(normalize) // *** IMPORTANT: Use NEW normalize function here ***
                             });
                         });
                     }
@@ -1123,7 +1134,7 @@
                 if (qrcodeFallbackMessage) qrcodeFallbackMessage.textContent = ''; // Clear fallback message
                 try {
                     // Only attempt to use QRCode if it's confirmed to be loaded
-                    if (typeof QRCode !== 'undefined' && QRCode && qrcodeDiv) { 
+                    if (typeof QRCode !== 'undefined' && QRCode && qrcodeDiv) {  
                         new QRCode(qrcodeDiv, {
                             text: gameRoomLink,
                             width: 128,
@@ -1159,6 +1170,11 @@
                         try {
                             document.execCommand('copy');
                             showCustomMessageBox("تم النسخ!", "تم نسخ رابط الغرفة إلى الحافظة.");
+                            // Visual feedback on button itself
+                            copyLinkButton.textContent = 'تم النسخ!';
+                            setTimeout(() => {
+                                copyLinkButton.textContent = 'انسخ الرابط';
+                            }, 2000);
                         } catch (err) {
                             console.error('Failed to copy text: ', err);
                             showCustomMessageBox("خطأ في النسخ", "فشل نسخ الرابط، يرجى نسخه يدوياً.");
@@ -1180,7 +1196,7 @@
         }
 
         // Initiates the game start countdown (only once at the very beginning)
-        async function initiateGameStartCountdown() { 
+        async function initiateGameStartCountdown() {  
             showLoading();
             try {
                 if (!gameId) throw new Error("لا يوجد معرف لعبة.");
@@ -1257,7 +1273,7 @@
                 const batch = db.batch();
                 playersDocs.docs.forEach(playerDoc => {
                     const playerRef = playerDoc.ref;
-                    batch.update(playerRef, { 
+                    batch.update(playerRef, {  
                         playerSubmittedAnswer: '',
                         playerSelectedPoints: 0,
                         playerScoreChange: 0,
@@ -1275,6 +1291,11 @@
                 selectedPointsBet = 1;
                 populatePointsButtons(); // Re-render buttons to reset selection visually and enable
 
+                // Clear player's correct guesses list for the new question
+                if (playerCorrectGuessesList) {
+                    playerCorrectGuessesList.innerHTML = '';
+                }
+
                 console.log(`Starting question ${currentQuestionIndex + 1}: ${currentQuestion.category} - Question: ${currentQuestion.question}`);
 
             } catch (error) {
@@ -1287,8 +1308,8 @@
 
         // --- Host Specific Functions ---
         // Allows host to end the current question early
-        async function endQuestionEarly() { 
-            if (!isHost || !gameId) return; 
+        async function endQuestionEarly() {  
+            if (!isHost || !gameId) return;  
 
             showLoading();
             try {
@@ -1468,16 +1489,16 @@
                 return;
             }
             // If already submitted, prevent re-submission (client-side check for immediate feedback)
-            if (gameGuessInput.disabled) { 
+            if (gameGuessInput.disabled) {  
                 showCustomMessageBox("تم الإجابة", "لقد أجبت بالفعل على هذا السؤال.");
                 return;
             }
 
 
-            const guess = normalizeString(gameGuessInput.value); // Get and normalize player's guess
+            const guess = gameGuessInput.value; // Get player's guess (will be normalized in isCorrectAnswer)
             const pointsBet = selectedPointsBet; // Get selected points from global variable
 
-            if (guess === '') {
+            if (guess.trim() === '') {
                 showCustomMessageBox("خطأ في الإدخال", "الرجاء كتابة إجابتك قبل الإرسال.");
                 return;
             }
@@ -1504,7 +1525,6 @@
                     const playerData = playerDoc.data();
 
                     const currentCorrectAnswers = gameData.currentCorrectAnswers || []; // All correct answers for the current question (normalized)
-                    const currentQuestionGuessedAnswers = gameData.currentQuestionGuessedAnswers || []; // Answers guessed in THIS question by ANY player
                     const hasSubmittedAnswer = playerData.hasSubmittedAnswer || false;
                     const playerUsedPointsBets = playerData.usedPointsBets || [];
 
@@ -1520,37 +1540,32 @@
 
                     let scoreChange = 0; // Points change for this question
 
-                    // Check if guess is correct using fuzzy matching
-                    let isCorrect = false;
-                    for (const correctAnswer of currentCorrectAnswers) {
-                        // Check for exact match first
-                        if (correctAnswer === guess) {
-                            isCorrect = true;
-                            break;
-                        }
-                        // Then check for fuzzy match
-                        if (levenshteinDistance(correctAnswer, guess) <= FUZZY_THRESHOLD) {
-                            isCorrect = true;
-                            break;
-                        }
-                    }
-
+                    // Check if guess is correct using the new fuzzy matching function
+                    let isCorrect = isCorrectAnswer(guess, currentCorrectAnswers);
+                    
                     if (isCorrect) {
                         scoreChange = pointsBet;
                         // Add this correct guess to the game's shared list of guesses for this question
                         transaction.update(gameRef, {
-                            currentQuestionGuessedAnswers: firebase.firestore.FieldValue.arrayUnion(guess) // Use player's original normalized guess for display in shared list
+                            currentQuestionGuessedAnswers: firebase.firestore.FieldValue.arrayUnion(guess) // Use player's original guess for display in shared list
                         });
+                        // Add to player's correct guesses list locally
+                        if (playerCorrectGuessesList) {
+                            const listItem = document.createElement('li');
+                            listItem.textContent = guess;
+                            playerCorrectGuessesList.appendChild(listItem);
+                        }
+                        showPlayerFeedback("إجابة صحيحة!", true);
                         console.log("Correct guess:", guess, "Points:", pointsBet);
                     } else {
                         scoreChange = -pointsBet;
+                        showPlayerFeedback("إجابة خاطئة!", false);
                         console.log("Incorrect guess:", guess, "Points lost:", pointsBet);
                     }
 
                     // Update player's per-question data (score itself is updated later by reconcile)
                     transaction.update(playerRef, {
-                        // score: playerOverallScore, // NOT updated here anymore
-                        playerSubmittedAnswer: guess, // Store the actual normalized guess for display in results
+                        playerSubmittedAnswer: guess, // Store the actual guess for display in results
                         playerSelectedPoints: pointsBet,
                         playerScoreChange: scoreChange, // Store the calculated change
                         hasSubmittedAnswer: true, // Mark as submitted
@@ -1572,7 +1587,7 @@
                 // Catch specific errors thrown from transaction
                 if (error.message.includes("لقد أجبت بالفعل")) {
                      showCustomMessageBox("تم الإجابة", error.message);
-                } else if (typeof error === 'string' && error.message.includes("لقد استخدمت قيمة")) { 
+                } else if (error.message.includes("لقد استخدمت قيمة")) {  
                      showCustomMessageBox("نقاط مستخدمة", error.message); // Show the specific message
                 }
                 else {
@@ -1600,15 +1615,15 @@
                     if (questionCounterDisplay) {
                         // currentQuestionIndexInGame is already incremented for the NEXT question to be displayed,
                         // so to show current question, we use currentQuestionIndexInGame.
-                        const currentQNum = gameData.currentQuestionIndexInGame; 
+                        const currentQNum = gameData.currentQuestionIndexInGame;  
                         const totalQs = gameData.quizSet ? gameData.quizSet.length : 0;
                         // Display (current number - 1) if not in countdown/lobby, otherwise 0
                         const displayQNum = gamePhase === 'game_countdown' || gamePhase === 'lobby' ? 0 : currentQNum;
 
                         if (totalQs > 0) {
-                             questionCounterDisplay.textContent = `${displayQNum} / ${totalQs}`;
+                               questionCounterDisplay.textContent = `${displayQNum} / ${totalQs}`;
                         } else {
-                             questionCounterDisplay.textContent = `-- / --`;
+                               questionCounterDisplay.textContent = `-- / --`;
                         }
                     }
 
@@ -1631,7 +1646,7 @@
                         }
                     }
                     // Phase: Initial Game Countdown (only once at start of game)
-                    else if (gamePhase === 'game_countdown') { 
+                    else if (gamePhase === 'game_countdown') {  
                         showScreen(gameCountdownScreen); // Show the dedicated countdown screen
                         clearInterval(timerInterval); // Clear any existing timer
                         const countdownDuration = gameData.countdownDuration || 5;
@@ -1646,7 +1661,7 @@
                                 clearInterval(timerInterval);
                                 if (isHost) {
                                     // Host initiates the actual first question after countdown
-                                    startNextQuestion(); 
+                                    startNextQuestion();  
                                 }
                             }
                         }, 1000);
@@ -1666,7 +1681,7 @@
                                     if (gameGuessInput) gameGuessInput.disabled = false;
                                     populatePointsButtons(); // Re-populate buttons to enable/disable based on usedPointsBets
                                     if (submitAnswerButton) submitAnswerButton.disabled = false;
-                                } else { 
+                                } else {  
                                     // Player has submitted, disable inputs
                                     if (gameGuessInput) gameGuessInput.disabled = true;
                                     if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
@@ -1706,7 +1721,7 @@
                                     // If time runs out, move to question results phase and reconcile scores
                                     await gameRef.update({ gamePhase: 'question_results', currentTime: 0, scoresReconciledForCurrentQuestion: false }); // Reset reconciliation flag
                                     // Host also triggers score reconciliation here
-                                    reconcileQuestionScores(); 
+                                    reconcileQuestionScores();  
                                 }
                             }, 1000); // Update every second
                         } else {
@@ -1727,14 +1742,12 @@
                                 sharedRoundGuessesList.appendChild(listItem);
                             });
                         }
-                        // IMPORTANT: Removed auto-advance logic if all correct answers are guessed.
-                        // Now, it strictly waits for time or host to explicitly end the question.
-                    } 
+                    }  
                     // Phase: Showing Question Results
                     else if (gamePhase === 'question_results') {
                         // If host, ensure scores were reconciled before displaying results
                         if (isHost && !gameData.scoresReconciledForCurrentQuestion) { // Only reconcile if not already done
-                            reconcileQuestionScores(); 
+                            reconcileQuestionScores();  
                         }
                         showScreen(questionResultsScreen); // Reusing questionResultsScreen
                         clearInterval(timerInterval); // Stop any timer
@@ -1750,13 +1763,13 @@
                             const listItem = document.createElement('li');
                             if (primaryCorrectAnswer) {
                                 // Check if the primary correct answer was guessed by anyone
-                                const wasPrimaryGuessed = (gameData.currentQuestionGuessedAnswers || []).includes(normalizeString(primaryCorrectAnswer)); // Check normalized
+                                const wasPrimaryGuessed = (gameData.currentQuestionGuessedAnswers || []).includes(primaryCorrectAnswer); // Check original guess
                                 if (wasPrimaryGuessed) {
                                     listItem.innerHTML = `<i class="fas fa-check text-green-500 mr-2"></i> ${primaryCorrectAnswer}`;
                                 } else {
                                     // If not guessed, check if any of the fuzzy answers were guessed (these are normalized answers)
                                     // This logic is mostly for comprehensive check, but for display, we show displayAnswer
-                                    const anyFuzzyGuessed = (gameData.currentCorrectAnswers || []).some(ans => (gameData.currentQuestionGuessedAnswers || []).includes(ans));
+                                    const anyFuzzyGuessed = (gameData.currentCorrectAnswers || []).some(ans => (gameData.currentQuestionGuessedAnswers || []).map(normalize).includes(ans));
                                     if (anyFuzzyGuessed) {
                                         listItem.innerHTML = `<i class="fas fa-check-circle text-green-500 mr-2"></i> ${primaryCorrectAnswer} (بإجابة مشابهة)`;
                                     } else {
@@ -1777,7 +1790,7 @@
                             questionResultsHostControls.classList.remove('hidden');
                             // Check if there are more questions in the quizSet
                             // gameData.currentQuestionIndexInGame holds the index of the *next* question to be played
-                            if (gameData.currentQuestionIndexInGame < gameData.quizSet.length) { 
+                            if (gameData.currentQuestionIndexInGame < gameData.quizSet.length) {  
                                 if (nextQuestionButton) nextQuestionButton.classList.remove('hidden');
                                 if (endGameFinalButton) endGameFinalButton.classList.add('hidden'); // Hide end game button if more questions
                             } else { // No more questions, show end game button
@@ -1815,19 +1828,21 @@
             playersSnapshotUnsubscribe = q.onSnapshot((snapshot) => {
                 if (joinedPlayersList) joinedPlayersList.innerHTML = ''; // Clear current list of joined players
                 // Do not clear playerCorrectGuessesList here, it will be updated based on playerSubmittedAnswer in gameData
-                // if (playerCorrectGuessesList) playerCorrectGuessesList.innerHTML = ''; 
-
+                
                 let currentPlayerOverallScore = 0;
                 
                 // Get gameData to determine who the host is
                 db.collection(`artifacts/${appId}/public/data/games`).doc(gameId).get().then(gameDoc => {
                     let hostIdFromGame = null;
+                    let gamePhase = 'lobby'; // Default for safety
                     if (gameDoc.exists) {
-                        hostIdFromGame = gameDoc.data().hostId;
+                        const gameData = gameDoc.data();
+                        hostIdFromGame = gameData.hostId;
+                        gamePhase = gameData.gamePhase;
                     }
 
                     // Update host submission status list (if current user is host)
-                    if (hostSubmissionStatusList && isHost) { 
+                    if (hostSubmissionStatusList && isHost) {  
                         hostSubmissionStatusList.innerHTML = ''; // Clear for fresh update
                     }
 
@@ -1849,13 +1864,25 @@
                             joinedPlayersList.appendChild(listItem);
                         }
 
-                        // Update host's view of player submission status
+                        // Update host's view of player submission status - IMPROVED DETAIL HERE
                         if (hostSubmissionStatusList && isHost) {
                             const statusItem = document.createElement('li');
-                            let statusIcon = playerData.hasSubmittedAnswer 
-                                ? '<i class="fas fa-check-circle text-green-500 ml-2"></i> أجاب' 
-                                : '<i class="fas fa-hourglass-half text-gray-500 ml-2"></i> لم يجب';
-                            statusItem.innerHTML = `${playerData.nickname || 'لاعب مجهول'}: ${statusIcon}`;
+                            let statusIcon = '';
+                            let submittedAnswerText = '';
+                            let scoreChangeText = '';
+
+                            if (playerData.hasSubmittedAnswer) {
+                                statusIcon = '<i class="fas fa-check-circle text-green-500 ml-2"></i>';
+                                submittedAnswerText = `إجابة: ${playerData.playerSubmittedAnswer || 'لا توجد'}`;
+                                const scoreChange = playerData.playerScoreChange || 0;
+                                scoreChangeText = `(${scoreChange >= 0 ? '+' : ''}${scoreChange} نقطة، رهان: ${playerData.playerSelectedPoints || 0})`;
+                            } else {  
+                                statusIcon = '<i class="fas fa-hourglass-half text-gray-500 ml-2"></i>';
+                                submittedAnswerText = 'لم يجب';
+                            }
+                            statusItem.innerHTML = `
+                                ${playerData.nickname || 'لاعب مجهول'}: ${statusIcon} ${submittedAnswerText} ${scoreChangeText}
+                            `;
                             hostSubmissionStatusList.appendChild(statusItem);
                         }
 
@@ -1864,26 +1891,17 @@
                         if (playerId === userId) {
                             currentPlayerOverallScore = playerData.score || 0;
                             // Update local userUsedPointsBets from player data
-                            userUsedPointsBets = playerData.usedPointsBets || []; 
+                            userUsedPointsBets = playerData.usedPointsBets || [];  
                             populatePointsButtons(); // Re-render buttons with updated used points status
-
-                            // Update player's correct answers for current question on UI if applicable
-                            // NOTE: playerCorrectAnswersForCurrentQuestion is no longer explicitly stored for players
-                            // as all player's submission details are stored in playerSubmittedAnswer etc.
-                            // This part of UI is now redundant as playerCorrectGuessesList always remains clear (based on design).
-                            // If you want player to see *their own* correct answers again, they'd see it on the results screen.
-                            // I will keep this list empty for now as it's not being updated from Firebase data.
-                            if (playerCorrectGuessesList) {
-                                playerCorrectGuessesList.innerHTML = ''; // Keep it cleared as player answers are only for display in results
-                            }
                         }
                     });
                     if (playerScoreDisplay) playerScoreDisplay.textContent = currentPlayerOverallScore; // Update UI with overall score
 
                     // Host-specific logic: Show/hide start button based on number of players
                     // Only apply if host is in waiting room phase
-                    if (gameDoc.exists && gameDoc.data().gamePhase === 'lobby' && isHost) {
-                        if (snapshot.size > 1) { // More than 1 player (host + at least one other)
+                    if (gamePhase === 'lobby' && isHost) {
+                        // For starting the game, require at least the host and one other player.
+                        if (snapshot.size >= 2) { 
                             if (startGameButton) startGameButton.classList.remove('hidden'); // Show start button
                         } else {
                             if (startGameButton) startGameButton.classList.add('hidden'); // Hide if only host or no other players
@@ -1935,13 +1953,8 @@
                         // Check if player's submitted answer is one of the correct answers (using fuzzy logic)
                         let isPlayerAnswerCorrect = false;
                         if (player.submittedAnswer !== 'لم يجب') {
-                            const normalizedSubmittedAnswer = normalizeString(player.submittedAnswer);
-                            for (const correctAnswer of currentCorrectAnswers) {
-                                if (levenshteinDistance(correctAnswer, normalizedSubmittedAnswer) <= FUZZY_THRESHOLD) {
-                                    isPlayerAnswerCorrect = true;
-                                    break;
-                                }
-                            }
+                            // Using the new isCorrectAnswer function
+                            isPlayerAnswerCorrect = isCorrectAnswer(player.submittedAnswer, currentCorrectAnswers);
                         }
 
                         if (player.submittedAnswer !== 'لم يجب') {
@@ -1959,10 +1972,10 @@
 
 
                         listItem.innerHTML = `
-                            <span class="font-bold">المركز ${index + 1}: ${player.nickname}:</span> 
-                            <span class="${answerColorClass}">${answerStatusIcon} ${player.submittedAnswer}</span> 
-                            (راهن بـ ${player.selectedPoints} نقطة، 
-                            ${player.scoreChange >= 0 ? '+' : ''}${player.scoreChange} نقطة، 
+                            <span class="font-bold">المركز ${index + 1}: ${player.nickname}:</span>  
+                            <span class="${answerColorClass}">${answerStatusIcon} ${player.submittedAnswer}</span>  
+                            (راهن بـ ${player.selectedPoints} نقطة،  
+                            ${player.scoreChange >= 0 ? '+' : ''}${player.scoreChange} نقطة،  
                             إجمالي: ${player.overallScore})
                         `;
                         questionPlayerScoresList.appendChild(listItem);
@@ -2062,13 +2075,13 @@
         if (submitAnswerButton) submitAnswerButton.addEventListener('click', submitGuess);
 
         // Host clicks to start the game (initiates countdown for first question) from waiting room
-        if (startGameButton) startGameButton.addEventListener('click', initiateGameStartCountdown); 
+        if (startGameButton) startGameButton.addEventListener('click', initiateGameStartCountdown);  
 
         // Host clicks to end the current question early
-        if (endQuestionEarlyButton) endQuestionEarlyButton.addEventListener('click', endQuestionEarly); 
+        if (endQuestionEarlyButton) endQuestionEarlyButton.addEventListener('click', endQuestionEarly);  
 
         // Host clicks to proceed to the next question from question results screen
-        if (nextQuestionButton) nextQuestionButton.addEventListener('click', startNextQuestion); 
+        if (nextQuestionButton) nextQuestionButton.addEventListener('click', startNextQuestion);  
 
         // Host clicks to end the entire game from question results screen
         if (endGameFinalButton) endGameFinalButton.addEventListener('click', endGame);
@@ -2126,32 +2139,6 @@
         // --- Initial Load ---
         // DOMContentLoaded listener is already used at the bottom of the script for initial checks and Firebase init.
     </script>
-
-    <!-- مكتبة QR Code -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-<script>
-  function generateQRCode(link) {
-    const qrcodeContainer = document.getElementById("qrcode");
-    qrcodeContainer.innerHTML = ""; // ننظف القديم
-
-    new QRCode(qrcodeContainer, {
-      text: link,
-      width: 150,
-      height: 150,
-    });
-  }
-
-  // عند عرض رابط الغرفة
-  window.addEventListener('DOMContentLoaded', () => {
-    const link = window.location.href; // أو أي رابط الغرفة
-    const linkDisplay = document.getElementById("game-link-display");
-    if (linkDisplay) {
-      linkDisplay.textContent = link;
-    }
-    generateQRCode(link);
-  });
-</script>
 
 </body>
 </html>
