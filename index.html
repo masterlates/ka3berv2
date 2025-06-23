@@ -263,24 +263,40 @@
 
         // --- Firebase Initialization ---
         // This function initializes Firebase and handles user authentication.
-        // It relies on global `firebase` object provided by Firebase CDN scripts loaded later in body.
+        // It now uses the specific Firebase configuration provided directly.
         async function initializeFirebase() {
             showLoading(); // Show loading overlay
             try {
-                // `__app_id` and `__firebase_config` are global variables provided by the Canvas environment.
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-                const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+                // *** FIREBASE CONFIGURATION (YOUR PROJECT'S SETTINGS) ***
+                // This is the configuration you provided for your Firebase project 'ka3boura-dbcf5'.
+                const firebaseConfig = {
+                  apiKey: "AIzaSyCwdZjTwrnjKZU_AilP5_GZJeEuUZjVcUY",
+                  authDomain: "ka3boura-dbcf5.firebaseapp.com",
+                  projectId: "ka3boura-dbcf5",
+                  storageBucket: "ka3boura-dbcf5.firebasestorage.app",
+                  messagingSenderId: "1051115240747",
+                  appId: "1:1051115240747:web:694751eef3173327f5596e",
+                  measurementId: "G-9413DFK5DF"
+                };
+                // ***********************************************************************************
+
+                // Log the Firebase config to console to help debugging if there's an issue
+                console.log("Using Firebase Config:", firebaseConfig);
+
+                // For Firestore paths, we use projectId as the unique application ID.
+                // This 'appId' needs to match the 'projectId' from your Firebase config
+                const appId = firebaseConfig.projectId;
+                console.log("Derived App ID for Firestore path:", appId);
+
 
                 app = firebase.initializeApp(firebaseConfig); // Initialize Firebase app
                 db = firebase.firestore(app); // Get Firestore instance
                 auth = firebase.auth(app); // Get Auth instance
 
-                // Sign in anonymously for game functionality if no custom token is provided
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await auth.signInWithCustomToken(__initial_auth_token); // Use provided custom token
-                } else {
-                    await auth.signInAnonymously(); // Sign in anonymously
-                }
+                // Sign in anonymously for game functionality.
+                // In Render deployment, `__initial_auth_token` is not defined,
+                // so it will always fall back to anonymous authentication which is fine.
+                await auth.signInAnonymously();
 
                 // Listen for authentication state changes
                 auth.onAuthStateChanged((user) => {
@@ -299,7 +315,6 @@
                             // If nickname is available, prompt user to join directly. Otherwise, show join screen.
                             if (!playerNicknameInput.value) {
                                 showScreen(joinGameScreen); // Show join screen for nickname input
-                                // Optionally show a message to enter nickname
                                 showCustomMessageBox("الانضمام إلى لعبة", `أدخل اسمك المستعار للانضمام إلى اللعبة برمز ${gameId}.`);
                                 customMessageCloseButton.onclick = () => {
                                     hideCustomMessageBox();
@@ -323,8 +338,8 @@
                 });
 
             } catch (error) {
-                console.error("Error initializing Firebase:", error);
-                showCustomMessageBox("خطأ", "فشل تهيئة اللعبة. حاول تحديث الصفحة.");
+                console.error("Firebase Initialization Error Details:", error); // Log the full error object for detailed debugging
+                showCustomMessageBox("خطأ", `فشل تهيئة اللعبة. تأكد من إعداد Firebase بشكل صحيح وقواعد الأمان. التفاصيل: ${error.message}`);
                 hideLoading();
             }
         }
@@ -353,7 +368,7 @@
 
             // Show the target screen
             screenElement.classList.remove('hidden');
-            // If it's not the message box itself, ensure the message box is hidden
+            // If it's not the message box, ensure the message box is hidden
             if (screenElement !== customMessageBox) {
                 customMessageBox.classList.remove('flex', 'opacity-100');
                 customMessageBox.classList.add('hidden', 'opacity-0');
@@ -413,7 +428,8 @@
 
                 // Reference to the new game document in Firestore
                 // Path: artifacts/{appId}/public/data/games/{gameId}
-                const gameRef = db.collection(`artifacts/${__app_id}/public/data/games`).doc(gameId);
+                const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
+                console.log("Attempting to create game at path:", gameRef.path); // Log path
                 await gameRef.set({ // Create the game document
                     hostId: userId,
                     category: selectedQuiz.category,
@@ -430,6 +446,7 @@
                 // Add host as a player in the game's subcollection
                 // Path: artifacts/{appId}/public/data/games/{gameId}/players/{userId}
                 const playerRef = gameRef.collection('players').doc(userId);
+                console.log("Attempting to add host player at path:", playerRef.path); // Log path
                 await playerRef.set({
                     nickname: "المضيف", // Default nickname for the host
                     score: 0,
@@ -471,7 +488,7 @@
                     throw new Error("لا يوجد معرف لعبة لبدء اللعبة."); // Error if no game ID
                 }
                 // Reference to the game document
-                const gameRef = db.collection(`artifacts/${__app_id}/public/data/games`).doc(gameId);
+                const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
                 await gameRef.update({ // Update game status to 'playing' and set start time
                     status: 'playing',
                     startedAt: Date.now()
@@ -495,7 +512,8 @@
                 }
 
                 // Reference to the game document
-                const gameRef = db.collection(`artifacts/${__app_id}/public/data/games`).doc(code);
+                const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(code);
+                console.log("Attempting to join game at path:", gameRef.path); // Log path
                 const gameDoc = await gameRef.get(); // Get game document
 
                 if (!gameDoc.exists) {
@@ -509,6 +527,7 @@
 
                 // Add player to the game's players subcollection
                 const playerRef = gameRef.collection('players').doc(userId);
+                console.log("Attempting to add player at path:", playerRef.path); // Log path
                 await playerRef.set({ // Use set with merge to avoid overwriting if player rejoins
                     nickname: nickname,
                     score: 0,
@@ -553,7 +572,7 @@
 
             showLoading(); // Show loading spinner
             try {
-                const gameRef = db.collection(`artifacts/${__app_id}/public/data/games`).doc(gameId);
+                const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
                 const playerRef = gameRef.collection('players').doc(userId);
 
                 // Use a Firestore transaction to ensure atomic updates
@@ -606,7 +625,8 @@
         function listenToGameChanges() {
             if (gameSnapshotUnsubscribe) gameSnapshotUnsubscribe(); // Unsubscribe from previous listener if exists
 
-            const gameRef = db.collection(`artifacts/${__app_id}/public/data/games`).doc(gameId);
+            const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
+            console.log("Listening to game changes at path:", gameRef.path); // Log path
 
             gameSnapshotUnsubscribe = gameRef.onSnapshot((docSnap) => {
                 if (docSnap.exists) {
@@ -669,7 +689,7 @@
                 }
             }, (error) => {
                 console.error("Error listening to game changes:", error);
-                showCustomMessageBox("خطأ في الاتصال", "فقد الاتصال باللعبة. يرجى التحقق من اتصالك بالإنترنت.");
+                showCustomMessageBox("خطأ في الاتصال", `فقد الاتصال باللعبة. يرجى التحقق من اتصالك بالإنترنت. التفاصيل: ${error.message}`);
             });
         }
 
@@ -677,7 +697,8 @@
         function listenToPlayers() {
             if (playersSnapshotUnsubscribe) playersSnapshotUnsubscribe(); // Unsubscribe from previous listener
 
-            const playersRef = db.collection(`artifacts/${__app_id}/public/data/games/${gameId}/players`);
+            const playersRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
+            console.log("Listening to players at path:", playersRef.path); // Log path
             // Query to get all player documents in this game's subcollection
             const q = playersRef;
 
@@ -742,7 +763,7 @@
                 }
 
                 // Fetch all player data one last time to get final scores
-                const playersRef = db.collection(`artifacts/${__app_id}/public/data/games/${gameId}/players`);
+                const playersRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
                 const playersSnapshot = await playersRef.get();
 
                 let finalScores = [];
@@ -848,7 +869,7 @@
     </script>
 
     <!-- Firebase CDN Scripts - MUST be included at the end of <body> for global access -->
-    <!-- Use specific version that is compatible with the Firebase functions used (e.g., 8.10.1) -->
+    <!-- These load the Firebase library globally, making `firebase.initializeApp`, etc., available -->
     <script type="text/javascript" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
