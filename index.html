@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> كعبورة يجاوب   </title>
+    <title>سبوركل بارتي (متعدد اللاعبين)</title>
     <!-- Tailwind CSS CDN for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts - Cairo for typography -->
@@ -409,24 +409,6 @@
 
     <!-- QRCode.js for generating QR codes -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode.js/1.0.0/qrcode.min.js"></script>
-<script>
-    // دالة توليد QR
-    function generateQRCode(link) {
-        const qrcodeContainer = document.getElementById("qrcode");
-        qrcodeContainer.innerHTML = ""; // ننظف القديم لو موجود
-
-        new QRCode(qrcodeContainer, {
-            text: link,
-            width: 150,
-            height: 150,
-        });
-    }
-
-    // مثال عند فتح غرفة اللعب، تولي:
-    const gameLink = window.location.href; // ولا استبدلها بالرابط الصحيح إن لزم
-    document.getElementById("game-link-display").textContent = gameLink;
-    generateQRCode(gameLink);
-</script>
 
     <!-- Main JavaScript Logic -->
     <script type="text/javascript">
@@ -1311,13 +1293,10 @@
             showLoading();
             try {
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
-                // When ending early, set phase to question_results and trigger score reconciliation
                 await gameRef.update({
-                    gamePhase: 'question_results', 
-                    currentTime: 0 
+                    gamePhase: 'question_results', // Move to showing question results
+                    currentTime: 0 // Ensure timer is at zero
                 });
-                // Host also triggers score reconciliation here, immediately after update
-                reconcileQuestionScores(); // Now called immediately when host ends early
                 console.log("Host ended question early.");
             } catch (error) {
                 console.error("Error ending question early:", error);
@@ -1345,13 +1324,20 @@
             }
         }
 
-        // NEW: Function to reconcile scores for all players after a question ends (called by host)
+        // Function to reconcile scores for all players after a question ends (called by host)
         async function reconcileQuestionScores() {
             if (!isHost || !gameId) return; // Only host performs this
             console.log("Reconciling scores for the ended question...");
+            // Ensure this runs only once per question results phase
+            const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
+            const gameDoc = await gameRef.get();
+            if (!gameDoc.exists || gameDoc.data().scoresReconciledForCurrentQuestion) {
+                console.log("Scores already reconciled for this question, or game data missing.");
+                return; // Prevent double reconciliation if listener triggers again
+            }
+
             showLoading();
             try {
-                const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
                 const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
                 const playersDocs = await playersCollectionRef.get();
                 
@@ -1360,7 +1346,6 @@
                     const playerRef = playerDoc.ref;
                     const playerData = playerDoc.data();
                     
-                    // Only update if player has submitted an answer for this question
                     if (playerData.hasSubmittedAnswer && playerData.playerScoreChange !== undefined) {
                         const newScore = (playerData.score || 0) + (playerData.playerScoreChange);
                         batch.update(playerRef, {
@@ -1380,6 +1365,8 @@
                         });
                     }
                 });
+                // Mark scores as reconciled for this question in the main game document
+                batch.update(gameRef, { scoresReconciledForCurrentQuestion: true });
                 await batch.commit();
                 console.log("Scores reconciled and player flags reset for the question.");
             } catch (error) {
@@ -1406,7 +1393,10 @@
                 const gameDoc = await gameRef.get(); // Get game document
 
                 if (!gameDoc.exists) {
-                    throw new Error("رمز اللعبة غير صحيح أو الغرفة غير موجودة."); // Game not found
+                    showCustomMessageBox("اللعبة غير موجودة", "رمز اللعبة غير صحيح أو الغرفة غير موجودة.");
+                    hideLoading();
+                    showScreen(roleSelectionScreen); // Redirect to role selection
+                    return;
                 }
 
                 const gameData = gameDoc.data();
@@ -1559,9 +1549,10 @@
 
                     // Update player's per-question data (score itself is updated later by reconcile)
                     transaction.update(playerRef, {
+                        // score: playerOverallScore, // NOT updated here anymore
                         playerSubmittedAnswer: guess, // Store the actual normalized guess for display in results
                         playerSelectedPoints: pointsBet,
-                        playerScoreChange: scoreChange,
+                        playerScoreChange: scoreChange, // Store the calculated change
                         hasSubmittedAnswer: true, // Mark as submitted
                         usedPointsBets: firebase.firestore.FieldValue.arrayUnion(pointsBet) // Add used points to player's array
                     });
@@ -1611,8 +1602,11 @@
                         // so to show current question, we use currentQuestionIndexInGame.
                         const currentQNum = gameData.currentQuestionIndexInGame; 
                         const totalQs = gameData.quizSet ? gameData.quizSet.length : 0;
+                        // Display (current number - 1) if not in countdown/lobby, otherwise 0
+                        const displayQNum = gamePhase === 'game_countdown' || gamePhase === 'lobby' ? 0 : currentQNum;
+
                         if (totalQs > 0) {
-                             questionCounterDisplay.textContent = `${currentQNum} / ${totalQs}`;
+                             questionCounterDisplay.textContent = `${displayQNum} / ${totalQs}`;
                         } else {
                              questionCounterDisplay.textContent = `-- / --`;
                         }
@@ -1710,7 +1704,7 @@
                                 } else {
                                     clearInterval(timerInterval); // Stop timer
                                     // If time runs out, move to question results phase and reconcile scores
-                                    await gameRef.update({ gamePhase: 'question_results', currentTime: 0 });
+                                    await gameRef.update({ gamePhase: 'question_results', currentTime: 0, scoresReconciledForCurrentQuestion: false }); // Reset reconciliation flag
                                     // Host also triggers score reconciliation here
                                     reconcileQuestionScores(); 
                                 }
@@ -1739,8 +1733,8 @@
                     // Phase: Showing Question Results
                     else if (gamePhase === 'question_results') {
                         // If host, ensure scores were reconciled before displaying results
-                        if (isHost) {
-                            reconcileQuestionScores(); // Call again just in case (e.g., if host refreshes)
+                        if (isHost && !gameData.scoresReconciledForCurrentQuestion) { // Only reconcile if not already done
+                            reconcileQuestionScores(); 
                         }
                         showScreen(questionResultsScreen); // Reusing questionResultsScreen
                         clearInterval(timerInterval); // Stop any timer
@@ -1874,15 +1868,13 @@
                             populatePointsButtons(); // Re-render buttons with updated used points status
 
                             // Update player's correct answers for current question on UI if applicable
+                            // NOTE: playerCorrectAnswersForCurrentQuestion is no longer explicitly stored for players
+                            // as all player's submission details are stored in playerSubmittedAnswer etc.
+                            // This part of UI is now redundant as playerCorrectGuessesList always remains clear (based on design).
+                            // If you want player to see *their own* correct answers again, they'd see it on the results screen.
+                            // I will keep this list empty for now as it's not being updated from Firebase data.
                             if (playerCorrectGuessesList) {
-                                playerCorrectGuessesList.innerHTML = ''; // Clear for fresh update
-                                // Defensive check, ensure playerCorrectAnswersForCurrentQuestion exists
-                                (playerData.playerCorrectAnswersForCurrentQuestion || []).forEach(guess => {
-                                    const listItem = document.createElement('li');
-                                    listItem.textContent = guess;
-                                    listItem.classList.add('text-green-700', 'font-semibold', 'opacity-0', 'animate-fade-in-up');
-                                    playerCorrectGuessesList.appendChild(listItem);
-                                });
+                                playerCorrectGuessesList.innerHTML = ''; // Keep it cleared as player answers are only for display in results
                             }
                         }
                     });
@@ -2076,7 +2068,7 @@
         if (endQuestionEarlyButton) endQuestionEarlyButton.addEventListener('click', endQuestionEarly); 
 
         // Host clicks to proceed to the next question from question results screen
-        if (nextQuestionButton) nextQuestionButton.addEventListener('click', startNextQuestion); // Calls startNextQuestion directly
+        if (nextQuestionButton) nextQuestionButton.addEventListener('click', startNextQuestion); 
 
         // Host clicks to end the entire game from question results screen
         if (endGameFinalButton) endGameFinalButton.addEventListener('click', endGame);
@@ -2134,12 +2126,5 @@
         // --- Initial Load ---
         // DOMContentLoaded listener is already used at the bottom of the script for initial checks and Firebase init.
     </script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-
-
-
-    
 </body>
 </html>
