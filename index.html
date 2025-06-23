@@ -112,6 +112,39 @@
         .tag-remove:hover {
             opacity: 1;
         }
+        /* Styles for points buttons */
+        .points-button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+        }
+        .points-button {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 2px solid #cbd5e0; /* gray-300 */
+            background-color: #f8fafc; /* gray-50 */
+            color: #4a5568; /* gray-700 */
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .points-button.selected {
+            background-color: #6366f1; /* indigo-500 */
+            color: white;
+            border-color: #6366f1;
+            transform: scale(1.05);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .points-button:not(.selected):hover {
+            background-color: #e2e8f0; /* gray-200 */
+            border-color: #a0aec0; /* gray-400 */
+        }
+        .points-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 min-h-screen flex flex-col items-center justify-center p-4 text-gray-800">
@@ -240,15 +273,20 @@
             <p class="text-2xl font-bold text-gray-800 mb-4 text-center">الفئة: <span id="game-category" class="text-indigo-600"></span></p> <!-- Current category display -->
             <p class="text-3xl font-extrabold text-gray-900 mb-6 text-center" id="game-question"></p> <!-- Current question display -->
 
-            <div class="flex items-center gap-4 w-full mb-6">
-                <select id="points-select" class="p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50 flex-shrink-0">
-                    <!-- Options 1-20 will be populated by JS -->
-                </select>
+            <div class="flex items-center flex-wrap gap-2 w-full mb-4">
+                <label for="game-guess-input" class="sr-only">اكتب إجابتك هنا</label>
                 <input type="text" id="game-guess-input" placeholder="اكتب إجابتك هنا..."
-                    class="w-full p-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50">
+                    class="flex-grow p-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50">
                 <button id="submit-answer-button" class="bg-blue-500 hover:bg-blue-600 text-white text-xl font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out flex-shrink-0">
                     <i class="fas fa-paper-plane"></i> إرسال
                 </button>
+            </div>
+            
+            <div class="w-full mb-6">
+                <label class="block text-xl font-semibold text-gray-700 mb-2 text-center">راهن بالنقاط:</label>
+                <div id="points-button-group" class="points-button-group">
+                    <!-- Points buttons (1-20) will be generated here -->
+                </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
@@ -344,6 +382,7 @@
         let gameSnapshotUnsubscribe = null; // Listener for game document changes
         let playersSnapshotUnsubscribe = null; // Listener for players collection changes
         let timerInterval = null; // Interval for host's game timer
+        let selectedPointsBet = 1; // Default selected points bet
 
         // Quiz data - IMPORTANT: Each object in quizzes now represents a CATEGORY with multiple questions.
         // Each question has a questionText and correctAnswers.
@@ -439,10 +478,10 @@
         const quizCategoryInput = document.getElementById('quiz-category-input');
         const quizCategoryDropdown = document.getElementById('quiz-category-dropdown');
         const selectedCategoriesTags = document.getElementById('selected-categories-tags');
-        const hostNicknameInput = document.getElementById('host-nickname-input'); // New: Host nickname input
+        const hostNicknameInput = document.getElementById('host-nickname-input'); // Host nickname input
 
         // Function to populate and manage the multi-select dropdown
-        // This now lists the category and the first question for clarity
+        // This now lists the category and an example question from it for clarity
         function setupQuizCategorySelection() {
             if (!quizCategoryDropdown) {
                 console.error("Error: quizCategoryDropdown element not found.");
@@ -569,7 +608,7 @@
         const playerScoreDisplay = document.getElementById('player-score');
         const gameCategoryDisplay = document.getElementById('game-category');
         const gameQuestionDisplay = document.getElementById('game-question'); // Displays the current question text
-        const pointsSelect = document.getElementById('points-select'); // New: Points selection dropdown
+        const pointsButtonGroup = document.getElementById('points-button-group'); // New: Points buttons container
         const gameGuessInput = document.getElementById('game-guess-input');
         const submitAnswerButton = document.getElementById('submit-answer-button'); // New: Submit answer button
         const playerCorrectGuessesList = document.getElementById('player-correct-guesses-list');
@@ -609,7 +648,7 @@
                 'quizCategoryDropdown': quizCategoryDropdown,
                 'selectedCategoriesTags': selectedCategoriesTags,
                 'hostNicknameInput': hostNicknameInput,
-                'pointsSelect': pointsSelect,
+                'pointsButtonGroup': pointsButtonGroup, // Check the new group
                 'gameGuessInput': gameGuessInput,
                 'submitAnswerButton': submitAnswerButton,
                 'endQuestionEarlyButton': endQuestionEarlyButton,
@@ -633,17 +672,44 @@
                     throw new Error(`Element ${id} not found.`);
                 }
             }
-            // Populate points select dropdown (1-20)
-            for (let i = 1; i <= 20; i++) {
-                const option = document.createElement('option');
-                option.value = i;
-                option.textContent = `${i} نقطة`;
-                pointsSelect.appendChild(option);
-            }
+            // Populate points buttons (1-20)
+            populatePointsButtons();
             // If all critical elements are found, proceed with Firebase init
             initializeFirebase();
         });
 
+        // Function to populate and manage the points buttons (1-20)
+        function populatePointsButtons() {
+            if (!pointsButtonGroup) {
+                console.error("Error: pointsButtonGroup element not found for population.");
+                return;
+            }
+            pointsButtonGroup.innerHTML = ''; // Clear existing buttons
+            for (let i = 1; i <= 20; i++) {
+                const button = document.createElement('button');
+                button.type = 'button'; // Prevent form submission
+                button.className = 'points-button';
+                button.textContent = i;
+                button.setAttribute('data-points', i); // Store points value in data attribute
+
+                if (i === selectedPointsBet) {
+                    button.classList.add('selected'); // Select default 1
+                }
+
+                button.addEventListener('click', (event) => {
+                    // Unselect previous button
+                    const currentSelected = pointsButtonGroup.querySelector('.points-button.selected');
+                    if (currentSelected) {
+                        currentSelected.classList.remove('selected');
+                    }
+                    // Select new button
+                    event.target.classList.add('selected');
+                    selectedPointsBet = parseInt(event.target.getAttribute('data-points'));
+                    console.log("Selected points bet:", selectedPointsBet);
+                });
+                pointsButtonGroup.appendChild(button);
+            }
+        }
 
         // --- Firebase Initialization ---
         // This function initializes Firebase and handles user authentication.
@@ -828,6 +894,7 @@
                 gameId = generateGameCode(); // Generate a unique game ID
                 isHost = true; // Set current user as host
                 userNickname = hostNickname; // Set host's nickname
+                localStorage.setItem('hostNickname', hostNickname); // Save host nickname locally
                 const timeLimit = parseInt(timeLimitSelect.value); // Get selected time limit
 
                 // Prepare the quiz order for the game
@@ -864,7 +931,7 @@
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
                 console.log("Attempting to create game at path:", gameRef.path); // Log path
                 await gameRef.set({ // Create the game document
-                    hostId: userId,
+                    hostId: userId, // Store host's userId
                     gamePhase: 'lobby', // Initial phase
                     quizSet: quizSetForGame, // Array of ALL questions for this game
                     currentQuestionIndexInGame: 0, // Index of the current question in the quizSet (0-indexed)
@@ -875,11 +942,11 @@
                     questionStartTime: null, // Timestamp when current question started
                     timeLimitPerQuestion: timeLimit, // Renamed for clarity
                     currentTime: timeLimit, // Initialize current time with full time limit
-                    playerScores: {}, // To store overall cumulative scores for players (will be updated by listenToPlayers)
+                    // playerScores: {}, // This will be implicitly managed via player sub-collection listen
                     lastUpdate: Date.now() // Timestamp for host's last update (for real-time timer sync)
                 });
 
-                // Add host as a player in the game's subcollection
+                // Add host as a player in the game's subcollection (Host can also play)
                 // Path: artifacts/{appId}/public/data/games/{gameId}/players/{userId}
                 const playerRef = gameRef.collection('players').doc(userId);
                 console.log("Attempting to add host player at path:", playerRef.path); // Log path
@@ -990,7 +1057,7 @@
                     currentQuestionIndexInGame: nextQuestionIndex + 1, // Advance question index for *next* question setup
                     currentCategory: nextQuestion.category,
                     currentQuestionText: nextQuestion.question, // Set the current question text
-                    currentCorrectAnswers: nextQuestion.correctAnswers.map(normalizeString), // Set the correct answers for this question (normalized)
+                    currentCorrectAnswers: nextQuestion.correctAnswers, // Set the correct answers for this question (already normalized when stored)
                     currentQuestionGuessedAnswers: [], // Reset guessed answers for new question (from all players)
                     questionStartTime: Date.now(), // New timestamp for question start
                     currentTime: gameData.timeLimitPerQuestion, // Reset timer
@@ -1017,13 +1084,13 @@
                 if (gameGuessInput) {
                     gameGuessInput.value = '';
                 }
-                if (pointsSelect) pointsSelect.value = 1; // Reset points select to default (1)
-                // Re-enable input and select for current player
-                if (gameGuessInput) gameGuessInput.disabled = false;
-                if (pointsSelect) pointsSelect.disabled = false;
-                if (submitAnswerButton) submitAnswerButton.disabled = false;
+                // Reset points button selection to default (1)
+                selectedPointsBet = 1;
+                populatePointsButtons(); // Re-render buttons to reset selection visually
 
-
+                // Re-enable input and select for current player if they are not the host
+                // This is now handled in listenToPlayers based on hasSubmittedAnswer
+                
                 console.log(`Starting question ${nextQuestionIndex + 1}: ${nextQuestion.category} - Question: ${nextQuestion.question}`);
 
             } catch (error) {
@@ -1101,7 +1168,7 @@
                 }
 
                 gameId = code; // Set current game ID
-                isHost = false; // Current user is a player
+                isHost = (gameData.hostId === userId); // Determine if current user is the host
                 userNickname = nickname; // Set current user's nickname
                 localStorage.setItem('playerNickname', nickname); // Save nickname locally for future use
 
@@ -1128,7 +1195,7 @@
                 showScreen(waitingRoomScreen); // Show waiting room screen
                 if (document.getElementById('waiting-room-title')) document.getElementById('waiting-room-title').textContent = `في انتظار بدء اللعبة...`; // Player-specific waiting message
                 
-                // For players, the game link display will just show the game ID
+                // For players, the game link display will just show the game ID (no QR)
                 if (gameLinkDisplay) gameLinkDisplay.textContent = `رمز الغرفة: ${gameId}`;
                 
                 // Hide QR code and copy button for players
@@ -1152,13 +1219,13 @@
             if (!gameId || (gamePlayScreen && gamePlayScreen.classList.contains('hidden'))) {
                  return; // Do nothing if not in active game play
             }
-            if (!gameGuessInput || !pointsSelect || !submitAnswerButton) {
+            if (!gameGuessInput || !pointsButtonGroup || !submitAnswerButton) { // Check point buttons group
                 console.error("Error: Game input elements not found.");
                 return;
             }
 
             const guess = normalizeString(gameGuessInput.value); // Get and normalize player's guess
-            const pointsBet = parseInt(pointsSelect.value); // Get selected points
+            const pointsBet = selectedPointsBet; // Get selected points from global variable
 
             if (guess === '') {
                 showCustomMessageBox("خطأ في الإدخال", "الرجاء كتابة إجابتك قبل الإرسال.");
@@ -1203,6 +1270,10 @@
                     if (isCorrect) {
                         scoreChange = pointsBet;
                         playerOverallScore += pointsBet; // Add points
+                        // Add this correct guess to the game's shared list of guesses for this question
+                        transaction.update(gameRef, {
+                            currentQuestionGuessedAnswers: firebase.firestore.FieldValue.arrayUnion(guess)
+                        });
                         console.log("Correct guess:", guess, "Points:", pointsBet);
                     } else {
                         scoreChange = -pointsBet;
@@ -1218,16 +1289,13 @@
                         playerScoreChange: scoreChange,
                         hasSubmittedAnswer: true // Mark as submitted
                     });
-
-                    // Optional: If you want to show which player submitted what immediately on the shared list,
-                    // you would also update a field on the main game document here.
-                    // For now, `listenToPlayers` will update the shared list to show player's names,
-                    // and `showQuestionPlayerScoresDetailed` will show answers.
                 });
 
-                // Disable input elements for the player after submission
+                // Disable input elements for the player after successful submission
                 if (gameGuessInput) gameGuessInput.disabled = true;
-                if (pointsSelect) pointsSelect.disabled = true;
+                if (pointsButtonGroup) { // Disable all point buttons
+                    Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
+                }
                 if (submitAnswerButton) submitAnswerButton.disabled = true;
 
             } catch (error) {
@@ -1275,23 +1343,22 @@
                         if (gameCategoryDisplay) gameCategoryDisplay.textContent = gameData.currentCategory;
                         if (gameQuestionDisplay) gameQuestionDisplay.textContent = gameData.currentQuestionText; // Display current question text
                         
-                        // Re-enable input/points select/submit button if player hasn't submitted yet
-                        if (!isHost) { // Only for players (host doesn't answer)
+                        // Handle input state for current player based on their submission status
+                        if (!isHost) { // Only for players (host doesn't submit here, they manage)
                             db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId).get().then(playerDoc => {
                                 if (playerDoc.exists && !playerDoc.data().hasSubmittedAnswer) {
                                     if (gameGuessInput) gameGuessInput.disabled = false;
-                                    if (pointsSelect) pointsSelect.disabled = false;
+                                    if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = false);
                                     if (submitAnswerButton) submitAnswerButton.disabled = false;
-                                } else {
-                                    // Player already submitted
+                                } else { // Player has submitted
                                     if (gameGuessInput) gameGuessInput.disabled = true;
-                                    if (pointsSelect) pointsSelect.disabled = true;
+                                    if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
                                     if (submitAnswerButton) submitAnswerButton.disabled = true;
                                 }
                             }).catch(e => console.error("Error checking player submission status:", e));
                         } else { // Host
                             if (gameGuessInput) gameGuessInput.disabled = true;
-                            if (pointsSelect) pointsSelect.disabled = true;
+                            if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
                             if (submitAnswerButton) submitAnswerButton.disabled = true;
                         }
                         if (gameGuessInput) gameGuessInput.focus();
@@ -1416,92 +1483,63 @@
 
             playersSnapshotUnsubscribe = q.onSnapshot((snapshot) => {
                 if (joinedPlayersList) joinedPlayersList.innerHTML = ''; // Clear current list of joined players
-                if (playerCorrectGuessesList) playerCorrectGuessesList.innerHTML = ''; // Clear player's own current question guesses display
+                // Do not clear playerCorrectGuessesList here, it will be updated based on playerSubmittedAnswer in gameData
+                // if (playerCorrectGuessesList) playerCorrectGuessesList.innerHTML = ''; 
 
                 let currentPlayerOverallScore = 0;
-                let currentPlayerCorrectAnswersForCurrentQuestion = [];
-
-                snapshot.forEach((doc) => {
-                    const playerData = doc.data();
-                    const playerId = doc.id;
-
-                    // Update the list of joined players in the waiting room
-                    if (joinedPlayersList) {
-                        const listItem = document.createElement('li');
-                        // Add Host tag if this player is the host
-                        let playerDisplayName = playerData.nickname || 'لاعب مجهول';
-                        if (isHost && playerId === userId) { // If current user is host and this is their entry
-                            playerDisplayName += ' <i class="fas fa-crown text-yellow-500"></i> (المضيف)';
-                        } else if (!isHost && playerData.hostId === playerId) { // If player is viewing, and this is the host's ID
-                             // Need to fetch hostId from main game doc or pass it
-                             // For now, rely on main game data stream for hostId
-                             // If host is the creator, their ID is in gameData.hostId
-                             // A more robust way would be to listen to gameData.hostId
-                             // or check against the currently known hostId from gameData.
-                             // For simplicity, let's keep it based on isHost for current user.
-                             // A better way is to show a host tag on all players' screens for the actual host:
-                             // This will be done by comparing playerData.id with gameData.hostId (from gameChanges listener)
-                        }
-
-                        // Get gameData to compare with hostId
-                        db.collection(`artifacts/${appId}/public/data/games`).doc(gameId).get().then(gameDoc => {
-                            let updatedPlayerDisplayName = playerDisplayName;
-                            if (gameDoc.exists && gameDoc.data().hostId === playerId) {
-                                updatedPlayerDisplayName = `${playerData.nickname || 'المضيف'} <i class="fas fa-crown text-yellow-500"></i> (المضيف)`;
-                            }
-                            listItem.innerHTML = `${updatedPlayerDisplayName} (ID: ${playerId.substring(0, 8)}... - النقاط: ${playerData.score || 0})`;
-                            // Ensure the list item is added only once if this is an async update
-                            // This currently rebuilds the list, so it's fine.
-                        }).catch(e => console.error("Error getting game data for host tag:", e));
-                        
-                        // Default display before host check resolves (will be updated)
-                        listItem.innerHTML = `${playerDisplayName} (ID: ${playerId.substring(0, 8)}... - النقاط: ${playerData.score || 0})`;
-                        joinedPlayersList.appendChild(listItem);
+                
+                // Get gameData to determine who the host is
+                db.collection(`artifacts/${appId}/public/data/games`).doc(gameId).get().then(gameDoc => {
+                    let hostIdFromGame = null;
+                    if (gameDoc.exists) {
+                        hostIdFromGame = gameDoc.data().hostId;
                     }
 
-                    // Update current player's overall score and current question guesses (only for self)
-                    if (playerId === userId) {
-                        currentPlayerOverallScore = playerData.score || 0;
-                        currentPlayerCorrectAnswersForCurrentQuestion = playerData.playerCorrectAnswersForCurrentQuestion || [];
-                        // Set current player's input state (disabled/enabled) based on hasSubmittedAnswer
-                        if (gamePlayScreen && !gamePlayScreen.classList.contains('hidden') && !isHost) {
-                            if (playerData.hasSubmittedAnswer) {
-                                if (gameGuessInput) gameGuessInput.disabled = true;
-                                if (pointsSelect) pointsSelect.disabled = true;
-                                if (submitAnswerButton) submitAnswerButton.disabled = true;
-                            } else {
-                                if (gameGuessInput) gameGuessInput.disabled = false;
-                                if (pointsSelect) pointsSelect.disabled = false;
-                                if (submitAnswerButton) submitAnswerButton.disabled = false;
+                    snapshot.forEach((doc) => {
+                        const playerData = doc.data();
+                        const playerId = doc.id;
+
+                        // Update the list of joined players in the waiting room
+                        if (joinedPlayersList) {
+                            const listItem = document.createElement('li');
+                            let playerDisplayName = playerData.nickname || 'لاعب مجهول';
+                            // Add Host tag if this player is the host
+                            if (hostIdFromGame && hostIdFromGame === playerId) {
+                                playerDisplayName += ' <i class="fas fa-crown text-yellow-500"></i> (المضيف)';
+                            }
+                            // Display partial user ID for uniqueness and debugging in multiplayer
+                            listItem.innerHTML = `${playerDisplayName} (ID: ${playerId.substring(0, 8)}... - النقاط: ${playerData.score || 0})`;
+                            joinedPlayersList.appendChild(listItem);
+                        }
+
+                        // Update current player's overall score (only for self)
+                        if (playerId === userId) {
+                            currentPlayerOverallScore = playerData.score || 0;
+                            // Update player's correct answers for current question on UI if applicable
+                            if (playerCorrectGuessesList) {
+                                playerCorrectGuessesList.innerHTML = ''; // Clear for fresh update
+                                (playerData.playerCorrectAnswersForCurrentQuestion || []).forEach(guess => {
+                                    const listItem = document.createElement('li');
+                                    listItem.textContent = guess;
+                                    listItem.classList.add('text-green-700', 'font-semibold', 'opacity-0', 'animate-fade-in-up');
+                                    playerCorrectGuessesList.appendChild(listItem);
+                                });
                             }
                         }
-                    }
-                });
-                if (playerScoreDisplay) playerScoreDisplay.textContent = currentPlayerOverallScore; // Update UI with overall score
-
-                // Populate the current player's specific correct guesses list for THIS QUESTION
-                if (playerCorrectGuessesList) {
-                    playerCorrectGuessesList.innerHTML = ''; // Clear for fresh update
-                    currentPlayerCorrectAnswersForCurrentQuestion.forEach(guess => {
-                        const listItem = document.createElement('li');
-                        listItem.textContent = guess;
-                        listItem.classList.add('text-green-700', 'font-semibold', 'opacity-0', 'animate-fade-in-up');
-                        playerCorrectGuessesList.appendChild(listItem);
                     });
-                }
+                    if (playerScoreDisplay) playerScoreDisplay.textContent = currentPlayerOverallScore; // Update UI with overall score
 
-                // Host-specific logic: Show/hide start button based on number of players
-                // Only apply if host is in waiting room phase
-                const gameDocRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
-                gameDocRef.get().then(doc => {
-                    if (doc.exists && doc.data().gamePhase === 'lobby' && isHost) {
+                    // Host-specific logic: Show/hide start button based on number of players
+                    // Only apply if host is in waiting room phase
+                    if (gameDoc.exists && gameDoc.data().gamePhase === 'lobby' && isHost) {
                         if (snapshot.size > 1) { // More than 1 player (host + at least one other)
                             if (startGameButton) startGameButton.classList.remove('hidden'); // Show start button
                         } else {
                             if (startGameButton) startGameButton.classList.add('hidden'); // Hide if only host or no other players
                         }
                     }
-                }).catch(error => console.error("Error checking game phase:", error));
+
+                }).catch(error => console.error("Error checking game phase/hostId for players listener:", error));
 
             }, (error) => {
                 console.error("Error listening to players:", error);
@@ -1509,12 +1547,13 @@
             });
         }
 
-        // Displays scores of players for the CURRENT QUESTION on the results screen
+        // Displays detailed scores of players for the CURRENT QUESTION on the results screen
         async function showQuestionPlayerScoresDetailed() { // Renamed from showRoundPlayerScores
             if (questionPlayerScoresList) questionPlayerScoresList.innerHTML = ''; // Clear previous scores
             try {
                 const playersRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
                 const playersSnapshot = await playersRef.get();
+                // Get main game data to retrieve the correct answers for the current question
                 const gameData = (await db.collection(`artifacts/${appId}/public/data/games`).doc(gameId).get()).data();
                 const currentCorrectAnswers = gameData.currentCorrectAnswers || [];
 
@@ -1543,7 +1582,8 @@
                         let answerColorClass = 'text-gray-700';
 
                         // Check if player's submitted answer is one of the correct answers
-                        const isPlayerAnswerCorrect = currentCorrectAnswers.includes(normalizeString(player.submittedAnswer));
+                        // Normalize the player's submitted answer before checking against correct answers
+                        const isPlayerAnswerCorrect = player.submittedAnswer !== 'لم يجب' && currentCorrectAnswers.includes(normalizeString(player.submittedAnswer));
 
                         if (player.submittedAnswer !== 'لم يجب') {
                             if (isPlayerAnswerCorrect) {
@@ -1553,7 +1593,11 @@
                                 answerStatusIcon = `<i class="fas fa-times-circle text-red-500 mr-2"></i>`;
                                 answerColorClass = 'text-red-700';
                             }
+                        } else {
+                            answerStatusIcon = `<i class="fas fa-question-circle text-gray-500 mr-2"></i>`; // Icon for no answer
+                            answerColorClass = 'text-gray-500';
                         }
+
 
                         listItem.innerHTML = `
                             <span class="font-bold">${player.nickname}:</span> 
@@ -1569,6 +1613,8 @@
             } catch (error) {
                 console.error("Error showing question player scores detailed:", error);
                 showCustomMessageBox("خطأ", "فشل عرض نتائج السؤال بالتفصيل.");
+            } finally {
+                hideLoading(); // Hide loading spinner
             }
         }
 
@@ -1615,7 +1661,7 @@
                             finalScoresList.appendChild(listItem);
                         });
                         if (endTitle) endTitle.textContent = "انتهت اللعبة!";
-                        if (endMessage) endMessage.textContent = `فاز ${finalScores[0].nickname} بـ ${finalScores[0].score} نقطة!`;
+                        if (endMessage) endTitle.textContent = `فاز ${finalScores[0].nickname} بـ ${finalScores[0].score} نقطة!`;
                     } else {
                         if (endTitle) endTitle.textContent = "انتهت اللعبة!";
                         if (endMessage) endTitle.textContent = "لم يكن هناك لاعبون في هذه الجولة.";
