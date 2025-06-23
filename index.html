@@ -440,7 +440,7 @@
                     { questionText: "ما هي عاصمة المغرب؟", displayAnswer: "الرباط", correctAnswers: ["الرباط", "rabat"] },
                     { questionText: "ما هي عاصمة الجزائر؟", displayAnswer: "الجزائر", correctAnswers: ["الجزائر", "algiers"] },
                     { questionText: "ما هي عاصمة السودان؟", displayAnswer: "الخرطوم", correctAnswers: ["الخرطوم", "khartoum"] },
-                    { questionText: "ما هي عاصمة اليمن؟", correctAnswers: ["صنعاء", "sanaa"] },
+                    { questionText: "ما هي عاصمة اليمن؟", displayAnswer: "صنعاء", correctAnswers: ["صنعاء", "sanaa"] },
                     { questionText: "ما هي عاصمة الإمارات؟", displayAnswer: "أبو ظبي", correctAnswers: ["ابوظبي", "أبو ظبي", "abu dhabi"] },
                     { questionText: "ما هي عاصمة قطر؟", displayAnswer: "الدوحة", correctAnswers: ["الدوحة", "doha"] },
                     { questionText: "ما هي عاصمة الكويت؟", displayAnswer: "الكويت", correctAnswers: ["الكويت", "kuwait"] },
@@ -1630,7 +1630,7 @@
 
                     // Update player's per-question data (score itself is updated later by reconcile)
                     transaction.update(playerRef, {
-                        playerSubmittedAnswer: guess, // Store the original guess for display in results
+                        playerSubmittedAnswer: guess, // Store the actual normalized guess for display in results
                         playerSelectedPoints: pointsBet,
                         playerScoreChange: scoreChange,
                         hasSubmittedAnswer: true, // Mark as submitted
@@ -1683,7 +1683,9 @@
                     if (questionCounterDisplay) {
                         // currentQuestionIndexInGame is already incremented for the NEXT question to be displayed,
                         // so to show current question, we use currentQuestionIndexInGame.
-                        const currentQNum = gameData.currentQuestionIndexInGame > 0 ? gameData.currentQuestionIndexInGame : 1; 
+                        // If phase is not 'question_active' or 'question_results', show 0/Total
+                        const currentQNum = gamePhase === 'question_active' || gamePhase === 'question_results'
+                                            ? gameData.currentQuestionIndexInGame : 0;
                         const totalQs = gameData.quizSet ? gameData.quizSet.length : 0;
                         if (totalQs > 0) {
                              questionCounterDisplay.textContent = `${currentQNum} / ${totalQs}`;
@@ -1742,8 +1744,11 @@
                             if (playerDoc.exists) { // Ensure player doc exists
                                 const currentPlayerData = playerDoc.data();
                                 if (!currentPlayerData.hasSubmittedAnswer) {
-                                    // Player has not submitted, enable inputs
-                                    if (gameGuessInput) gameGuessInput.disabled = false;
+                                    // Player has not submitted, enable inputs and clear input field
+                                    if (gameGuessInput) {
+                                        gameGuessInput.value = ''; // Clear input field
+                                        gameGuessInput.disabled = false;
+                                    }
                                     populatePointsButtons(); // Re-populate buttons to enable/disable based on usedPointsBets
                                     if (submitAnswerButton) submitAnswerButton.disabled = false;
                                 } else { 
@@ -1830,7 +1835,7 @@
                             const listItem = document.createElement('li');
                             if (primaryCorrectAnswer) {
                                 // Check if the primary correct answer was guessed by anyone
-                                const wasPrimaryGuessed = (gameData.currentQuestionGuessedAnswers || []).includes(normalizeString(primaryCorrectAnswer)); // Check normalized
+                                const wasPrimaryGuessed = (gameData.currentQuestionGuessedAnswers || []).includes(normalize(primaryCorrectAnswer)); // Check normalized
                                 if (wasPrimaryGuessed) {
                                     listItem.innerHTML = `<i class="fas fa-check text-green-500 mr-2"></i> ${primaryCorrectAnswer}`;
                                 } else {
@@ -2015,7 +2020,7 @@
                         // Check if player's submitted answer is one of the correct answers (using fuzzy logic)
                         let isPlayerAnswerCorrect = false;
                         if (player.submittedAnswer !== 'لم يجب') {
-                            const normalizedSubmittedAnswer = normalize(player.submittedAnswer); // Use custom normalize
+                            const normalizedSubmittedAnswer = normalize(player.submittedAnswer);
                             for (const correctAnswer of currentCorrectAnswers) {
                                 if (isCorrectAnswer(normalizedSubmittedAnswer, [correctAnswer])) { // Use custom isCorrectAnswer
                                     isPlayerAnswerCorrect = true;
@@ -2206,32 +2211,5 @@
         // --- Initial Load ---
         // DOMContentLoaded listener is already used at the bottom of the script for initial checks and Firebase init.
     </script>
-
-    <!-- مكتبة QR Code -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-<script>
-  function generateQRCode(link) {
-    const qrcodeContainer = document.getElementById("qrcode");
-    qrcodeContainer.innerHTML = ""; // ننظف القديم
-
-    new QRCode(qrcodeContainer, {
-      text: link,
-      width: 150,
-      height: 150,
-    });
-  }
-
-  // عند عرض رابط الغرفة
-  window.addEventListener('DOMContentLoaded', () => {
-    const link = window.location.href; // أو أي رابط الغرفة
-    const linkDisplay = document.getElementById("game-link-display");
-    if (linkDisplay) {
-      linkDisplay.textContent = link;
-    }
-    generateQRCode(link);
-  });
-</script>
-
 </body>
 </html>
