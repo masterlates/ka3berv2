@@ -146,6 +146,12 @@
             <h2 class="text-3xl font-bold text-indigo-700 mb-6">إعداد غرفة اللعب</h2> <!-- Host setup title -->
 
             <div class="w-full mb-6">
+                <label for="host-nickname-input" class="block text-xl font-semibold text-gray-700 mb-2">اسمك المستعار (المضيف):</label>
+                <input type="text" id="host-nickname-input" placeholder="اسم المضيف"
+                       class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50">
+            </div>
+
+            <div class="w-full mb-6">
                 <label for="quiz-category-input" class="block text-xl font-semibold text-gray-700 mb-2">اختر فئات الأسئلة (يمكن اختيار أكثر من واحدة):</label>
                 <div class="multiselect-container">
                     <input type="text" id="quiz-category-input" readonly placeholder="انقر هنا لاختيار الفئات..."
@@ -160,12 +166,13 @@
             </div>
 
             <div class="w-full mb-6">
-                <label for="time-limit-select" class="block text-xl font-semibold text-gray-700 mb-2">الوقت المخصص لكل جولة (بالثواني):</label> <!-- Time limit label -->
+                <label for="time-limit-select" class="block text-xl font-semibold text-gray-700 mb-2">الوقت المخصص لكل سؤال (بالثواني):</label> <!-- Time limit label -->
                 <select id="time-limit-select" class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50">
+                    <option value="15">15 ثانية</option>
+                    <option value="20">20 ثانية</option>
                     <option value="30">30 ثانية</option>
+                    <option value="45">45 ثانية</option>
                     <option value="60">60 ثانية</option>
-                    <option value="90">90 ثانية</option>
-                    <option value="120">120 ثانية</option>
                 </select>
             </div>
 
@@ -233,50 +240,58 @@
             <p class="text-2xl font-bold text-gray-800 mb-4 text-center">الفئة: <span id="game-category" class="text-indigo-600"></span></p> <!-- Current category display -->
             <p class="text-3xl font-extrabold text-gray-900 mb-6 text-center" id="game-question"></p> <!-- Current question display -->
 
-            <input type="text" id="game-guess-input" placeholder="اكتب إجابتك هنا..."
-                   class="w-full p-4 mb-6 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50"> <!-- Guess input field -->
+            <div class="flex items-center gap-4 w-full mb-6">
+                <select id="points-select" class="p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50 flex-shrink-0">
+                    <!-- Options 1-20 will be populated by JS -->
+                </select>
+                <input type="text" id="game-guess-input" placeholder="اكتب إجابتك هنا..."
+                    class="w-full p-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50">
+                <button id="submit-answer-button" class="bg-blue-500 hover:bg-blue-600 text-white text-xl font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out flex-shrink-0">
+                    <i class="fas fa-paper-plane"></i> إرسال
+                </button>
+            </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 h-64 overflow-y-auto shadow-inner">
-                    <h3 class="text-xl font-semibold text-blue-800 mb-3">الإجابات الصحيحة (الخاصة بك):</h3> <!-- Player's correct guesses title -->
+                    <h3 class="text-xl font-semibold text-blue-800 mb-3">إجاباتك الصحيحة (لهذا السؤال):</h3> <!-- Player's correct guesses title -->
                     <ul id="player-correct-guesses-list" class="list-disc pr-6 text-gray-700 text-lg space-y-2">
                         <!-- Player's correct guesses will be listed here -->
                     </ul>
                 </div>
                 <div class="bg-purple-50 border border-purple-200 rounded-lg p-6 h-64 overflow-y-auto shadow-inner">
-                    <h3 class="text-xl font-semibold text-purple-800 mb-3">الإجابات المشتركة (لهذه الجولة):</h3> <!-- Shared correct guesses title -->
+                    <h3 class="text-xl font-semibold text-purple-800 mb-3">الإجابات المشتركة (لهذا السؤال):</h3> <!-- Shared correct guesses title -->
                     <ul id="shared-round-guesses-list" class="list-disc pr-6 text-gray-700 text-lg space-y-2">
-                        <!-- All correct guesses across players for THIS ROUND will be listed here -->
+                        <!-- All correct guesses across players for THIS QUESTION will be listed here -->
                     </ul>
                 </div>
             </div>
             
-            <!-- Host-only button to end round early -->
-            <button id="end-round-early-button" class="w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out mt-6 hidden">
-                <i class="fas fa-flag-checkered"></i> إنهاء الجولة الآن <!-- End round early button -->
+            <!-- Host-only button to end question early -->
+            <button id="end-question-early-button" class="w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out mt-6 hidden">
+                <i class="fas fa-flag-checkered"></i> إنهاء السؤال الآن <!-- End question early button -->
             </button>
         </div>
 
-        <!-- Round Results Screen (New) -->
-        <div id="round-results-screen" class="w-full hidden">
-            <h2 class="text-3xl font-bold text-green-700 mb-6 text-center">نتائج الجولة!</h2>
-            <p class="text-xl text-gray-700 mb-6 text-center">فئة الجولة: <span id="results-category" class="font-bold text-indigo-600"></span></p>
+        <!-- Question Results Screen (New) -->
+        <div id="question-results-screen" class="w-full hidden">
+            <h2 class="text-3xl font-bold text-green-700 mb-6 text-center">نتائج السؤال!</h2>
+            <p class="text-xl text-gray-700 mb-6 text-center">الفئة: <span id="results-category" class="font-bold text-indigo-600"></span></p>
             <p class="text-2xl font-semibold text-gray-800 mb-4 text-center">السؤال: <span id="results-question" class="font-bold text-gray-900"></span></p>
 
-            <h3 class="text-2xl font-semibold text-gray-800 mb-4 text-center">الإجابات الصحيحة لهذه الجولة:</h3>
+            <h3 class="text-2xl font-semibold text-gray-800 mb-4 text-center">الإجابات الصحيحة لهذا السؤال:</h3>
             <ul id="round-correct-answers-list" class="w-full bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8 max-h-64 overflow-y-auto shadow-inner text-lg list-disc pr-6">
-                <!-- All correct answers for the round -->
+                <!-- All correct answers for the question -->
             </ul>
 
-            <h3 class="text-2xl font-semibold text-gray-800 mb-4 text-center">نقاط اللاعبين في هذه الجولة:</h3>
-            <ul id="round-player-scores-list" class="w-full bg-gray-100 border border-gray-200 rounded-lg p-4 mb-8 shadow-inner text-lg max-h-64 overflow-y-auto">
-                <!-- Player scores for this round -->
+            <h3 class="text-2xl font-semibold text-gray-800 mb-4 text-center">أداء اللاعبين في هذا السؤال:</h3>
+            <ul id="question-player-scores-list" class="w-full bg-gray-100 border border-gray-200 rounded-lg p-4 mb-8 shadow-inner text-lg max-h-64 overflow-y-auto">
+                <!-- Player scores for this question -->
             </ul>
 
-            <!-- Host controls for next round or end game -->
-            <div id="round-results-host-controls" class="w-full flex flex-col items-center gap-4 hidden">
-                <button id="next-round-button" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
-                    <i class="fas fa-forward"></i> الجولة التالية
+            <!-- Host controls for next question or end game -->
+            <div id="question-results-host-controls" class="w-full flex flex-col items-center gap-4 hidden">
+                <button id="next-question-button" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
+                    <i class="fas fa-forward"></i> السؤال التالي
                 </button>
                 <button id="end-game-final-button" class="w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
                     <i class="fas fa-times-circle"></i> إنهاء اللعبة
@@ -330,9 +345,9 @@
         let playersSnapshotUnsubscribe = null; // Listener for players collection changes
         let timerInterval = null; // Interval for host's game timer
 
-        // Quiz data - Add more quizzes as needed!
-        // IMPORTANT: Each object in quizzes now represents a CATEGORY with multiple questions.
+        // Quiz data - IMPORTANT: Each object in quizzes now represents a CATEGORY with multiple questions.
         // Each question has a questionText and correctAnswers.
+        // Ensure correctAnswers are unique within each question for proper arrayUnion/removal.
         const quizzes = [
             {
                 category: "عواصم الدول العربية",
@@ -424,6 +439,7 @@
         const quizCategoryInput = document.getElementById('quiz-category-input');
         const quizCategoryDropdown = document.getElementById('quiz-category-dropdown');
         const selectedCategoriesTags = document.getElementById('selected-categories-tags');
+        const hostNicknameInput = document.getElementById('host-nickname-input'); // New: Host nickname input
 
         // Function to populate and manage the multi-select dropdown
         // This now lists the category and the first question for clarity
@@ -532,7 +548,7 @@
         const waitingRoomScreen = document.getElementById('waiting-room-screen');
         const joinGameScreen = document.getElementById('join-game-screen');
         const gamePlayScreen = document.getElementById('game-play-screen');
-        const roundResultsScreen = document.getElementById('round-results-screen'); // New round results screen
+        const questionResultsScreen = document.getElementById('question-results-screen'); // Renamed from roundResultsScreen
         const gameEndScreen = document.getElementById('game-end-screen');
 
         const createHostButton = document.getElementById('create-host-button');
@@ -545,25 +561,27 @@
         const copyLinkButton = document.getElementById('copy-link-button');
 
         const joinedPlayersList = document.getElementById('joined-players-list');
-        const startGameButton = document.getElementById('start-game-button'); // Now starts the first round
+        const startGameButton = document.getElementById('start-game-button'); // Now starts the first question
         const gameCodeInput = document.getElementById('game-code-input');
         const playerNicknameInput = document.getElementById('player-nickname-input');
         const joinRoomButton = document.getElementById('join-room-button');
         const gameTimerDisplay = document.getElementById('game-timer');
         const playerScoreDisplay = document.getElementById('player-score');
         const gameCategoryDisplay = document.getElementById('game-category');
-        const gameQuestionDisplay = document.getElementById('game-question'); // New: Displays the current question
+        const gameQuestionDisplay = document.getElementById('game-question'); // Displays the current question text
+        const pointsSelect = document.getElementById('points-select'); // New: Points selection dropdown
         const gameGuessInput = document.getElementById('game-guess-input');
+        const submitAnswerButton = document.getElementById('submit-answer-button'); // New: Submit answer button
         const playerCorrectGuessesList = document.getElementById('player-correct-guesses-list');
-        const sharedRoundGuessesList = document.getElementById('shared-round-guesses-list'); // Renamed for current round
-        const endRoundEarlyButton = document.getElementById('end-round-early-button'); // Button for host to end round early
+        const sharedRoundGuessesList = document.getElementById('shared-round-guesses-list'); // Renamed for current question
+        const endQuestionEarlyButton = document.getElementById('end-question-early-button'); // Renamed from endRoundEarlyButton
 
         const resultsCategory = document.getElementById('results-category');
-        const resultsQuestion = document.getElementById('results-question'); // New: Displays question in results
-        const roundCorrectAnswersList = document.getElementById('round-correct-answers-list');
-        const roundPlayerScoresList = document.getElementById('round-player-scores-list');
-        const roundResultsHostControls = document.getElementById('round-results-host-controls');
-        const nextRoundButton = document.getElementById('next-round-button');
+        const resultsQuestion = document.getElementById('results-question'); // Displays question in results
+        const roundCorrectAnswersList = document.getElementById('round-correct-answers-list'); // Now for question results
+        const questionPlayerScoresList = document.getElementById('question-player-scores-list'); // Renamed from roundPlayerScoresList
+        const questionResultsHostControls = document.getElementById('question-results-host-controls'); // Renamed
+        const nextQuestionButton = document.getElementById('next-question-button'); // Renamed from nextRoundButton
         const endGameFinalButton = document.getElementById('end-game-final-button');
 
 
@@ -583,14 +601,22 @@
                 'roleSelectionScreen': roleSelectionScreen,
                 'createHostButton': createHostButton,
                 'joinPlayerButton': joinPlayerButton,
-                // Add other critical elements here
                 'gameLinkDisplay': gameLinkDisplay,
                 'qrcodeDiv': qrcodeDiv,
                 'copyLinkButton': copyLinkButton,
                 'customMessageBox': customMessageBox,
                 'quizCategoryInput': quizCategoryInput,
                 'quizCategoryDropdown': quizCategoryDropdown,
-                'selectedCategoriesTags': selectedCategoriesTags
+                'selectedCategoriesTags': selectedCategoriesTags,
+                'hostNicknameInput': hostNicknameInput,
+                'pointsSelect': pointsSelect,
+                'gameGuessInput': gameGuessInput,
+                'submitAnswerButton': submitAnswerButton,
+                'endQuestionEarlyButton': endQuestionEarlyButton,
+                'questionResultsScreen': questionResultsScreen,
+                'questionPlayerScoresList': questionPlayerScoresList,
+                'nextQuestionButton': nextQuestionButton,
+                'endGameFinalButton': endGameFinalButton
             };
 
             for (const id in requiredElements) {
@@ -606,6 +632,13 @@
                     // Prevent further script execution if a critical element is missing
                     throw new Error(`Element ${id} not found.`);
                 }
+            }
+            // Populate points select dropdown (1-20)
+            for (let i = 1; i <= 20; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `${i} نقطة`;
+                pointsSelect.appendChild(option);
             }
             // If all critical elements are found, proceed with Firebase init
             initializeFirebase();
@@ -720,7 +753,7 @@
             // It's safer to ensure these elements exist before trying to modify their classes
             const allScreens = [
                 roleSelectionScreen, hostSetupScreen, waitingRoomScreen,
-                joinGameScreen, gamePlayScreen, roundResultsScreen, gameEndScreen
+                joinGameScreen, gamePlayScreen, questionResultsScreen, gameEndScreen
             ];
             allScreens.forEach(screen => {
                 if (screen && screen instanceof HTMLElement) { // Defensive check
@@ -780,6 +813,12 @@
         async function createGame() {
             showLoading(); // Show loading spinner
             try {
+                const hostNickname = hostNicknameInput.value.trim();
+                if (!hostNickname) {
+                    showCustomMessageBox("خطأ", "الرجاء إدخال اسمك المستعار.");
+                    hideLoading();
+                    return;
+                }
                 if (selectedQuizIndices.length === 0) {
                     showCustomMessageBox("خطأ", "الرجاء اختيار فئة واحدة على الأقل للأسئلة.");
                     hideLoading();
@@ -788,10 +827,11 @@
 
                 gameId = generateGameCode(); // Generate a unique game ID
                 isHost = true; // Set current user as host
+                userNickname = hostNickname; // Set host's nickname
                 const timeLimit = parseInt(timeLimitSelect.value); // Get selected time limit
 
                 // Prepare the quiz order for the game
-                // Map selected indices to an array of quiz objects (category, question, and allAnswers)
+                // Flatten all questions from selected categories into a single array
                 const quizSetForGame = [];
                 selectedQuizIndices.forEach(catIndex => {
                     const category = quizzes[catIndex];
@@ -800,7 +840,7 @@
                             quizSetForGame.push({
                                 category: category.category,
                                 question: q.questionText,
-                                allAnswers: q.correctAnswers.map(normalizeString)
+                                correctAnswers: q.correctAnswers.map(normalizeString) // Normalize correct answers
                             });
                         });
                     }
@@ -827,15 +867,15 @@
                     hostId: userId,
                     gamePhase: 'lobby', // Initial phase
                     quizSet: quizSetForGame, // Array of ALL questions for this game
-                    currentQuestionIndexInGame: 0, // Index of the current question in the quizSet
+                    currentQuestionIndexInGame: 0, // Index of the current question in the quizSet (0-indexed)
                     currentCategory: '', // Will be set when question starts
                     currentQuestionText: '', // Will be set when question starts
                     currentCorrectAnswers: [], // Will be set when question starts
-                    currentQuestionGuessedAnswers: [], // Guesses for the current question
+                    currentQuestionGuessedAnswers: [], // Guesses for the current question (from all players)
                     questionStartTime: null, // Timestamp when current question started
                     timeLimitPerQuestion: timeLimit, // Renamed for clarity
                     currentTime: timeLimit, // Initialize current time with full time limit
-                    playerScores: {}, // To store overall cumulative scores for players
+                    playerScores: {}, // To store overall cumulative scores for players (will be updated by listenToPlayers)
                     lastUpdate: Date.now() // Timestamp for host's last update (for real-time timer sync)
                 });
 
@@ -844,12 +884,14 @@
                 const playerRef = gameRef.collection('players').doc(userId);
                 console.log("Attempting to add host player at path:", playerRef.path); // Log path
                 await playerRef.set({
-                    nickname: "المضيف", // Default nickname for the host
+                    nickname: hostNickname, // Use host's provided nickname
                     score: 0, // Overall score
                     joinedAt: Date.now(),
-                    playerCorrectAnswersForCurrentQuestion: [] // Player's correct guesses for the *current* question
+                    playerSubmittedAnswer: '', // Answer submitted for current question
+                    playerSelectedPoints: 0, // Points selected for current question
+                    playerScoreChange: 0, // Points change for current question
+                    hasSubmittedAnswer: false // Flag if player submitted for current question
                 });
-                userNickname = "المضيف"; // Set current user's nickname
 
                 console.log("Game created with ID:", gameId);
                 // Display the direct link to the game room
@@ -948,29 +990,39 @@
                     currentQuestionIndexInGame: nextQuestionIndex + 1, // Advance question index for *next* question setup
                     currentCategory: nextQuestion.category,
                     currentQuestionText: nextQuestion.question, // Set the current question text
-                    currentCorrectAnswers: nextQuestion.allAnswers, // Set the correct answers for this question
-                    currentQuestionGuessedAnswers: [], // Reset guessed answers for new question
+                    currentCorrectAnswers: nextQuestion.correctAnswers.map(normalizeString), // Set the correct answers for this question (normalized)
+                    currentQuestionGuessedAnswers: [], // Reset guessed answers for new question (from all players)
                     questionStartTime: Date.now(), // New timestamp for question start
                     currentTime: gameData.timeLimitPerQuestion, // Reset timer
                 });
 
-                // Crucially, reset players' playerCorrectAnswersForCurrentQuestion in their sub-documents
+                // Crucially, reset players' per-question flags/data in their sub-documents
                 const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
                 const playersDocs = await playersCollectionRef.get();
                 const batch = db.batch();
                 playersDocs.docs.forEach(playerDoc => {
                     const playerRef = playerDoc.ref;
-                    batch.update(playerRef, { playerCorrectAnswersForCurrentQuestion: [] });
+                    batch.update(playerRef, { 
+                        playerSubmittedAnswer: '',
+                        playerSelectedPoints: 0,
+                        playerScoreChange: 0,
+                        hasSubmittedAnswer: false
+                    });
                 });
                 await batch.commit();
-                console.log("Cleared all players' playerCorrectAnswersForCurrentQuestion for new question.");
+                console.log("Reset player-specific question data for new question.");
 
-                // Clear player's correct guesses for the *new* question on their local UI
+                // Clear player's local UI for the new question
                 if (playerCorrectGuessesList) playerCorrectGuessesList.innerHTML = ''; 
                 if (gameGuessInput) {
                     gameGuessInput.value = '';
-                    gameGuessInput.focus();
                 }
+                if (pointsSelect) pointsSelect.value = 1; // Reset points select to default (1)
+                // Re-enable input and select for current player
+                if (gameGuessInput) gameGuessInput.disabled = false;
+                if (pointsSelect) pointsSelect.disabled = false;
+                if (submitAnswerButton) submitAnswerButton.disabled = false;
+
 
                 console.log(`Starting question ${nextQuestionIndex + 1}: ${nextQuestion.category} - Question: ${nextQuestion.question}`);
 
@@ -1060,7 +1112,10 @@
                     nickname: nickname,
                     score: 0, // Overall score
                     joinedAt: Date.now(),
-                    playerCorrectAnswersForCurrentQuestion: [] // Player's correct guesses for the *current* question
+                    playerSubmittedAnswer: '',
+                    playerSelectedPoints: 0,
+                    playerScoreChange: 0,
+                    hasSubmittedAnswer: false
                 }, { merge: true });
 
                 console.log("Joined game:", gameId);
@@ -1097,20 +1152,27 @@
             if (!gameId || (gamePlayScreen && gamePlayScreen.classList.contains('hidden'))) {
                  return; // Do nothing if not in active game play
             }
-            if (!gameGuessInput) {
-                console.error("Error: gameGuessInput element not found.");
+            if (!gameGuessInput || !pointsSelect || !submitAnswerButton) {
+                console.error("Error: Game input elements not found.");
                 return;
             }
 
             const guess = normalizeString(gameGuessInput.value); // Get and normalize player's guess
-            gameGuessInput.value = ''; // Clear input field immediately after submission
+            const pointsBet = parseInt(pointsSelect.value); // Get selected points
 
-            if (guess === '') return; // Do nothing if guess is empty
+            if (guess === '') {
+                showCustomMessageBox("خطأ في الإدخال", "الرجاء كتابة إجابتك قبل الإرسال.");
+                return;
+            }
+            if (isNaN(pointsBet) || pointsBet < 1 || pointsBet > 20) {
+                 showCustomMessageBox("خطأ في النقاط", "الرجاء اختيار عدد نقاط صحيح بين 1 و 20.");
+                 return;
+            }
 
             showLoading(); // Show loading spinner
             try {
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
-                const playerRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId); // Use direct path for playerRef
+                const playerRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId);
 
                 // Use a Firestore transaction to ensure atomic updates
                 await db.runTransaction(async (transaction) => {
@@ -1118,42 +1180,59 @@
                     const playerDoc = await transaction.get(playerRef); // Get current player data
 
                     if (!gameDoc.exists || !playerDoc.exists) {
-                        throw "Game or player data not found."; // Critical error if documents don't exist
+                        throw "Game or player data not found.";
                     }
 
                     const gameData = gameDoc.data();
                     const playerData = playerDoc.data();
 
                     const currentCorrectAnswers = gameData.currentCorrectAnswers || []; // All correct answers for the current question
-                    const currentQuestionGuessedAnswers = gameData.currentQuestionGuessedAnswers || []; // Answers guessed in THIS question by ANY player
-                    let playerOverallScore = playerData.score || 0; // Player's overall score
-                    // Ensure playerCorrectAnswersForCurrentQuestion is properly initialized and fetched from player data
-                    let playerCorrectAnswersForCurrentQuestion = playerData.playerCorrectAnswersForCurrentQuestion || [];
+                    const hasSubmittedAnswer = playerData.hasSubmittedAnswer || false;
 
-                    // Check if guess is correct AND has not been guessed by ANYONE yet for THIS question
-                    if (currentCorrectAnswers.includes(guess) && !currentQuestionGuessedAnswers.includes(guess)) {
-                        // Add guess to the shared list of guessed answers for THIS question
-                        transaction.update(gameRef, {
-                            currentQuestionGuessedAnswers: firebase.firestore.FieldValue.arrayUnion(guess)
-                        });
-
-                        // Update player's overall score and their own list of correct guesses for THIS question
-                        transaction.update(playerRef, {
-                            score: playerOverallScore + 10, // Increase overall score by 10
-                            playerCorrectAnswersForCurrentQuestion: firebase.firestore.FieldValue.arrayUnion(guess)
-                        });
-                        console.log("Correct guess:", guess);
-                    } else if (currentCorrectAnswers.includes(guess) && currentQuestionGuessedAnswers.includes(guess)) {
-                        console.log("Answer already guessed by someone (or self) this question:", guess);
-                        // Optionally provide visual feedback to user: already guessed
-                    } else {
-                        console.log("Incorrect guess:", guess);
-                        // Optionally provide visual feedback to user: incorrect
+                    if (hasSubmittedAnswer) {
+                        console.log("Player already submitted answer for this question.");
+                        showCustomMessageBox("تم الإجابة", "لقد أجبت بالفعل على هذا السؤال.");
+                        return; // Exit transaction if already submitted
                     }
+
+                    let playerOverallScore = playerData.score || 0; // Player's overall score
+                    let scoreChange = 0; // Points change for this question
+
+                    // Check if guess is correct
+                    const isCorrect = currentCorrectAnswers.includes(guess);
+                    if (isCorrect) {
+                        scoreChange = pointsBet;
+                        playerOverallScore += pointsBet; // Add points
+                        console.log("Correct guess:", guess, "Points:", pointsBet);
+                    } else {
+                        scoreChange = -pointsBet;
+                        playerOverallScore -= pointsBet; // Subtract points
+                        console.log("Incorrect guess:", guess, "Points lost:", pointsBet);
+                    }
+
+                    // Update player's overall score and per-question data
+                    transaction.update(playerRef, {
+                        score: playerOverallScore,
+                        playerSubmittedAnswer: guess,
+                        playerSelectedPoints: pointsBet,
+                        playerScoreChange: scoreChange,
+                        hasSubmittedAnswer: true // Mark as submitted
+                    });
+
+                    // Optional: If you want to show which player submitted what immediately on the shared list,
+                    // you would also update a field on the main game document here.
+                    // For now, `listenToPlayers` will update the shared list to show player's names,
+                    // and `showQuestionPlayerScoresDetailed` will show answers.
                 });
+
+                // Disable input elements for the player after submission
+                if (gameGuessInput) gameGuessInput.disabled = true;
+                if (pointsSelect) pointsSelect.disabled = true;
+                if (submitAnswerButton) submitAnswerButton.disabled = true;
+
             } catch (error) {
                 console.error("Error submitting guess:", error);
-                // For a multiplayer game, avoid showing pop-up for every incorrect guess. Log instead.
+                showCustomMessageBox("خطأ في الإجابة", error.message || "حدث خطأ أثناء إرسال الإجابة.");
             } finally {
                 hideLoading(); // Hide loading spinner
             }
@@ -1195,13 +1274,33 @@
                         showScreen(gamePlayScreen);
                         if (gameCategoryDisplay) gameCategoryDisplay.textContent = gameData.currentCategory;
                         if (gameQuestionDisplay) gameQuestionDisplay.textContent = gameData.currentQuestionText; // Display current question text
+                        
+                        // Re-enable input/points select/submit button if player hasn't submitted yet
+                        if (!isHost) { // Only for players (host doesn't answer)
+                            db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId).get().then(playerDoc => {
+                                if (playerDoc.exists && !playerDoc.data().hasSubmittedAnswer) {
+                                    if (gameGuessInput) gameGuessInput.disabled = false;
+                                    if (pointsSelect) pointsSelect.disabled = false;
+                                    if (submitAnswerButton) submitAnswerButton.disabled = false;
+                                } else {
+                                    // Player already submitted
+                                    if (gameGuessInput) gameGuessInput.disabled = true;
+                                    if (pointsSelect) pointsSelect.disabled = true;
+                                    if (submitAnswerButton) submitAnswerButton.disabled = true;
+                                }
+                            }).catch(e => console.error("Error checking player submission status:", e));
+                        } else { // Host
+                            if (gameGuessInput) gameGuessInput.disabled = true;
+                            if (pointsSelect) pointsSelect.disabled = true;
+                            if (submitAnswerButton) submitAnswerButton.disabled = true;
+                        }
                         if (gameGuessInput) gameGuessInput.focus();
                         
                         // Show/hide "End Question Early" button for host only during game play
                         if (isHost) {
-                            if (endRoundEarlyButton) endRoundEarlyButton.classList.remove('hidden');
+                            if (endQuestionEarlyButton) endQuestionEarlyButton.classList.remove('hidden');
                         } else {
-                            if (endRoundEarlyButton) endRoundEarlyButton.classList.add('hidden');
+                            if (endQuestionEarlyButton) endQuestionEarlyButton.classList.add('hidden');
                         }
 
                         // Host-specific timer logic: Host updates time in Firestore
@@ -1241,7 +1340,7 @@
                             });
                         }
 
-                        // Auto-advance if all answers for the current question are guessed
+                        // Auto-advance if all correct answers for the current question are guessed by ANYONE
                         if ((gameData.currentQuestionGuessedAnswers || []).length === (gameData.currentCorrectAnswers || []).length && (gameData.currentCorrectAnswers || []).length > 0) {
                             if (gamePhase === 'question_active') { // Only auto-advance if currently in active question phase
                                 gameRef.update({ gamePhase: 'question_results' }); // Move to showing question results
@@ -1251,7 +1350,7 @@
                     } 
                     // Phase: Showing Question Results
                     else if (gamePhase === 'question_results') {
-                        showScreen(roundResultsScreen); // Reusing roundResultsScreen for question results
+                        showScreen(questionResultsScreen); // Reusing questionResultsScreen
                         clearInterval(timerInterval); // Stop any timer
 
                         if (resultsCategory) resultsCategory.textContent = gameData.currentCategory;
@@ -1273,21 +1372,22 @@
                         }
 
                         // Display player scores for this question (fetching live data from players subcollection)
-                        showQuestionPlayerScores(); // New function for question-specific scores
+                        showQuestionPlayerScoresDetailed(); // Detailed scores for this question
 
                         // Host controls for next question or end game
-                        if (isHost && roundResultsHostControls) {
-                            roundResultsHostControls.classList.remove('hidden');
+                        if (isHost && questionResultsHostControls) {
+                            questionResultsHostControls.classList.remove('hidden');
                             // Check if there are more questions in the quizSet
+                            // gameData.currentQuestionIndexInGame holds the index of the *next* question to be played
                             if (gameData.currentQuestionIndexInGame < gameData.quizSet.length) { 
-                                if (nextRoundButton) nextRoundButton.classList.remove('hidden');
+                                if (nextQuestionButton) nextQuestionButton.classList.remove('hidden');
                                 if (endGameFinalButton) endGameFinalButton.classList.add('hidden'); // Hide end game button if more questions
                             } else { // No more questions, show end game button
-                                if (nextRoundButton) nextRoundButton.classList.add('hidden'); // Hide next question button
+                                if (nextQuestionButton) nextQuestionButton.classList.add('hidden'); // Hide next question button
                                 if (endGameFinalButton) endGameFinalButton.classList.remove('hidden'); // Show end game button
                             }
                         } else {
-                            if (roundResultsHostControls) roundResultsHostControls.classList.add('hidden'); // Hide host controls for players
+                            if (questionResultsHostControls) questionResultsHostControls.classList.add('hidden'); // Hide host controls for players
                         }
                     }
                     // Phase: Final Game Results
@@ -1328,8 +1428,34 @@
                     // Update the list of joined players in the waiting room
                     if (joinedPlayersList) {
                         const listItem = document.createElement('li');
-                        // Display partial user ID for uniqueness and debugging in multiplayer
-                        listItem.textContent = `${playerData.nickname || 'لاعب مجهول'} (ID: ${playerId.substring(0, 8)}... - النقاط: ${playerData.score || 0})`;
+                        // Add Host tag if this player is the host
+                        let playerDisplayName = playerData.nickname || 'لاعب مجهول';
+                        if (isHost && playerId === userId) { // If current user is host and this is their entry
+                            playerDisplayName += ' <i class="fas fa-crown text-yellow-500"></i> (المضيف)';
+                        } else if (!isHost && playerData.hostId === playerId) { // If player is viewing, and this is the host's ID
+                             // Need to fetch hostId from main game doc or pass it
+                             // For now, rely on main game data stream for hostId
+                             // If host is the creator, their ID is in gameData.hostId
+                             // A more robust way would be to listen to gameData.hostId
+                             // or check against the currently known hostId from gameData.
+                             // For simplicity, let's keep it based on isHost for current user.
+                             // A better way is to show a host tag on all players' screens for the actual host:
+                             // This will be done by comparing playerData.id with gameData.hostId (from gameChanges listener)
+                        }
+
+                        // Get gameData to compare with hostId
+                        db.collection(`artifacts/${appId}/public/data/games`).doc(gameId).get().then(gameDoc => {
+                            let updatedPlayerDisplayName = playerDisplayName;
+                            if (gameDoc.exists && gameDoc.data().hostId === playerId) {
+                                updatedPlayerDisplayName = `${playerData.nickname || 'المضيف'} <i class="fas fa-crown text-yellow-500"></i> (المضيف)`;
+                            }
+                            listItem.innerHTML = `${updatedPlayerDisplayName} (ID: ${playerId.substring(0, 8)}... - النقاط: ${playerData.score || 0})`;
+                            // Ensure the list item is added only once if this is an async update
+                            // This currently rebuilds the list, so it's fine.
+                        }).catch(e => console.error("Error getting game data for host tag:", e));
+                        
+                        // Default display before host check resolves (will be updated)
+                        listItem.innerHTML = `${playerDisplayName} (ID: ${playerId.substring(0, 8)}... - النقاط: ${playerData.score || 0})`;
                         joinedPlayersList.appendChild(listItem);
                     }
 
@@ -1337,12 +1463,25 @@
                     if (playerId === userId) {
                         currentPlayerOverallScore = playerData.score || 0;
                         currentPlayerCorrectAnswersForCurrentQuestion = playerData.playerCorrectAnswersForCurrentQuestion || [];
+                        // Set current player's input state (disabled/enabled) based on hasSubmittedAnswer
+                        if (gamePlayScreen && !gamePlayScreen.classList.contains('hidden') && !isHost) {
+                            if (playerData.hasSubmittedAnswer) {
+                                if (gameGuessInput) gameGuessInput.disabled = true;
+                                if (pointsSelect) pointsSelect.disabled = true;
+                                if (submitAnswerButton) submitAnswerButton.disabled = true;
+                            } else {
+                                if (gameGuessInput) gameGuessInput.disabled = false;
+                                if (pointsSelect) pointsSelect.disabled = false;
+                                if (submitAnswerButton) submitAnswerButton.disabled = false;
+                            }
+                        }
                     }
                 });
                 if (playerScoreDisplay) playerScoreDisplay.textContent = currentPlayerOverallScore; // Update UI with overall score
 
                 // Populate the current player's specific correct guesses list for THIS QUESTION
                 if (playerCorrectGuessesList) {
+                    playerCorrectGuessesList.innerHTML = ''; // Clear for fresh update
                     currentPlayerCorrectAnswersForCurrentQuestion.forEach(guess => {
                         const listItem = document.createElement('li');
                         listItem.textContent = guess;
@@ -1371,37 +1510,65 @@
         }
 
         // Displays scores of players for the CURRENT QUESTION on the results screen
-        async function showQuestionPlayerScores() { // Renamed from showRoundPlayerScores
-            if (roundPlayerScoresList) roundPlayerScoresList.innerHTML = ''; // Clear previous scores
+        async function showQuestionPlayerScoresDetailed() { // Renamed from showRoundPlayerScores
+            if (questionPlayerScoresList) questionPlayerScoresList.innerHTML = ''; // Clear previous scores
             try {
                 const playersRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
                 const playersSnapshot = await playersRef.get();
+                const gameData = (await db.collection(`artifacts/${appId}/public/data/games`).doc(gameId).get()).data();
+                const currentCorrectAnswers = gameData.currentCorrectAnswers || [];
+
 
                 let questionScores = [];
                 playersSnapshot.forEach(doc => {
                     const playerData = doc.data();
                     questionScores.push({
                         nickname: playerData.nickname,
-                        questionCorrectAnswersCount: (playerData.playerCorrectAnswersForCurrentQuestion || []).length, // Count correct answers for this question
-                        overallScore: playerData.score || 0 // Display overall score as well
+                        submittedAnswer: playerData.playerSubmittedAnswer || 'لم يجب',
+                        selectedPoints: playerData.playerSelectedPoints || 0,
+                        scoreChange: playerData.playerScoreChange || 0,
+                        overallScore: playerData.score || 0
                     });
                 });
 
-                // Sort by question correct answers count descending
-                questionScores.sort((a, b) => b.questionCorrectAnswersCount - a.questionCorrectAnswersCount);
+                // Sort by score change for this question, then by overall score
+                questionScores.sort((a, b) => b.scoreChange - a.scoreChange);
 
-                if (roundPlayerScoresList) {
+                if (questionPlayerScoresList) {
                     questionScores.forEach(player => {
                         const listItem = document.createElement('li');
                         listItem.classList.add('py-2', 'px-4', 'rounded-lg', 'mb-2', 'bg-gray-50');
-                        listItem.textContent = `${player.nickname}: ${player.questionCorrectAnswersCount} إجابة صحيحة لهذا السؤال (إجمالي النقاط: ${player.overallScore})`;
-                        roundPlayerScoresList.appendChild(listItem);
+                        
+                        let answerStatusIcon = '';
+                        let answerColorClass = 'text-gray-700';
+
+                        // Check if player's submitted answer is one of the correct answers
+                        const isPlayerAnswerCorrect = currentCorrectAnswers.includes(normalizeString(player.submittedAnswer));
+
+                        if (player.submittedAnswer !== 'لم يجب') {
+                            if (isPlayerAnswerCorrect) {
+                                answerStatusIcon = `<i class="fas fa-check-circle text-green-500 mr-2"></i>`;
+                                answerColorClass = 'text-green-700';
+                            } else {
+                                answerStatusIcon = `<i class="fas fa-times-circle text-red-500 mr-2"></i>`;
+                                answerColorClass = 'text-red-700';
+                            }
+                        }
+
+                        listItem.innerHTML = `
+                            <span class="font-bold">${player.nickname}:</span> 
+                            <span class="${answerColorClass}">${answerStatusIcon} ${player.submittedAnswer}</span> 
+                            (راهن بـ ${player.selectedPoints} نقطة، 
+                            ${player.scoreChange >= 0 ? '+' : ''}${player.scoreChange} نقطة، 
+                            إجمالي: ${player.overallScore})
+                        `;
+                        questionPlayerScoresList.appendChild(listItem);
                     });
                 }
 
             } catch (error) {
-                console.error("Error showing question player scores:", error);
-                showCustomMessageBox("خطأ", "فشل عرض نتائج السؤال.");
+                console.error("Error showing question player scores detailed:", error);
+                showCustomMessageBox("خطأ", "فشل عرض نتائج السؤال بالتفصيل.");
             }
         }
 
@@ -1451,7 +1618,7 @@
                         if (endMessage) endMessage.textContent = `فاز ${finalScores[0].nickname} بـ ${finalScores[0].score} نقطة!`;
                     } else {
                         if (endTitle) endTitle.textContent = "انتهت اللعبة!";
-                        if (endMessage) endMessage.textContent = "لم يكن هناك لاعبون في هذه الجولة.";
+                        if (endMessage) endTitle.textContent = "لم يكن هناك لاعبون في هذه الجولة.";
                     }
                 }
 
@@ -1470,6 +1637,7 @@
         if (createHostButton) {
             createHostButton.addEventListener('click', () => {
                 setupQuizCategorySelection(); // Initialize multi-select dropdown
+                if (hostNicknameInput) hostNicknameInput.value = localStorage.getItem('hostNickname') || ''; // Load host nickname
                 showScreen(hostSetupScreen); // Show host setup screen
             });
         }
@@ -1485,14 +1653,17 @@
         // Host clicks to create the game instance in Firebase
         if (createGameButton) createGameButton.addEventListener('click', createGame);
 
+        // Player clicks to submit their answer and chosen points
+        if (submitAnswerButton) submitAnswerButton.addEventListener('click', submitGuess);
+
         // Host clicks to start the game (first question) from waiting room
         if (startGameButton) startGameButton.addEventListener('click', startNextQuestion); 
 
         // Host clicks to end the current question early
-        if (endRoundEarlyButton) endRoundEarlyButton.addEventListener('click', endQuestionEarly); // Renamed
+        if (endQuestionEarlyButton) endQuestionEarlyButton.addEventListener('click', endQuestionEarly); 
 
         // Host clicks to proceed to the next question from question results screen
-        if (nextRoundButton) nextRoundButton.addEventListener('click', startNextQuestion); // Renamed
+        if (nextQuestionButton) nextQuestionButton.addEventListener('click', startNextQuestion); 
 
         // Host clicks to end the entire game from question results screen
         if (endGameFinalButton) endGameFinalButton.addEventListener('click', endGame);
@@ -1515,6 +1686,7 @@
         if (gameGuessInput) {
             gameGuessInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
+                    e.preventDefault(); // Prevent default form submission behavior
                     submitGuess(); // Submit the guess
                 }
             });
@@ -1545,8 +1717,7 @@
         if (customMessageCloseButton) customMessageCloseButton.addEventListener('click', hideCustomMessageBox);
 
         // --- Initial Load ---
-        // No longer using DOMContentLoaded directly here, it's called by the initial check
-        // document.addEventListener('DOMContentLoaded', initializeFirebase);
+        // DOMContentLoaded listener is already used at the bottom of the script for initial checks and Firebase init.
     </script>
 </body>
 </html>
