@@ -1130,7 +1130,7 @@
                     if (category && category.questions) {
                         category.questions.forEach(q => {
                             allPossibleQuestions.push({
-                                category: category.category,
+                                category: q.category,
                                 question: q.questionText,
                                 displayAnswer: q.displayAnswer, // Include displayAnswer
                                 correctAnswers: q.correctAnswers.map(normalize) // Normalize correct answers using custom normalize
@@ -1353,13 +1353,13 @@
                 await batch.commit();
                 console.log("Reset player-specific question data for new question.");
 
-                // Reset player's local UI for the new question
-                if (gameGuessInput) {
-                    gameGuessInput.value = ''; // Clear input field for ALL players
-                }
-                // Reset points button selection to default (1) and re-enable them
-                selectedPointsBet = 1;
-                populatePointsButtons(); // Re-render buttons to reset selection visually and enable
+                // Reset player's local UI for the new question (This is now handled in listenToGameChanges)
+                // if (gameGuessInput) {
+                //     gameGuessInput.value = ''; // Clear input field for ALL players
+                // }
+                // Reset points button selection to default (1) and re-enable them (This is now handled in listenToGameChanges)
+                // selectedPointsBet = 1;
+                // populatePointsButtons(); // Re-render buttons to reset selection visually and enable
 
                 console.log(`Starting question ${currentQuestionIndex + 1}: ${currentQuestion.category} - Question: ${currentQuestion.question}`);
 
@@ -1683,10 +1683,14 @@
                     if (questionCounterDisplay) {
                         // currentQuestionIndexInGame is already incremented for the NEXT question to be displayed,
                         // so to show current question, we use currentQuestionIndexInGame.
-                        const currentQNum = gameData.currentQuestionIndexInGame > 0 ? gameData.currentQuestionIndexInGame : 0; 
+                        const currentQNum = gameData.currentQuestionIndexInGame; 
                         const totalQs = gameData.quizSet ? gameData.quizSet.length : 0;
+                        // Display (current number - 1) for the current question being played.
+                        // If currentQNum is 0 (lobby/countdown), display "0" for the question number.
+                        const displayCurrentQNum = currentQNum > 0 ? currentQNum : 0; // Use 0 for lobby/countdown
+                        
                         if (totalQs > 0) {
-                             questionCounterDisplay.textContent = `${currentQNum} / ${totalQs}`;
+                             questionCounterDisplay.textContent = `${displayCurrentQNum} / ${totalQs}`;
                         } else {
                              questionCounterDisplay.textContent = `-- / --`;
                         }
@@ -1742,9 +1746,9 @@
                             if (playerDoc.exists) { // Ensure player doc exists
                                 const currentPlayerData = playerDoc.data();
                                 if (!currentPlayerData.hasSubmittedAnswer) {
-                                    // Player has not submitted, enable inputs
+                                    // Player has not submitted, enable inputs AND CLEAR INPUT FIELD
                                     if (gameGuessInput) {
-                                        gameGuessInput.value = ''; // Clear input field
+                                        gameGuessInput.value = ''; // Clear input field here for all players on new question
                                         gameGuessInput.disabled = false;
                                     }
                                     populatePointsButtons(); // Re-populate buttons to enable/disable based on usedPointsBets
@@ -2018,13 +2022,8 @@
                         // Check if player's submitted answer is one of the correct answers (using fuzzy logic)
                         let isPlayerAnswerCorrect = false;
                         if (player.submittedAnswer !== 'لم يجب') {
-                            const normalizedSubmittedAnswer = normalize(player.submittedAnswer);
-                            for (const correctAnswer of currentCorrectAnswers) {
-                                if (isCorrectAnswer(normalizedSubmittedAnswer, [correctAnswer])) { // Use custom isCorrectAnswer
-                                    isPlayerAnswerCorrect = true;
-                                    break;
-                                }
-                            }
+                            // currentCorrectAnswers from gameData is already normalized
+                            isPlayerAnswerCorrect = isCorrectAnswer(player.submittedAnswer, currentCorrectAnswers);
                         }
 
                         if (player.submittedAnswer !== 'لم يجب') {
