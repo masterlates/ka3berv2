@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> حرقاسة HARGASA GAME </title>
+    <title>سبوركل بارتي (متعدد اللاعبين)</title>
     <!-- Tailwind CSS CDN for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts - Cairo for typography -->
@@ -174,36 +174,36 @@
 
     <!-- Main Game Container -->
     <div class="bg-white rounded-xl shadow-2xl p-8 max-w-3xl w-full flex flex-col items-center relative overflow-hidden transform transition-all duration-500 ease-in-out">
-        <h1 class="text-4xl font-extrabold text-gray-800 mb-6 text-center leading-tight">حرقاسة HARGASA GAME   <i class="fas fa-users text-blue-500"></i></h1>
+        <h1 class="text-4xl font-extrabold text-gray-800 mb-6 text-center leading-tight">لعبة سبوركل بارتي <i class="fas fa-users text-blue-500"></i></h1>
         <p class="text-lg text-gray-600 mb-8 text-center" id="game-description">
             اختر دورك: إما مضيف لإنشاء غرفة، أو لاعب للانضمام إلى غرفة موجودة. <!-- Game description in Arabic -->
         </p>
 
         <!-- Role Selection Screen -->
         <div id="role-selection-screen" class="w-full flex flex-col items-center space-y-6">
-            <button id="create-host-button" class="w-full md:w-2/3 bg-blue-600 hover:bg-blue-700 text-white text-2xl font-bold py-5 rounded-lg shadow-xl transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
+            <button id="create-host-button" class="w-full md:w-2/3 bg-blue-600 hover:bg-blue-700 text-white text-2xl font-bold py-5 rounded-lg shadow-xl transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center text-center gap-3">
                 <i class="fas fa-crown"></i> إنشاء غرفة (مضيف) <!-- Create host room button -->
             </button>
-            <button id="join-player-button" class="w-full md:w-2/3 bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-5 rounded-lg shadow-xl transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
+            <button id="join-player-button" class="w-full md:w-2/3 bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-5 rounded-lg shadow-xl transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center text-center gap-3">
                 <i class="fas fa-gamepad"></i> الانضمام إلى غرفة (لاعب) <!-- Join player room button -->
             </button>
         </div>
 
         <!-- Host Room Setup Screen -->
         <div id="host-setup-screen" class="w-full flex flex-col items-center hidden">
-            <h2 class="text-3xl font-bold text-indigo-700 mb-6">إعداد غرفة اللعب</h2> <!-- Host setup title -->
+            <h2 class="text-3xl font-bold text-indigo-700 mb-6 text-center">إعداد غرفة اللعب</h2> <!-- Host setup title -->
 
             <div class="w-full mb-6">
-                <label for="host-nickname-input" class="block text-xl font-semibold text-gray-700 mb-2">اسمك المستعار (المضيف):</label>
+                <label for="host-nickname-input" class="block text-xl font-semibold text-gray-700 mb-2 text-right">اسمك المستعار (المضيف):</label>
                 <input type="text" id="host-nickname-input" placeholder="اسم المضيف"
-                        class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50">
+                        class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50 text-right">
             </div>
 
             <div class="w-full mb-6">
-                <label for="quiz-category-input" class="block text-xl font-semibold text-gray-700 mb-2">اختر فئات الأسئلة (يمكن اختيار أكثر من واحدة):</label>
+                <label for="quiz-category-input" class="block text-xl font-semibold text-gray-700 mb-2 text-right">اختر فئات الأسئلة (يمكن اختيار أكثر من واحدة):</label>
                 <div class="multiselect-container">
                     <input type="text" id="quiz-category-input" readonly placeholder="انقر هنا لاختيار الفئات..."
-                        class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50 cursor-pointer">
+                        class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50 cursor-pointer text-right">
                     <div id="quiz-category-dropdown" class="multiselect-dropdown hidden">
                         <!-- Checkboxes will be populated by JS -->
                     </div>
@@ -214,8 +214,8 @@
             </div>
 
             <div class="w-full mb-6">
-                <label for="total-questions-per-game-select" class="block text-xl font-semibold text-gray-700 mb-2">عدد الأسئلة الكلي في اللعبة:</label>
-                <select id="total-questions-per-game-select" class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50">
+                <label for="total-questions-per-game-select" class="block text-xl font-semibold text-gray-700 mb-2 text-right">عدد الأسئلة الكلي في اللعبة:</label>
+                <select id="total-questions-per-game-select" class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50 text-right">
                     <option value="5">5 أسئلة</option>
                     <option value="10">10 أسئلة</option>
                     <option value="15">15 سؤال</option>
@@ -225,8 +225,8 @@
             </div>
 
             <div class="w-full mb-6">
-                <label for="time-limit-select" class="block text-xl font-semibold text-gray-700 mb-2">الوقت المخصص لكل سؤال (بالثواني):</label> <!-- Time limit label -->
-                <select id="time-limit-select" class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50">
+                <label for="time-limit-select" class="block text-xl font-semibold text-gray-700 mb-2 text-right">الوقت المخصص لكل سؤال (بالثواني):</label> <!-- Time limit label -->
+                <select id="time-limit-select" class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50 text-right">
                     <option value="15">15 ثانية</option>
                     <option value="20">20 ثانية</option>
                     <option value="30">30 ثانية</option>
@@ -235,66 +235,66 @@
                 </select>
             </div>
 
-            <button id="create-game-button" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-content-center gap-3">
+            <button id="create-game-button" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center text-center gap-3">
                 <i class="fas fa-plus-circle"></i> إنشاء اللعبة <!-- Create game button -->
             </button>
         </div>
 
         <!-- Waiting Room Screen (Host & Player) -->
         <div id="waiting-room-screen" class="w-full flex flex-col items-center hidden">
-            <h2 class="text-3xl font-bold text-indigo-700 mb-4" id="waiting-room-title">انتظر انضمام اللاعبين...</h2> <!-- Waiting room title -->
-            <p class="text-xl text-gray-700 mb-6">شارك هذا الرابط مع أصدقائك للانضمام:</p> <!-- Share link instruction -->
+            <h2 class="text-3xl font-bold text-indigo-700 mb-4 text-center" id="waiting-room-title">انتظر انضمام اللاعبين...</h2> <!-- Waiting room title -->
+            <p class="text-xl text-gray-700 mb-6 text-center">شارك هذا الرابط مع أصدقائك للانضمام:</p> <!-- Share link instruction -->
             <div class="bg-gray-100 p-4 rounded-lg shadow-inner mb-6 flex flex-col items-center">
                 <span id="game-link-display" class="text-md md:text-xl font-medium text-blue-600 break-all text-center"></span>
-                <div id="qrcode" class="mb-2 p-2 bg-white rounded-lg shadow-md flex justify-content-center align-items-center">
+                <div id="qrcode" class="mb-2 p-2 bg-white rounded-lg shadow-md flex justify-center items-center">
                     <!-- QR code will be rendered here by JavaScript -->
                     <div id="qrcode-fallback-message" class="text-gray-500 text-sm text-center">
                         <!-- Fallback message for QR code -->
                     </div>
                 </div>
-                <button id="copy-link-button" class="copy-button mt-4">انسخ الرابط</button>
+                <button id="copy-link-button" class="copy-button mt-4 text-center">انسخ الرابط</button>
             </div>
             
-            <h3 class="text-2xl font-semibold text-gray-800 mb-4">اللاعبون المنضمون:</h3> <!-- Joined players list title -->
-            <ul id="joined-players-list" class="w-full bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8 h-40 overflow-y-auto shadow-inner text-lg">
+            <h3 class="text-2xl font-semibold text-gray-800 mb-4 text-center">اللاعبون المنضمون:</h3> <!-- Joined players list title -->
+            <ul id="joined-players-list" class="w-full bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8 h-40 overflow-y-auto shadow-inner text-right">
                 <!-- Players will be listed here by JavaScript -->
             </ul>
 
-            <button id="start-game-button" class="w-full bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out hidden">
+            <button id="start-game-button" class="w-full bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center text-center hidden">
                 <i class="fas fa-play"></i> بدء اللعب! <!-- Start game button (for host) -->
             </button>
         </div>
 
         <!-- Join Game Screen (Player) -->
         <div id="join-game-screen" class="w-full flex flex-col items-center hidden">
-            <h2 class="text-3xl font-bold text-indigo-700 mb-6">الانضمام إلى غرفة اللعب</h2> <!-- Join game title -->
+            <h2 class="text-3xl font-bold text-indigo-700 mb-6 text-center">الانضمام إلى غرفة اللعب</h2> <!-- Join game title -->
             <div class="w-full mb-6">
-                <label for="game-code-input" class="block text-xl font-semibold text-gray-700 mb-2">أدخل رمز الغرفة:</label> <!-- Game code input label -->
+                <label for="game-code-input" class="block text-xl font-semibold text-gray-700 mb-2 text-right">أدخل رمز الغرفة:</label> <!-- Game code input label -->
                 <input type="text" id="game-code-input" placeholder="مثال: ABCDE"
                         class="w-full p-4 mb-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50 uppercase text-center tracking-widest">
             </div>
              <div class="w-full mb-6">
-                <label for="player-nickname-input" class="block text-xl font-semibold text-gray-700 mb-2">أدخل اسمك المستعار:</label> <!-- Player nickname input label -->
+                <label for="player-nickname-input" class="block text-xl font-semibold text-gray-700 mb-2 text-right">أدخل اسمك المستعار:</label> <!-- Player nickname input label -->
                 <input type="text" id="player-nickname-input" placeholder="اسمك"
                         class="w-full p-4 mb-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50 text-center">
             </div>
-            <button id="join-room-button" class="w-full bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-content-center gap-3">
+            <button id="join-room-button" class="w-full bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center text-center gap-3">
                 <i class="fas fa-door-open"></i> الانضمام <!-- Join button -->
             </button>
         </div>
 
         <!-- Game Play Screen (Host & Player) -->
         <div id="game-play-screen" class="w-full hidden">
-            <div class="flex flex-col md:flex-row justify-content-between align-items-center w-full mb-8 space-y-4 md:space-y-0">
-                <div class="flex align-items-center space-x-2 space-x-reverse text-2xl font-bold text-gray-700 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
+            <div class="flex flex-col md:flex-row justify-between items-center w-full mb-8 space-y-4 md:space-y-0 text-center">
+                <div class="flex items-center space-x-2 space-x-reverse text-2xl font-bold text-gray-700 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
                     <i class="fas fa-hourglass-half text-blue-500"></i>
                     <span>الوقت: <span id="game-timer" class="text-blue-600">--</span> ثانية</span> <!-- Game timer display -->
                 </div>
-                <div class="flex align-items-center space-x-2 space-x-reverse text-2xl font-bold text-gray-700 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
+                <div class="flex items-center space-x-2 space-x-reverse text-2xl font-bold text-gray-700 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
                     <i class="fas fa-star text-yellow-500"></i>
                     <span>نقاطك: <span id="player-score" class="text-yellow-600">0</span></span> <!-- Player's score display -->
                 </div>
-                <div class="flex align-items-center space-x-2 space-x-reverse text-2xl font-bold text-gray-700 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
+                <div class="flex items-center space-x-2 space-x-reverse text-2xl font-bold text-gray-700 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
                     <i class="fas fa-question-circle text-purple-500"></i>
                     <span>السؤال: <span id="question-counter" class="text-purple-600">-- / --</span></span> <!-- Question counter -->
                 </div>
@@ -306,11 +306,11 @@
                 <p class="text-3xl font-extrabold text-gray-900" id="game-question"></p> <!-- Current question display -->
             </div>
 
-            <div class="flex align-items-center flex-wrap gap-2 w-full mb-4">
+            <div class="flex items-center flex-wrap gap-2 w-full mb-4">
                 <label for="game-guess-input" class="sr-only">اكتب إجابتك هنا</label>
                 <input type="text" id="game-guess-input" placeholder="اكتب إجابتك هنا..."
-                    class="flex-grow p-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50">
-                <button id="submit-answer-button" class="bg-blue-500 hover:bg-blue-600 text-white text-xl font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out flex-shrink-0">
+                    class="flex-grow p-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50 text-right">
+                <button id="submit-answer-button" class="bg-blue-500 hover:bg-blue-600 text-white text-xl font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out flex-shrink-0 text-center">
                     <i class="fas fa-paper-plane"></i> إرسال
                 </button>
             </div>
@@ -323,14 +323,14 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 h-64 overflow-y-auto shadow-inner">
-                    <h3 class="text-xl font-semibold text-blue-800 mb-3">إجاباتك الصحيحة (لهذا السؤال):</h3> <!-- Player's correct guesses title -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 h-64 overflow-y-auto shadow-inner text-right">
+                    <h3 class="text-xl font-semibold text-blue-800 mb-3 text-right">إجاباتك الصحيحة (لهذا السؤال):</h3> <!-- Player's correct guesses title -->
                     <ul id="player-correct-guesses-list" class="list-disc pr-6 text-gray-700 text-lg space-y-2">
                         <!-- Player's correct guesses will be listed here -->
                     </ul>
                 </div>
-                <div class="bg-purple-50 border border-purple-200 rounded-lg p-6 h-64 overflow-y-auto shadow-inner">
-                    <h3 class="text-xl font-semibold text-purple-800 mb-3">الإجابات المشتركة (لهذا السؤال):</h3> <!-- Shared correct guesses title -->
+                <div class="bg-purple-50 border border-purple-200 rounded-lg p-6 h-64 overflow-y-auto shadow-inner text-right">
+                    <h3 class="text-xl font-semibold text-purple-800 mb-3 text-right">الإجابات المشتركة (لهذا السؤال):</h3> <!-- Shared correct guesses title -->
                     <ul id="shared-round-guesses-list" class="list-disc pr-6 text-gray-700 text-lg space-y-2">
                         <!-- All correct guesses across players for THIS QUESTION will be listed here -->
                     </ul>
@@ -338,12 +338,12 @@
             </div>
             
             <!-- Host-only controls during game play -->
-            <div id="host-gameplay-controls" class="w-full flex flex-col align-items-center gap-4 hidden">
-                <h3 class="text-xl font-semibold text-gray-800 mb-2">حالة إجابة اللاعبين (المضيف فقط):</h3>
-                <ul id="host-submission-status-list" class="w-full bg-gray-100 border border-gray-200 rounded-lg p-3 mb-4 shadow-inner text-base max-h-32 overflow-y-auto">
+            <div id="host-gameplay-controls" class="w-full flex flex-col items-center gap-4 hidden">
+                <h3 class="text-xl font-semibold text-gray-800 mb-2 text-center">حالة إجابة اللاعبين (المضيف فقط):</h3>
+                <ul id="host-submission-status-list" class="w-full bg-gray-100 border border-gray-200 rounded-lg p-3 mb-4 shadow-inner text-base text-right max-h-32 overflow-y-auto">
                     <!-- Player submission status will be listed here -->
                 </ul>
-                <button id="end-question-early-button" class="w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out">
+                <button id="end-question-early-button" class="w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center text-center">
                     <i class="fas fa-flag-checkered"></i> إنهاء السؤال الآن <!-- End question early button -->
                 </button>
             </div>
@@ -356,21 +356,21 @@
             <p class="text-2xl font-semibold text-gray-800 mb-4 text-center">السؤال: <span id="results-question" class="font-bold text-gray-900"></span></p>
 
             <h3 class="text-2xl font-semibold text-gray-800 mb-4 text-center">الإجابة الصحيحة:</h3>
-            <ul id="round-correct-answers-list" class="w-full bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8 max-h-64 overflow-y-auto shadow-inner text-lg list-disc pr-6">
+            <ul id="round-correct-answers-list" class="w-full bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8 max-h-64 overflow-y-auto shadow-inner text-lg list-disc pr-6 text-right">
                 <!-- All correct answers for the question -->
             </ul>
 
             <h3 class="text-2xl font-semibold text-gray-800 mb-4 text-center">أداء اللاعبين في هذا السؤال:</h3>
-            <ul id="question-player-scores-list" class="w-full bg-gray-100 border border-gray-200 rounded-lg p-4 mb-8 shadow-inner text-lg max-h-64 overflow-y-auto">
+            <ul id="question-player-scores-list" class="w-full bg-gray-100 border border-gray-200 rounded-lg p-4 mb-8 shadow-inner text-lg max-h-64 overflow-y-auto text-right">
                 <!-- Player scores for this question -->
             </ul>
 
             <!-- Host controls for next question or end game -->
-            <div id="question-results-host-controls" class="w-full flex flex-col align-items-center gap-4 hidden">
-                <button id="next-question-button" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex align-items-center justify-content-center gap-3">
+            <div id="question-results-host-controls" class="w-full flex flex-col items-center gap-4 hidden">
+                <button id="next-question-button" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center text-center gap-3">
                     <i class="fas fa-forward"></i> السؤال التالي
                 </button>
-                <button id="end-game-final-button" class="w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex align-items-center justify-content-center gap-3">
+                <button id="end-game-final-button" class="w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center text-center gap-3">
                     <i class="fas fa-times-circle"></i> إنهاء اللعبة
                 </button>
             </div>
@@ -382,21 +382,23 @@
             <p class="text-xl text-gray-600 mb-6 text-center" id="end-message"></p> <!-- End message -->
 
             <h3 class="text-2xl font-semibold text-gray-800 mb-4 text-center">الترتيب النهائي:</h3> <!-- Final scores title -->
-            <ul id="final-scores-list" class="w-full bg-gray-100 border border-gray-200 rounded-lg p-4 mb-8 shadow-inner text-lg max-h-64 overflow-y-auto">
+            <ul id="final-scores-list" class="w-full bg-gray-100 border border-gray-200 rounded-lg p-4 mb-8 shadow-inner text-lg max-h-64 overflow-y-auto text-right">
                 <!-- Final scores will be listed here by JavaScript -->
             </ul>
 
-            <button id="play-again-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex align-items-center justify-content-center gap-3">
+            <button id="play-again-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center text-center gap-3">
                 <i class="fas fa-redo"></i> العب مرة أخرى <!-- Play again button -->
             </button>
+            <!-- New: Button for players when host can restart -->
+            <p id="waiting-for-host-to-restart-message" class="text-lg text-gray-600 mt-4 text-center hidden">في انتظار أن يبدأ المضيف جولة جديدة...</p>
         </div>
 
         <!-- Custom Message Box - For alerts and confirmations -->
-        <div id="custom-message-box" class="fixed inset-0 bg-black bg-opacity-70 flex align-items-center justify-content-center p-4 z-40 hidden transition-opacity duration-300 ease-out opacity-0">
+        <div id="custom-message-box" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-40 hidden transition-opacity duration-300 ease-out opacity-0">
             <div class="bg-white rounded-xl p-8 text-center shadow-xl transform scale-90 transition-transform duration-300 ease-out">
                 <h2 id="custom-message-title" class="text-3xl font-bold text-gray-900 mb-4"></h2> <!-- Message title -->
                 <p id="custom-message-content" class="text-xl text-gray-700 mb-6"></p> <!-- Message content -->
-                <button id="custom-message-close-button" class="bg-blue-600 hover:bg-blue-700 text-white text-xl font-semibold py-3 px-8 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out">
+                <button id="custom-message-close-button" class="bg-blue-600 hover:bg-blue-700 text-white text-xl font-semibold py-3 px-8 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out text-center">
                     حسناً <!-- Close button -->
                 </button>
             </div>
@@ -425,6 +427,7 @@
         let userUsedPointsBets = []; // Array to store points already used by the current player in the current GAME
         let currentQuestionSoundInterval = null; // Interval for repeated sound effect
         let soundStarted = false; // Flag to control sound playback for time running out
+        let hostSelectedCategoriesForGame = []; // Store selected categories by host for replay
 
         // Quiz data - IMPORTANT: Each object in quizzes now represents a CATEGORY with multiple questions.
         // Each question has a questionText and correctAnswers.
@@ -575,7 +578,7 @@
                     { questionText: "ما اسم السلسلة التي عرضت ليلة رأس السنة؟", displayAnswer: "شوفلي حل ليلة رأس السنة", correctAnswers: ["شوفلي حل ليلة رأس السنة", "ليلة رأس السنة"] },
                     { questionText: "ما هي السنة التي بدأ فيها عرض مسلسل شوفلي حل؟", displayAnswer: "2005", correctAnswers: ["2005"] },
                     { questionText: "كم عدد مواسم مسلسل شوفلي حل؟", displayAnswer: "6 مواسم", correctAnswers: ["6", "6 مواسم", "ستة", "ستة مواسم"] },
-                    { questionText: "ما اسم المحل الذي فتحته زينب بعد محل التحف؟", display: "مركز تجميل", correctAnswers: ["مركز تجميل", "صالون تجميل"] },
+                    { questionText: "ما اسم المحل الذي فتحته زينب بعد محل التحف؟", displayAnswer: "مركز تجميل", correctAnswers: ["مركز تجميل", "صالون تجميل"] },
                     { questionText: "ما اسم الحيوان الأليف الذي كان عند جنات في إحدى الحلقات؟", displayAnswer: "قرد", correctAnswers: ["قرد", "monkey"] },
                     { questionText: "ما اسم صديق سليمان المقرب الذي ظهر في عدة حلقات وكان يعمل مهندساً؟", displayAnswer: "الطيب", correctAnswers: ["الطيب", "tayeb", "طيّب"] },
                     { questionText: "ما اسم الطبيبة التي كانت تعمل مع سليمان في عيادته لفترة؟", displayAnswer: "الدكتورة أسماء", correctAnswers: ["الدكتورة أسماء", "أسماء", "asmaa"] },
@@ -635,6 +638,7 @@
         const selectedCategoriesTags = document.getElementById('selected-categories-tags');
         const hostNicknameInput = document.getElementById('host-nickname-input'); // Host nickname input
         const totalQuestionsPerGameSelect = document.getElementById('total-questions-per-game-select'); // Total questions select
+        const waitingForHostToRestartMessage = document.getElementById('waiting-for-host-to-restart-message'); // New element
 
         // Function to populate and manage the multi-select dropdown
         // This now lists the category and an example question from it for clarity
@@ -789,6 +793,7 @@
         const endMessage = document.getElementById('end-message');
         const finalScoresList = document.getElementById('final-scores-list');
         const playAgainButton = document.getElementById('play-again-button');
+        const waitingForHostToRestartMsg = document.getElementById('waiting-for-host-to-restart-message'); // Renamed variable
         const customMessageBox = document.getElementById('custom-message-box');
         const customMessageTitle = document.getElementById('custom-message-title');
         const customMessageContent = document.getElementById('custom-message-content');
@@ -845,7 +850,8 @@
                 'totalQuestionsPerGameSelect': totalQuestionsPerGameSelect,
                 'questionCounterDisplay': questionCounterDisplay,
                 'hostSubmissionStatusList': hostSubmissionStatusList,  
-                'hostGameplayControls': hostGameplayControls  
+                'hostGameplayControls': hostGameplayControls,
+                'waitingForHostToRestartMessage': waitingForHostToRestartMsg // Added check for the new message element
             };
 
             for (const id in requiredElements) {
@@ -1115,6 +1121,7 @@
                 localStorage.setItem('hostNickname', hostNickname); // Save host nickname locally
                 const timeLimit = parseInt(timeLimitSelect.value); // Get selected time limit
                 const totalQuestions = parseInt(totalQuestionsPerGameSelect.value); // Get total questions for game
+                hostSelectedCategoriesForGame = [...selectedQuizIndices]; // Save categories for replay
 
                 // Prepare the quiz order for the game
                 // Flatten all questions from selected categories into a single array
@@ -1310,6 +1317,7 @@
                 const quizSet = gameData.quizSet;
 
                 if (currentQuestionIndex >= quizSet.length) {
+                    console.log("All questions played. Transitioning to final_results.");
                     // All questions played, end the game
                     await gameRef.update({ gamePhase: 'final_results' });
                     return;
@@ -1848,6 +1856,7 @@
                                     await gameRef.update({ currentTime: remainingTime, lastUpdate: now });
                                     if (gameTimerDisplay) gameTimerDisplay.textContent = remainingTime; // Update timer display
                                 } else {
+                                    console.log("Time ran out. Moving to question results.");
                                     clearInterval(timerInterval); // Stop timer
                                     clearInterval(currentQuestionSoundInterval); // Stop sound interval
                                     soundStarted = false; // Reset sound flag
@@ -1939,10 +1948,12 @@
                             questionResultsHostControls.classList.remove('hidden');
                             // Check if there are more questions in the quizSet
                             // gameData.currentQuestionIndexInGame holds the index of the *next* question to be played
-                            if (gameData.currentQuestionIndexInGame < gameData.quizSet.length) {  
+                            if (gameData.currentQuestionIndexInGame <= gameData.quizSet.length) { // Use <= to show "Next" for the *last* question, leading to final results
                                 if (nextQuestionButton) nextQuestionButton.classList.remove('hidden');
                                 if (endGameFinalButton) endGameFinalButton.classList.add('hidden'); // Hide end game button if more questions
-                            } else { // No more questions, show end game button
+                            } 
+                            if (gameData.currentQuestionIndexInGame > gameData.quizSet.length) { // All questions played, show end game
+                                console.log("All questions done, showing End Game button.");
                                 if (nextQuestionButton) nextQuestionButton.classList.add('hidden'); // Hide next question button
                                 if (endGameFinalButton) endGameFinalButton.classList.remove('hidden'); // Show end game button
                             }
@@ -2133,6 +2144,7 @@
 
         // Displays the final overall scores screen and results
         async function showFinalScores() {
+            console.log("Showing final scores.");
             showLoading(); // Show loading spinner
             try {
                 // Unsubscribe from real-time listeners to prevent further updates
@@ -2183,6 +2195,15 @@
                 }
 
                 showScreen(gameEndScreen); // Show the game end screen
+
+                // Handle "Play Again" button visibility based on host status
+                if (isHost) {
+                    if (playAgainButton) playAgainButton.classList.remove('hidden');
+                    if (waitingForHostToRestartMsg) waitingForHostToRestartMsg.classList.add('hidden');
+                } else {
+                    if (playAgainButton) playAgainButton.classList.add('hidden');
+                    if (waitingForHostToRestartMsg) waitingForHostToRestartMsg.classList.remove('hidden');
+                }
 
             } catch (error) {
                 console.error("Error showing final scores:", error);
@@ -2252,28 +2273,96 @@
             });
         }
 
-        // Button to play again after a game ends
+        // Button to play again after a game ends (Host initiates full game reset for new round)
         if (playAgainButton) {
-            playAgainButton.addEventListener('click', () => {
-                // Reset all game-related global variables and listeners
-                gameId = null;
-                isHost = false;
-                clearInterval(timerInterval); // Clear any active timer
-                clearInterval(currentQuestionSoundInterval); // Clear sound interval
-                soundStarted = false; // Reset sound flag
-                if (gameSnapshotUnsubscribe) { // Unsubscribe from Firestore listeners
-                    gameSnapshotUnsubscribe();
-                    gameSnapshotUnsubscribe = null;
+            playAgainButton.addEventListener('click', async () => {
+                if (!isHost || !gameId) {
+                    console.warn("Play Again clicked by non-host or without gameId. Ignoring.");
+                    return;
                 }
-                if (playersSnapshotUnsubscribe) { // Unsubscribe from Firestore listeners
-                    playersSnapshotUnsubscribe();
-                    playersSnapshotUnsubscribe = null;
+
+                showLoading();
+                try {
+                    const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
+                    
+                    // Re-generate quiz set from previously selected categories
+                    let allPossibleQuestions = [];
+                    hostSelectedCategoriesForGame.forEach(catIndex => { // Use saved categories
+                        const category = quizzes[catIndex];
+                        if (category && category.questions) {
+                            category.questions.forEach(q => {
+                                allPossibleQuestions.push({
+                                    category: category.category,
+                                    question: q.questionText,
+                                    displayAnswer: q.displayAnswer,
+                                    correctAnswers: q.correctAnswers.map(normalize)
+                                });
+                            });
+                        }
+                    });
+
+                    // Shuffle and slice for the new game round
+                    for (let i = allPossibleQuestions.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [allPossibleQuestions[i], allPossibleQuestions[j]] = [allPossibleQuestions[j], allPossibleQuestions[i]];
+                    }
+                    const totalQuestionsForNewRound = parseInt(totalQuestionsPerGameSelect.value); // Use current setting for total questions
+                    const newQuizSetForGame = allPossibleQuestions.slice(0, totalQuestionsForNewRound);
+
+                    if (newQuizSetForGame.length === 0) {
+                        throw new Error("لا توجد أسئلة كافية في الفئات المختارة لبدء جولة جديدة.");
+                    }
+
+                    // Reset game document state in Firestore for the new round
+                    await gameRef.update({
+                        gamePhase: 'lobby', // Go back to lobby phase
+                        quizSet: newQuizSetForGame, // New set of questions
+                        currentQuestionIndexInGame: 0,
+                        currentCategory: '',
+                        currentQuestionText: '',
+                        currentCorrectAnswers: [],
+                        currentDisplayAnswer: '',
+                        currentQuestionGuessedAnswers: [],
+                        lastQuestionPlayerResults: [],
+                        questionStartTime: null,
+                        timeLimitPerQuestion: parseInt(timeLimitSelect.value), // Use current time limit setting
+                        currentTime: parseInt(timeLimitSelect.value),
+                        countdownStartTime: null,
+                        scoresReconciledForCurrentQuestion: false,
+                        lastUpdate: Date.now()
+                    });
+
+                    // Reset all players' scores and states in the subcollection
+                    const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
+                    const playersDocs = await playersCollectionRef.get();
+                    const batch = db.batch();
+                    playersDocs.docs.forEach(playerDoc => {
+                        const playerRef = playerDoc.ref;
+                        batch.update(playerRef, {
+                            score: 0, // Reset overall score
+                            playerSubmittedAnswer: '',
+                            playerSelectedPoints: 0,
+                            playerScoreChange: 0,
+                            hasSubmittedAnswer: false,
+                            usedPointsBets: [] // Reset used points for the new game
+                        });
+                    });
+                    await batch.commit();
+
+                    // Reset local state for the host
+                    userUsedPointsBets = [];
+                    populatePointsButtons(); // Re-render point buttons for new game
+                    console.log(`Game ${gameId} restarted for a new round.`);
+
+                    // No need to change URL or re-listen, as we stay in the same gameId.
+                    // The listeners will automatically pick up the 'lobby' phase change.
+
+                } catch (error) {
+                    console.error("Error restarting game for new round:", error);
+                    showCustomMessageBox("خطأ في إعادة تشغيل اللعبة", error.message || "فشل إعادة تشغيل اللعبة.");
+                } finally {
+                    hideLoading();
                 }
-                selectedQuizIndices = []; // Reset selected quizzes for host setup
-                userUsedPointsBets = []; // Reset locally used points
-                populatePointsButtons(); // Re-render points buttons
-                showScreen(roleSelectionScreen); // Return to role selection screen
-                window.history.pushState({}, '', window.location.pathname); // Clear gameId from URL
             });
         }
 
