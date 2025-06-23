@@ -137,6 +137,14 @@
             transform: scale(1.05);
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+        .points-button.used { /* Style for used/disabled buttons */
+            background-color: #e2e8f0; /* gray-200 */
+            color: #94a3b8; /* slate-400 */
+            border-color: #cbd5e0; /* gray-300 */
+            cursor: not-allowed;
+            opacity: 0.8;
+            text-decoration: line-through;
+        }
         .points-button:not(.selected):hover {
             background-color: #e2e8f0; /* gray-200 */
             border-color: #a0aec0; /* gray-400 */
@@ -391,6 +399,7 @@
         let playersSnapshotUnsubscribe = null; // Listener for players collection changes
         let timerInterval = null; // Interval for host's game timer
         let selectedPointsBet = 1; // Default selected points bet
+        let userUsedPointsBets = []; // NEW: Array to store points already used by the current player
 
         // Quiz data - IMPORTANT: Each object in quizzes now represents a CATEGORY with multiple questions.
         // Each question has a questionText and correctAnswers.
@@ -705,11 +714,21 @@
                 button.textContent = i;
                 button.setAttribute('data-points', i); // Store points value in data attribute
 
+                // Check if this point value has been used by the current user
+                const isDisabled = userUsedPointsBets.includes(i);
+                if (isDisabled) {
+                    button.disabled = true;
+                    button.classList.add('used'); // Add a specific class for used buttons
+                }
+
                 if (i === selectedPointsBet) {
                     button.classList.add('selected'); // Select default 1
                 }
 
                 button.addEventListener('click', (event) => {
+                    // Prevent selection of disabled buttons
+                    if (event.target.disabled) return; 
+
                     // Unselect previous button
                     const currentSelected = pointsButtonGroup.querySelector('.points-button.selected');
                     if (currentSelected) {
@@ -955,9 +974,8 @@
                     questionStartTime: null, // Timestamp when current question started
                     timeLimitPerQuestion: timeLimit, // Renamed for clarity
                     currentTime: timeLimit, // Initialize current time with full time limit
-                    countdownStartTime: null, // New: For countdown before question
-                    countdownDuration: 5, // New: Duration of countdown
-                    // playerScores: {}, // This will be implicitly managed via player sub-collection listen
+                    countdownStartTime: null, // For countdown before question
+                    countdownDuration: 5, // Duration of countdown
                     lastUpdate: Date.now() // Timestamp for host's last update (for real-time timer sync)
                 });
 
@@ -972,8 +990,11 @@
                     playerSubmittedAnswer: '', // Answer submitted for current question
                     playerSelectedPoints: 0, // Points selected for current question
                     playerScoreChange: 0, // Points change for current question
-                    hasSubmittedAnswer: false // Flag if player submitted for current question
+                    hasSubmittedAnswer: false, // Flag if player submitted for current question
+                    usedPointsBets: [] // NEW: Array to track points already used by this player in this game
                 });
+                // Ensure usedPointsBets for host is also initialized
+                userUsedPointsBets = [];
 
                 console.log("Game created with ID:", gameId);
                 // Display the direct link to the game room
@@ -1094,21 +1115,21 @@
                 if (!gameDoc.exists) throw new Error("اللعبة غير موجودة.");
 
                 const gameData = gameDoc.data();
-                const nextQuestionIndex = gameData.currentQuestionIndexInGame; // This is the index for the question we are starting NOW
+                const currentQuestionIndex = gameData.currentQuestionIndexInGame; // This is the index for the question we are starting NOW
                 const quizSet = gameData.quizSet;
 
-                if (nextQuestionIndex >= quizSet.length) {
+                if (currentQuestionIndex >= quizSet.length) {
                     // This case should ideally be handled by initiateCountdownForNextQuestion,
                     // but as a safeguard, if we somehow get here, end the game.
                     await gameRef.update({ gamePhase: 'final_results' });
                     return;
                 }
 
-                const currentQuestion = quizSet[nextQuestionIndex]; // Get the question for THIS round
+                const currentQuestion = quizSet[currentQuestionIndex]; // Get the question for THIS round
 
                 await gameRef.update({
                     gamePhase: 'question_active',
-                    currentQuestionIndexInGame: nextQuestionIndex + 1, // Advance for *next* potential question
+                    currentQuestionIndexInGame: currentQuestionIndex + 1, // Advance for *next* potential question
                     currentCategory: currentQuestion.category,
                     currentQuestionText: currentQuestion.question,
                     currentCorrectAnswers: currentQuestion.correctAnswers,
@@ -1117,7 +1138,7 @@
                     currentTime: gameData.timeLimitPerQuestion, // Reset timer
                 });
 
-                // Reset players' per-question flags/data in their sub-documents
+                // Crucially, reset players' per-question flags/data in their sub-documents
                 const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
                 const playersDocs = await playersCollectionRef.get();
                 const batch = db.batch();
@@ -1140,9 +1161,9 @@
                 }
                 // Reset points button selection to default (1) and re-enable them
                 selectedPointsBet = 1;
-                populatePointsButtons(); 
+                populatePointsButtons(); // Re-render buttons to reset selection visually and enable
                 
-                console.log(`Starting question ${nextQuestionIndex + 1}: ${currentQuestion.category} - Question: ${currentQuestion.question}`);
+                console.log(`Starting question ${currentQuestionIndex + 1}: ${currentQuestion.category} - Question: ${currentQuestion.question}`);
 
             } catch (error) {
                 console.error("Error starting next question:", error);
@@ -1233,8 +1254,12 @@
                     playerSubmittedAnswer: '',
                     playerSelectedPoints: 0,
                     playerScoreChange: 0,
-                    hasSubmittedAnswer: false
+                    hasSubmittedAnswer: false,
+                    usedPointsBets: [] // NEW: Initialize used points for this player
                 }, { merge: true });
+                // If player is joining, reset their local used points
+                userUsedPointsBets = [];
+
 
                 console.log("Joined game:", gameId);
                 // Update URL to include gameId for easy sharing/rejoining
@@ -1274,6 +1299,12 @@
                 console.error("Error: Game input elements not found.");
                 return;
             }
+            // If already submitted, prevent re-submission (client-side check for immediate feedback)
+            if (gameGuessInput.disabled) { 
+                showCustomMessageBox("تم الإجابة", "لقد أجبت بالفعل على هذا السؤال.");
+                return;
+            }
+
 
             const guess = normalizeString(gameGuessInput.value); // Get and normalize player's guess
             const pointsBet = selectedPointsBet; // Get selected points from global variable
@@ -1307,12 +1338,19 @@
                     const currentCorrectAnswers = gameData.currentCorrectAnswers || []; // All correct answers for the current question
                     const currentQuestionGuessedAnswers = gameData.currentQuestionGuessedAnswers || []; // Answers guessed in THIS question by ANY player
                     const hasSubmittedAnswer = playerData.hasSubmittedAnswer || false;
+                    const playerUsedPointsBets = playerData.usedPointsBets || [];
 
                     if (hasSubmittedAnswer) {
-                        console.log("Player already submitted answer for this question.");
+                        console.log("Player already submitted answer for this question (transaction check).");
                         showCustomMessageBox("تم الإجابة", "لقد أجبت بالفعل على هذا السؤال.");
                         return; // Exit transaction if already submitted
                     }
+                    if (playerUsedPointsBets.includes(pointsBet)) {
+                         console.log("Player already used this point value in this game (transaction check).");
+                         showCustomMessageBox("نقاط مستخدمة", `لقد استخدمت قيمة ${pointsBet} نقطة بالفعل في هذه اللعبة. الرجاء اختيار قيمة أخرى.`);
+                         return; // Exit transaction if points already used
+                    }
+
 
                     let playerOverallScore = playerData.score || 0; // Player's overall score
                     let scoreChange = 0; // Points change for this question
@@ -1339,22 +1377,23 @@
                         playerSubmittedAnswer: guess,
                         playerSelectedPoints: pointsBet,
                         playerScoreChange: scoreChange,
-                        hasSubmittedAnswer: true // Mark as submitted
+                        hasSubmittedAnswer: true, // Mark as submitted
+                        usedPointsBets: firebase.firestore.FieldValue.arrayUnion(pointsBet) // NEW: Add used points to player's array
                     });
                 });
-
-                // Disable input elements for the player after successful submission
-                // This is now handled by listenToPlayers when playerDoc updates, making it reactive.
-                // But keeping direct disable here for immediate feedback is fine.
-                if (gameGuessInput) gameGuessInput.disabled = true;
-                if (pointsButtonGroup) { // Disable all point buttons
-                    Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
-                }
-                if (submitAnswerButton) submitAnswerButton.disabled = true;
-
+                // No need to manually disable here, listenToPlayers will handle it reactively.
+                // It's already done before the transaction for immediate feedback to user.
             } catch (error) {
                 console.error("Error submitting guess:", error);
-                showCustomMessageBox("خطأ في الإجابة", error.message || "حدث خطأ أثناء إرسال الإجابة.");
+                // Check for specific Firestore errors (e.g., aborts from transaction logic)
+                if (error === "Player already submitted answer for this question.") {
+                     showCustomMessageBox("تم الإجابة", "لقد أجبت بالفعل على هذا السؤال.");
+                } else if (error.includes("لقد استخدمت قيمة")) { // Specific check for the points re-use error
+                     showCustomMessageBox("نقاط مستخدمة", error); // Show the specific message
+                }
+                else {
+                    showCustomMessageBox("خطأ في الإجابة", error.message || "حدث خطأ أثناء إرسال الإجابة.");
+                }
             } finally {
                 hideLoading(); // Hide loading spinner
             }
@@ -1419,14 +1458,14 @@
                         if (gameQuestionDisplay) gameQuestionDisplay.textContent = gameData.currentQuestionText; // Display current question text
                         
                         // Handle input state for current player (including host) based on their submission status
-                        // This check is now robust and applies to all active players.
                         db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId).get().then(playerDoc => {
                             if (playerDoc.exists) { // Ensure player doc exists
                                 const currentPlayerData = playerDoc.data();
                                 if (!currentPlayerData.hasSubmittedAnswer) {
                                     // Player has not submitted, enable inputs
                                     if (gameGuessInput) gameGuessInput.disabled = false;
-                                    if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = false);
+                                    // Re-populate points buttons to reflect used ones and enable available ones
+                                    populatePointsButtons(); 
                                     if (submitAnswerButton) submitAnswerButton.disabled = false;
                                 } else { 
                                     // Player has submitted, disable inputs
@@ -1487,7 +1526,8 @@
                             });
                         }
 
-                        // Removed auto-advance logic. Now it waits for time or host to end.
+                        // IMPORTANT: Removed auto-advance logic if all answers are guessed by anyone.
+                        // Now, it waits for time or host to explicitly end.
                     } 
                     // Phase: Showing Question Results
                     else if (gamePhase === 'question_results') {
@@ -1589,6 +1629,9 @@
                         // Update current player's overall score (only for self)
                         if (playerId === userId) {
                             currentPlayerOverallScore = playerData.score || 0;
+                            userUsedPointsBets = playerData.usedPointsBets || []; // NEW: Update local used points array
+                            populatePointsButtons(); // NEW: Re-render buttons based on updated usedPointsBets
+
                             // Update player's correct answers for current question on UI if applicable
                             if (playerCorrectGuessesList) {
                                 playerCorrectGuessesList.innerHTML = ''; // Clear for fresh update
