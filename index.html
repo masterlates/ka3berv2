@@ -165,8 +165,8 @@
         </div>
     </div>
 
-    <!-- Countdown Screen -->
-    <div id="countdown-screen" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center text-yellow-400 text-9xl font-extrabold z-50 hidden">
+    <!-- Game Start Countdown Screen -->
+    <div id="game-countdown-screen" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center text-yellow-400 text-9xl font-extrabold z-50 hidden">
         <span id="countdown-timer-display">5</span>
     </div>
 
@@ -291,6 +291,10 @@
                 <div class="flex items-center space-x-2 space-x-reverse text-2xl font-bold text-gray-700 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
                     <i class="fas fa-star text-yellow-500"></i>
                     <span>نقاطك: <span id="player-score" class="text-yellow-600">0</span></span> <!-- Player's score display -->
+                </div>
+                <div class="flex items-center space-x-2 space-x-reverse text-2xl font-bold text-gray-700 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
+                    <i class="fas fa-question-circle text-purple-500"></i>
+                    <span>السؤال: <span id="question-counter" class="text-purple-600">-- / --</span></span> <!-- Question counter -->
                 </div>
             </div>
 
@@ -507,7 +511,7 @@
         const quizCategoryDropdown = document.getElementById('quiz-category-dropdown');
         const selectedCategoriesTags = document.getElementById('selected-categories-tags');
         const hostNicknameInput = document.getElementById('host-nickname-input'); // Host nickname input
-        const totalQuestionsPerGameSelect = document.getElementById('total-questions-per-game-select'); // New: total questions select
+        const totalQuestionsPerGameSelect = document.getElementById('total-questions-per-game-select'); // Total questions select
 
         // Function to populate and manage the multi-select dropdown
         // This now lists the category and an example question from it for clarity
@@ -652,8 +656,9 @@
         const nextQuestionButton = document.getElementById('next-question-button'); // Renamed from nextRoundButton
         const endGameFinalButton = document.getElementById('end-game-final-button');
 
-        const countdownScreen = document.getElementById('countdown-screen'); // Countdown screen element
+        const gameCountdownScreen = document.getElementById('game-countdown-screen'); // Renamed from countdownScreen
         const countdownTimerDisplay = document.getElementById('countdown-timer-display'); // Countdown timer display element
+        const questionCounterDisplay = document.getElementById('question-counter'); // NEW: Question counter display
 
 
         const endTitle = document.getElementById('end-title');
@@ -688,9 +693,10 @@
                 'questionPlayerScoresList': questionPlayerScoresList,
                 'nextQuestionButton': nextQuestionButton,
                 'endGameFinalButton': endGameFinalButton,
-                'countdownScreen': countdownScreen,
+                'gameCountdownScreen': gameCountdownScreen, // Renamed
                 'countdownTimerDisplay': countdownTimerDisplay,
-                'totalQuestionsPerGameSelect': totalQuestionsPerGameSelect // New element
+                'totalQuestionsPerGameSelect': totalQuestionsPerGameSelect,
+                'questionCounterDisplay': questionCounterDisplay // New
             };
 
             for (const id in requiredElements) {
@@ -864,7 +870,7 @@
             // It's safer to ensure these elements exist before trying to modify their classes
             const allScreens = [
                 roleSelectionScreen, hostSetupScreen, waitingRoomScreen,
-                joinGameScreen, gamePlayScreen, questionResultsScreen, gameEndScreen, countdownScreen // Include countdown screen
+                joinGameScreen, gamePlayScreen, questionResultsScreen, gameEndScreen, gameCountdownScreen // Include countdown screen
             ];
             allScreens.forEach(screen => {
                 if (screen && screen instanceof HTMLElement) { // Defensive check
@@ -941,7 +947,7 @@
                 userNickname = hostNickname; // Set host's nickname
                 localStorage.setItem('hostNickname', hostNickname); // Save host nickname locally
                 const timeLimit = parseInt(timeLimitSelect.value); // Get selected time limit
-                const totalQuestions = parseInt(totalQuestionsPerGameSelect.value); // NEW: Get total questions for game
+                const totalQuestions = parseInt(totalQuestionsPerGameSelect.value); // Get total questions for game
 
                 // Prepare the quiz order for the game
                 // Flatten all questions from selected categories into a single array
@@ -1082,50 +1088,48 @@
             }
         }
 
-        // Initiates the countdown for the next question
-        async function initiateCountdownForNextQuestion() {
+        // Initiates the game start countdown (only once at the very beginning)
+        async function initiateGameStartCountdown() { // Renamed from initiateCountdownForNextQuestion
             showLoading();
             try {
                 if (!gameId) throw new Error("لا يوجد معرف لعبة.");
-                if (!isHost) throw new Error("فقط المضيف يمكنه بدء الجولة.");
+                if (!isHost) throw new Error("فقط المضيف يمكنه بدء اللعبة.");
 
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
                 const gameDoc = await gameRef.get();
                 if (!gameDoc.exists) throw new Error("اللعبة غير موجودة.");
 
                 const gameData = gameDoc.data();
-                const nextQuestionIndexCandidate = gameData.currentQuestionIndexInGame;
-                const quizSet = gameData.quizSet;
-
-                if (nextQuestionIndexCandidate >= quizSet.length) {
-                    // All questions played, transition directly to final results
-                    await gameRef.update({ gamePhase: 'final_results' });
+                // Check if it's already past lobby (game has started or is in countdown)
+                if (gameData.gamePhase !== 'lobby') {
+                    console.log("Game already started or in countdown phase.");
+                    hideLoading();
                     return;
                 }
 
-                // Update game phase to countdown and set countdown start time
+                // Update game phase to game_countdown and set countdown start time
                 await gameRef.update({
-                    gamePhase: 'countdown',
+                    gamePhase: 'game_countdown', // NEW phase for initial countdown
                     countdownStartTime: Date.now(),
-                    countdownDuration: 5 // 5 seconds countdown
+                    countdownDuration: 5 // 5 seconds countdown for game start
                 });
-                console.log("Initiated countdown for next question.");
+                console.log("Initiated game start countdown.");
 
             } catch (error) {
-                console.error("Error initiating countdown:", error);
-                showCustomMessageBox("خطأ", error.message || "فشل بدء العد التنازلي للسؤال التالي.");
+                console.error("Error initiating game start countdown:", error);
+                showCustomMessageBox("خطأ", error.message || "فشل بدء العد التنازلي للعبة.");
             } finally {
                 hideLoading();
             }
         }
 
 
-        // Actually starts the next question after countdown
+        // Actually starts the next question (after initial countdown or from results screen)
         async function startNextQuestion() {
             showLoading();
             try {
                 if (!gameId) throw new Error("لا يوجد معرف لعبة.");
-                if (!isHost) throw new Error("فقط المضيف يمكنه بدء الجولة.");
+                if (!isHost) throw new Error("فقط المضيف يمكنه بدء السؤال التالي."); // Clarified host role
 
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
                 const gameDoc = await gameRef.get();
@@ -1136,8 +1140,7 @@
                 const quizSet = gameData.quizSet;
 
                 if (currentQuestionIndex >= quizSet.length) {
-                    // This case should ideally be handled by initiateCountdownForNextQuestion,
-                    // but as a safeguard, if we somehow get here, end the game.
+                    // All questions played, end the game
                     await gameRef.update({ gamePhase: 'final_results' });
                     return;
                 }
@@ -1146,17 +1149,17 @@
 
                 await gameRef.update({
                     gamePhase: 'question_active',
-                    currentQuestionIndexInGame: currentQuestionIndex + 1, // Advance for *next* potential question
+                    currentQuestionIndexInGame: currentQuestionIndex + 1, // Advance for *next* potential question (for display X/Y)
                     currentCategory: currentQuestion.category,
                     currentQuestionText: currentQuestion.question,
-                    currentCorrectAnswers: currentQuestion.correctAnswers,
+                    currentCorrectAnswers: currentQuestion.correctAnswers, // Already normalized
                     currentQuestionGuessedAnswers: [], // Reset guessed answers for new question
                     questionStartTime: Date.now(), // New timestamp for question start
                     timeLimitPerQuestion: gameData.timeLimitPerQuestion, // Use stored time limit
                     currentTime: gameData.timeLimitPerQuestion, // Reset timer
                 });
 
-                // Crucially, reset players' per-question flags/data in their sub-documents
+                // Reset players' per-question flags/data in their sub-documents
                 const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
                 const playersDocs = await playersCollectionRef.get();
                 const batch = db.batch();
@@ -1180,7 +1183,7 @@
                 // Reset points button selection to default (1) and re-enable them
                 selectedPointsBet = 1;
                 populatePointsButtons(); // Re-render buttons to reset selection visually and enable
-
+                
                 console.log(`Starting question ${currentQuestionIndex + 1}: ${currentQuestion.category} - Question: ${currentQuestion.question}`);
 
             } catch (error) {
@@ -1438,6 +1441,17 @@
                     const gameData = docSnap.data();
                     const gamePhase = gameData.gamePhase;
 
+                    // Update Question Counter (e.g., "السؤال 1 / 15")
+                    if (questionCounterDisplay) {
+                        const currentQNum = gameData.currentQuestionIndexInGame; // This is already incremented for next question
+                        const totalQs = gameData.quizSet ? gameData.quizSet.length : 0;
+                        if (totalQs > 0) {
+                             questionCounterDisplay.textContent = `${currentQNum} / ${totalQs}`;
+                        } else {
+                             questionCounterDisplay.textContent = `-- / --`;
+                        }
+                    }
+
                     // Phase: Lobby (Waiting room)
                     if (gamePhase === 'lobby') {
                         showScreen(waitingRoomScreen);
@@ -1445,7 +1459,7 @@
                         if (isHost) {
                             if (startGameButton) {
                                 startGameButton.textContent = "بدء الجولة الأولى!";
-                                startGameButton.onclick = initiateCountdownForNextQuestion; // Change function for start button
+                                startGameButton.onclick = initiateGameStartCountdown; // Correctly starts initial countdown
                                 if (joinedPlayersList && joinedPlayersList.children.length >= 1) { // Host + 0 or more players (host counts as 1)
                                     startGameButton.classList.remove('hidden');
                                 } else {
@@ -1456,9 +1470,9 @@
                             if (startGameButton) startGameButton.classList.add('hidden'); // Players don't see this button
                         }
                     }
-                    // Phase: Countdown before a question
-                    else if (gamePhase === 'countdown') {
-                        showScreen(countdownScreen);
+                    // Phase: Initial Game Countdown (only once at start of game)
+                    else if (gamePhase === 'game_countdown') { // NEW phase for initial countdown
+                        showScreen(gameCountdownScreen); // Show the dedicated countdown screen
                         clearInterval(timerInterval); // Clear any existing timer
                         const countdownDuration = gameData.countdownDuration || 5;
                         const countdownStartTime = gameData.countdownStartTime;
@@ -1471,7 +1485,7 @@
                             if (remaining <= 0) {
                                 clearInterval(timerInterval);
                                 if (isHost) {
-                                    // Host initiates the actual question phase after countdown
+                                    // Host initiates the actual first question after countdown
                                     startNextQuestion(); 
                                 }
                             }
@@ -1545,6 +1559,7 @@
                         // Update shared correct guesses list for the CURRENT QUESTION for all players
                         if (sharedRoundGuessesList) {
                             sharedRoundGuessesList.innerHTML = ''; // Clear existing list
+                            // Populate with answers from gameData.currentQuestionGuessedAnswers
                             (gameData.currentQuestionGuessedAnswers || []).forEach(answer => {
                                 const listItem = document.createElement('li');
                                 listItem.textContent = answer;
@@ -1568,7 +1583,7 @@
                             roundCorrectAnswersList.innerHTML = '';
                             (gameData.currentCorrectAnswers || []).forEach(answer => { // Use currentCorrectAnswers for this question
                                 const listItem = document.createElement('li');
-                                // Highlight if it was guessed by anyone
+                                // Highlight if it was guessed by anyone (from shared guesses)
                                 if ((gameData.currentQuestionGuessedAnswers || []).includes(answer)) {
                                     listItem.innerHTML = `<i class="fas fa-check text-green-500 mr-2"></i> ${answer}`;
                                 } else {
@@ -1655,7 +1670,7 @@
                         // Update current player's overall score (only for self)
                         if (playerId === userId) {
                             currentPlayerOverallScore = playerData.score || 0;
-                            // NEW: Update local userUsedPointsBets from player data
+                            // Update local userUsedPointsBets from player data
                             userUsedPointsBets = playerData.usedPointsBets || []; 
                             populatePointsButtons(); // Re-render buttons with updated used points status
 
@@ -1848,13 +1863,13 @@
         if (submitAnswerButton) submitAnswerButton.addEventListener('click', submitGuess);
 
         // Host clicks to start the game (initiates countdown for first question) from waiting room
-        if (startGameButton) startGameButton.addEventListener('click', initiateCountdownForNextQuestion); 
+        if (startGameButton) startGameButton.addEventListener('click', initiateGameStartCountdown); // Correctly starts initial countdown
 
         // Host clicks to end the current question early
         if (endQuestionEarlyButton) endQuestionEarlyButton.addEventListener('click', endQuestionEarly); 
 
         // Host clicks to proceed to the next question from question results screen
-        if (nextQuestionButton) nextQuestionButton.addEventListener('click', initiateCountdownForNextQuestion); 
+        if (nextQuestionButton) nextQuestionButton.addEventListener('click', startNextQuestion); // Calls startNextQuestion directly
 
         // Host clicks to end the entire game from question results screen
         if (endGameFinalButton) endGameFinalButton.addEventListener('click', endGame);
