@@ -1630,7 +1630,7 @@
 
                     // Update player's per-question data (score itself is updated later by reconcile)
                     transaction.update(playerRef, {
-                        playerSubmittedAnswer: guess, // Store the actual normalized guess for display in results
+                        playerSubmittedAnswer: guess, // Store the actual original guess for display in results
                         playerSelectedPoints: pointsBet,
                         playerScoreChange: scoreChange,
                         hasSubmittedAnswer: true, // Mark as submitted
@@ -1683,9 +1683,7 @@
                     if (questionCounterDisplay) {
                         // currentQuestionIndexInGame is already incremented for the NEXT question to be displayed,
                         // so to show current question, we use currentQuestionIndexInGame.
-                        // If phase is not 'question_active' or 'question_results', show 0/Total
-                        const currentQNum = gamePhase === 'question_active' || gamePhase === 'question_results'
-                                            ? gameData.currentQuestionIndexInGame : 0;
+                        const currentQNum = gameData.currentQuestionIndexInGame > 0 ? gameData.currentQuestionIndexInGame : 0; 
                         const totalQs = gameData.quizSet ? gameData.quizSet.length : 0;
                         if (totalQs > 0) {
                              questionCounterDisplay.textContent = `${currentQNum} / ${totalQs}`;
@@ -1744,7 +1742,7 @@
                             if (playerDoc.exists) { // Ensure player doc exists
                                 const currentPlayerData = playerDoc.data();
                                 if (!currentPlayerData.hasSubmittedAnswer) {
-                                    // Player has not submitted, enable inputs and clear input field
+                                    // Player has not submitted, enable inputs
                                     if (gameGuessInput) {
                                         gameGuessInput.value = ''; // Clear input field
                                         gameGuessInput.disabled = false;
