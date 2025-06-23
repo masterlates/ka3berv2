@@ -231,6 +231,7 @@
             </div>
 
             <p class="text-2xl font-bold text-gray-800 mb-4 text-center">الفئة: <span id="game-category" class="text-indigo-600"></span></p> <!-- Current category display -->
+            <p class="text-3xl font-extrabold text-gray-900 mb-6 text-center" id="game-question"></p> <!-- Current question display -->
 
             <input type="text" id="game-guess-input" placeholder="اكتب إجابتك هنا..."
                    class="w-full p-4 mb-6 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50"> <!-- Guess input field -->
@@ -260,7 +261,8 @@
         <div id="round-results-screen" class="w-full hidden">
             <h2 class="text-3xl font-bold text-green-700 mb-6 text-center">نتائج الجولة!</h2>
             <p class="text-xl text-gray-700 mb-6 text-center">فئة الجولة: <span id="results-category" class="font-bold text-indigo-600"></span></p>
-            
+            <p class="text-2xl font-semibold text-gray-800 mb-4 text-center">السؤال: <span id="results-question" class="font-bold text-gray-900"></span></p>
+
             <h3 class="text-2xl font-semibold text-gray-800 mb-4 text-center">الإجابات الصحيحة لهذه الجولة:</h3>
             <ul id="round-correct-answers-list" class="w-full bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8 max-h-64 overflow-y-auto shadow-inner text-lg list-disc pr-6">
                 <!-- All correct answers for the round -->
@@ -329,44 +331,102 @@
         let timerInterval = null; // Interval for host's game timer
 
         // Quiz data - Add more quizzes as needed!
-        // IMPORTANT: Answers should be unique within each quiz to avoid issues with `arrayUnion`
+        // IMPORTANT: Each object in quizzes now represents a CATEGORY with multiple questions.
+        // Each question has a questionText and correctAnswers.
         const quizzes = [
             {
                 category: "عواصم الدول العربية",
-                answers: ["الرياض", "القاهرة", "بغداد", "دمشق", "عمان", "بيروت", "الرباط", "تونس", "الجزائر", "الخرطوم", "صنعاء", "ابوظبي", "الدوحة", "الكويت", "المنامة", "مقديشو", "جيبوتي", "موروني", "طرابلس", "نواكشوط", "مسقط", "القدس"]
+                questions: [
+                    { questionText: "ما هي عاصمة تونس؟", correctAnswers: ["تونس"] },
+                    { questionText: "ما هي عاصمة مصر؟", correctAnswers: ["القاهرة"] },
+                    { questionText: "ما هي عاصمة السعودية؟", correctAnswers: ["الرياض"] },
+                    { questionText: "ما هي عاصمة العراق؟", correctAnswers: ["بغداد"] },
+                    { questionText: "ما هي عاصمة سوريا؟", correctAnswers: ["دمشق"] },
+                    { questionText: "ما هي عاصمة الأردن؟", correctAnswers: ["عمان"] },
+                    { questionText: "ما هي عاصمة لبنان؟", correctAnswers: ["بيروت"] },
+                    { questionText: "ما هي عاصمة المغرب؟", correctAnswers: ["الرباط"] },
+                    { questionText: "ما هي عاصمة الجزائر؟", correctAnswers: ["الجزائر"] },
+                    { questionText: "ما هي عاصمة السودان؟", correctAnswers: ["الخرطوم"] },
+                    { questionText: "ما هي عاصمة اليمن؟", correctAnswers: ["صنعاء"] },
+                    { questionText: "ما هي عاصمة الإمارات؟", correctAnswers: ["ابوظبي", "أبو ظبي"] },
+                    { questionText: "ما هي عاصمة قطر؟", correctAnswers: ["الدوحة"] },
+                    { questionText: "ما هي عاصمة الكويت؟", correctAnswers: ["الكويت"] },
+                    { questionText: "ما هي عاصمة البحرين؟", correctAnswers: ["المنامة"] },
+                    { questionText: "ما هي عاصمة الصومال؟", correctAnswers: ["مقديشو"] },
+                    { questionText: "ما هي عاصمة جيبوتي؟", correctAnswers: ["جيبوتي"] },
+                    { questionText: "ما هي عاصمة جزر القمر؟", correctAnswers: ["موروني"] },
+                    { questionText: "ما هي عاصمة ليبيا؟", correctAnswers: ["طرابلس"] },
+                    { questionText: "ما هي عاصمة موريتانيا؟", correctAnswers: ["نواكشوط"] },
+                    { questionText: "ما هي عاصمة سلطنة عمان؟", correctAnswers: ["مسقط"] },
+                    { questionText: "ما هي عاصمة فلسطين؟", correctAnswers: ["القدس"] }
+                ]
             },
             {
                 category: "الفواكه",
-                answers: ["تفاح", "برتقال", "موز", "عنب", "فراولة", "مانجو", "أناناس", "بطيخ", "شمام", "كيوي", "توت", "كرز", "ليمون", "جوافة", "خوخ", "رمان", "تين", "بلح", "توت أزرق", "كمثرى"]
+                questions: [
+                    { questionText: "فاكهة حمراء وصغيرة غالباً ما تستخدم في الحلويات؟", correctAnswers: ["فراولة", "كرز", "توت"] },
+                    { questionText: "فاكهة صفراء تنمو في مجموعات وغنية بالبوتاسيوم؟", correctAnswers: ["موز"] },
+                    { questionText: "فاكهة برتقالية اللون، غنية بفيتامين سي؟", correctAnswers: ["برتقال", "يوسفي", "مانجو"] },
+                    { questionText: "فاكهة استوائية كبيرة ذات قشرة خضراء شائكة ولحم أصفر حلو جداً؟", correctAnswers: ["أناناس"] },
+                    { questionText: "فاكهة صيفية كبيرة الحجم، خضراء من الخارج وحمراء من الداخل مع بذور سوداء؟", correctAnswers: ["بطيخ"] }
+                ]
             },
             {
-                category: "دول أوروبية (أكثر من 20)",
-                answers: [
-                    "ألمانيا", "فرنسا", "إيطاليا", "إسبانيا", "المملكة المتحدة", "بولندا", "أوكرانيا", "رومانيا", "هولندا", "بلجيكا",
-                    "اليونان", "البرتغال", "السويد", "النمسا", "سويسرا", "صربيا", "بلغاريا", "الدنمارك", "فنلندا", "النرويج",
-                    "إيرلندا", "كرواتيا", "البوسنة والهرسك", "ليتوانيا", "لاتفيا", "إستونيا", "سلوفاكيا", "سلوفينيا", "المجر", "جمهورية التشيك",
-                    "مولدوفا", "ألبانيا", "مقدونيا الشمالية", "الجبل الأسود", "مالطا", "لوكسمبورغ", "قبرص", "آيسلندا", "كوسوفو", "أندورا",
-                    "سان مارينو", "ليختنشتاين", "موناكو", "الفاتيكان", "روسيا (الجزء الأوروبي)", "تركيا (الجزء الأوروبي)", "بيلاروسيا", "جورجيا", "أذربيجان", "أرمينيا"
+                category: "عواصم دول أوروبية",
+                questions: [
+                    { questionText: "ما هي عاصمة ألمانيا؟", correctAnswers: ["برلين"] },
+                    { questionText: "ما هي عاصمة فرنسا؟", correctAnswers: ["باريس"] },
+                    { questionText: "ما هي عاصمة إيطاليا؟", correctAnswers: ["روما"] },
+                    { questionText: "ما هي عاصمة إسبانيا؟", correctAnswers: ["مدريد"] },
+                    { questionText: "ما هي عاصمة المملكة المتحدة؟", correctAnswers: ["لندن"] },
+                    { questionText: "ما هي عاصمة بولندا؟", correctAnswers: ["وارسو"] },
+                    { questionText: "ما هي عاصمة أوكرانيا؟", correctAnswers: ["كييف"] },
+                    { questionText: "ما هي عاصمة رومانيا؟", correctAnswers: ["بوخارست"] },
+                    { questionText: "ما هي عاصمة هولندا؟", correctAnswers: ["أمستردام"] },
+                    { questionText: "ما هي عاصمة بلجيكا؟", correctAnswers: ["بروكسل"] },
+                    { questionText: "ما هي عاصمة اليونان؟", correctAnswers: ["أثينا"] },
+                    { questionText: "ما هي عاصمة البرتغال؟", correctAnswers: ["لشبونة"] },
+                    { questionText: "ما هي عاصمة السويد؟", correctAnswers: ["ستوكهولم"] },
+                    { questionText: "ما هي عاصمة النمسا؟", correctAnswers: ["فيينا"] },
+                    { questionText: "ما هي عاصمة سويسرا؟", correctAnswers: ["برن"] },
+                    { questionText: "ما هي عاصمة الدنمارك؟", correctAnswers: ["كوبنهاغن"] },
+                    { questionText: "ما هي عاصمة فنلندا؟", correctAnswers: ["هلسنكي"] },
+                    { questionText: "ما هي عاصمة النرويج؟", correctAnswers: ["أوسلو"] },
+                    { questionText: "ما هي عاصمة إيرلندا؟", correctAnswers: ["دبلن"] },
+                    { questionText: "ما هي عاصمة كرواتيا؟", correctAnswers: ["زغرب"] }
                 ]
             },
             {
                 category: "حيوانات الغابة",
-                answers: ["أسد", "نمر", "فيل", "زرافة", "قرد", "دب", "ثعلب", "ذئب", "غزال", "حمار وحشي", "ضبع", "كنغر", "كوالا", "باندا"]
+                questions: [
+                    { questionText: "ملك الغابة؟", correctAnswers: ["أسد"] },
+                    { questionText: "حيوان مخطط بالأبيض والأسود يشبه الحصان؟", correctAnswers: ["حمار وحشي"] },
+                    { questionText: "أكبر حيوان بري على وجه الأرض، بخرطوم طويل وأذنين كبيرتين؟", correctAnswers: ["فيل"] },
+                    { questionText: "حيوان طويل العنق ذو بقع بنية، يتغذى على أوراق الأشجار العالية؟", correctAnswers: ["زرافة"] },
+                    { questionText: "حيوان ذكي يعيش في الغابات يأكل الموز ويتأرجح بين الأشجار؟", correctAnswers: ["قرد"] }
+                ]
             },
             {
                 category: "عواصم دول العالم (غير العربية)",
-                answers: ["واشنطن", "لندن", "باريس", "برلين", "روما", "مدريد", "طوكيو", "بكين", "موسكو", "أوتاوا", "كانبرا", "برازيليا", "بوينس آيرس", "نيودلهي", "أثينا", "وارسو", "ليما", "سيول", "بانكوك", "أنقرة"]
+                questions: [
+                    { questionText: "ما هي عاصمة اليابان؟", correctAnswers: ["طوكيو"] },
+                    { questionText: "ما هي عاصمة الولايات المتحدة الأمريكية؟", correctAnswers: ["واشنطن"] },
+                    { questionText: "ما هي عاصمة روسيا؟", correctAnswers: ["موسكو"] },
+                    { questionText: "ما هي عاصمة الصين؟", correctAnswers: ["بكين"] },
+                    { questionText: "ما هي عاصمة الهند؟", correctAnswers: ["نيودلهي"] }
+                ]
             }
         ];
         
         // Multi-select quiz categories logic
-        let selectedQuizIndices = [];
+        let selectedQuizIndices = []; // Stores indices of selected CATEGORIES
         // Defensive check for elements - getElementById returns null if not found
         const quizCategoryInput = document.getElementById('quiz-category-input');
         const quizCategoryDropdown = document.getElementById('quiz-category-dropdown');
         const selectedCategoriesTags = document.getElementById('selected-categories-tags');
 
         // Function to populate and manage the multi-select dropdown
+        // This now lists the category and the first question for clarity
         function setupQuizCategorySelection() {
             if (!quizCategoryDropdown) {
                 console.error("Error: quizCategoryDropdown element not found.");
@@ -377,22 +437,28 @@
                 const label = document.createElement('label');
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
-                checkbox.value = index;
+                checkbox.value = index; // The value is the index of the category
                 checkbox.className = 'ml-2'; // Tailwind spacing
 
-                checkbox.checked = selectedQuizIndices.includes(index); // Set checked state
+                // Check if this category is already selected
+                checkbox.checked = selectedQuizIndices.includes(index);
 
                 label.appendChild(checkbox);
-                label.appendChild(document.createTextNode(quiz.category));
+                // Display category name and an example question from it (first question)
+                const displayText = quiz.questions.length > 0 
+                                    ? `[${quiz.category}] - ${quiz.questions[0].questionText}`
+                                    : `[${quiz.category}] (لا يوجد أسئلة)`;
+                label.appendChild(document.createTextNode(displayText));
                 quizCategoryDropdown.appendChild(label);
 
                 checkbox.addEventListener('change', (event) => {
+                    const categoryIndex = parseInt(event.target.value);
                     if (event.target.checked) {
-                        if (!selectedQuizIndices.includes(index)) {
-                            selectedQuizIndices.push(index);
+                        if (!selectedQuizIndices.includes(categoryIndex)) {
+                            selectedQuizIndices.push(categoryIndex);
                         }
                     } else {
-                        selectedQuizIndices = selectedQuizIndices.filter(i => i !== index);
+                        selectedQuizIndices = selectedQuizIndices.filter(i => i !== categoryIndex);
                     }
                     updateSelectedCategoriesTags();
                 });
@@ -408,11 +474,11 @@
             }
             selectedCategoriesTags.innerHTML = '';
             selectedQuizIndices.forEach(index => {
-                const quiz = quizzes[index];
+                const quiz = quizzes[index]; // This is a category object
                 if (quiz) {
                     const tag = document.createElement('span');
                     tag.className = 'tag';
-                    tag.textContent = quiz.category;
+                    tag.textContent = quiz.category; // Display just the category name in the tag
                     
                     const removeBtn = document.createElement('span');
                     removeBtn.className = 'tag-remove';
@@ -430,7 +496,7 @@
                 if (selectedQuizIndices.length === 0) {
                     quizCategoryInput.placeholder = "انقر هنا لاختيار الفئات...";
                 } else {
-                    quizCategoryInput.placeholder = `تم اختيار ${selectedQuizIndices.length} فئات`;
+                    quizCategoryInput.placeholder = `تم اختيار ${selectedQuizIndices.length} فئة`;
                 }
             }
         }
@@ -450,8 +516,9 @@
             // Ensure elements exist before checking contains
             const clickedInsideInput = quizCategoryInput && quizCategoryInput.contains(event.target);
             const clickedInsideDropdown = quizCategoryDropdown && quizCategoryDropdown.contains(event.target);
-            
-            if (quizCategoryDropdown && !clickedInsideInput && !clickedInsideDropdown) {
+            const clickedInsideTags = selectedCategoriesTags && selectedCategoriesTags.contains(event.target); // Also check tags
+
+            if (quizCategoryDropdown && !clickedInsideInput && !clickedInsideDropdown && !clickedInsideTags) {
                 quizCategoryDropdown.classList.add('hidden');
             }
         });
@@ -485,12 +552,14 @@
         const gameTimerDisplay = document.getElementById('game-timer');
         const playerScoreDisplay = document.getElementById('player-score');
         const gameCategoryDisplay = document.getElementById('game-category');
+        const gameQuestionDisplay = document.getElementById('game-question'); // New: Displays the current question
         const gameGuessInput = document.getElementById('game-guess-input');
         const playerCorrectGuessesList = document.getElementById('player-correct-guesses-list');
         const sharedRoundGuessesList = document.getElementById('shared-round-guesses-list'); // Renamed for current round
         const endRoundEarlyButton = document.getElementById('end-round-early-button'); // Button for host to end round early
 
         const resultsCategory = document.getElementById('results-category');
+        const resultsQuestion = document.getElementById('results-question'); // New: Displays question in results
         const roundCorrectAnswersList = document.getElementById('round-correct-answers-list');
         const roundPlayerScoresList = document.getElementById('round-player-scores-list');
         const roundResultsHostControls = document.getElementById('round-results-host-controls');
@@ -518,7 +587,10 @@
                 'gameLinkDisplay': gameLinkDisplay,
                 'qrcodeDiv': qrcodeDiv,
                 'copyLinkButton': copyLinkButton,
-                'customMessageBox': customMessageBox
+                'customMessageBox': customMessageBox,
+                'quizCategoryInput': quizCategoryInput,
+                'quizCategoryDropdown': quizCategoryDropdown,
+                'selectedCategoriesTags': selectedCategoriesTags
             };
 
             for (const id in requiredElements) {
@@ -528,6 +600,7 @@
                     document.body.innerHTML = `
                         <div style="text-align: center; color: red; font-size: 1.5em; margin-top: 50px;">
                             خطأ فادح: لم يتم العثور على مكونات أساسية في الصفحة. يرجى إبلاغ مطور اللعبة.
+                            <br>المكون المفقود: ${id}
                         </div>
                     `;
                     // Prevent further script execution if a critical element is missing
@@ -584,9 +657,12 @@
                         const idFromUrl = urlParams.get('gameId');
                         if (idFromUrl) {
                             gameId = idFromUrl;
+                            // If gameId is in URL, pre-fill the input field
+                            if (gameCodeInput) gameCodeInput.value = gameId;
+
                             playerNicknameInput.value = localStorage.getItem('playerNickname') || ''; // Load saved nickname from local storage
 
-                            // If nickname is available, prompt user to join directly. Otherwise, show join screen.
+                            // If nickname is available, prompt user to join directly. Otherwise, show join screen for manual input.
                             if (!playerNicknameInput.value) {
                                 showScreen(joinGameScreen); // Show join screen for nickname input
                                 showCustomMessageBox("الانضمام إلى لعبة", `أدخل اسمك المستعار للانضمام إلى اللعبة برمز ${gameId}.`);
@@ -715,15 +791,31 @@
                 const timeLimit = parseInt(timeLimitSelect.value); // Get selected time limit
 
                 // Prepare the quiz order for the game
-                // Map selected indices to an array of quiz objects (category and allAnswers)
-                const quizSetForGame = selectedQuizIndices.map(index => ({
-                    category: quizzes[index].category,
-                    allAnswers: quizzes[index].answers.map(normalizeString)
-                }));
-                // Shuffle the quiz order for randomness
+                // Map selected indices to an array of quiz objects (category, question, and allAnswers)
+                const quizSetForGame = [];
+                selectedQuizIndices.forEach(catIndex => {
+                    const category = quizzes[catIndex];
+                    if (category && category.questions) {
+                        category.questions.forEach(q => {
+                            quizSetForGame.push({
+                                category: category.category,
+                                question: q.questionText,
+                                allAnswers: q.correctAnswers.map(normalizeString)
+                            });
+                        });
+                    }
+                });
+
+                // Shuffle the *flattened* quizSet (all questions from selected categories)
                 for (let i = quizSetForGame.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [quizSetForGame[i], quizSetForGame[j]] = [quizSetForGame[j], quizSetForGame[i]];
+                }
+                
+                if (quizSetForGame.length === 0) {
+                    showCustomMessageBox("خطأ", "الفئات المختارة لا تحتوي على أي أسئلة.");
+                    hideLoading();
+                    return;
                 }
 
 
@@ -734,13 +826,14 @@
                 await gameRef.set({ // Create the game document
                     hostId: userId,
                     gamePhase: 'lobby', // Initial phase
-                    quizSet: quizSetForGame, // Array of quizzes for this game
-                    currentQuizIndexInOrder: 0, // Index of the current quiz in the quizSet
-                    currentCategory: '', // Will be set when round starts
-                    currentAllAnswers: [], // Will be set when round starts
-                    currentRoundGuessedAnswers: [], // Guesses for the current round
-                    roundStartTime: null, // Timestamp when current round started
-                    timeLimitPerRound: timeLimit,
+                    quizSet: quizSetForGame, // Array of ALL questions for this game
+                    currentQuestionIndexInGame: 0, // Index of the current question in the quizSet
+                    currentCategory: '', // Will be set when question starts
+                    currentQuestionText: '', // Will be set when question starts
+                    currentCorrectAnswers: [], // Will be set when question starts
+                    currentQuestionGuessedAnswers: [], // Guesses for the current question
+                    questionStartTime: null, // Timestamp when current question started
+                    timeLimitPerQuestion: timeLimit, // Renamed for clarity
                     currentTime: timeLimit, // Initialize current time with full time limit
                     playerScores: {}, // To store overall cumulative scores for players
                     lastUpdate: Date.now() // Timestamp for host's last update (for real-time timer sync)
@@ -754,7 +847,7 @@
                     nickname: "المضيف", // Default nickname for the host
                     score: 0, // Overall score
                     joinedAt: Date.now(),
-                    correctGuesses: [] // Individual correct guesses (cumulative across rounds)
+                    playerCorrectAnswersForCurrentQuestion: [] // Player's correct guesses for the *current* question
                 });
                 userNickname = "المضيف"; // Set current user's nickname
 
@@ -770,7 +863,8 @@
                 if (qrcodeDiv) qrcodeDiv.innerHTML = ''; // Clear previous content
                 if (qrcodeFallbackMessage) qrcodeFallbackMessage.textContent = ''; // Clear fallback message
                 try {
-                    if (typeof QRCode !== 'undefined' && QRCode && qrcodeDiv) { // Explicit check for QRCode global object and qrcodeDiv existence
+                    // Only attempt to use QRCode if it's confirmed to be loaded
+                    if (typeof QRCode !== 'undefined' && QRCode && qrcodeDiv) { 
                         new QRCode(qrcodeDiv, {
                             text: gameRoomLink,
                             width: 128,
@@ -826,8 +920,8 @@
             }
         }
 
-        // Starts the next round of the game
-        async function startNextRound() {
+        // Starts the next question of the game
+        async function startNextQuestion() {
             showLoading();
             try {
                 if (!gameId) throw new Error("لا يوجد معرف لعبة.");
@@ -838,62 +932,72 @@
                 if (!gameDoc.exists) throw new Error("اللعبة غير موجودة.");
 
                 const gameData = gameDoc.data();
-                const currentQuizIndex = gameData.currentQuizIndexInOrder;
+                const nextQuestionIndex = gameData.currentQuestionIndexInGame; // Use currentQuestionIndexInGame as index for NEXT question
                 const quizSet = gameData.quizSet;
 
-                if (currentQuizIndex >= quizSet.length) {
-                    // All quizzes played, end the game
+                if (nextQuestionIndex >= quizSet.length) {
+                    // All questions played, end the game
                     await gameRef.update({ gamePhase: 'final_results' });
                     return;
                 }
 
-                const nextQuiz = quizSet[currentQuizIndex];
+                const nextQuestion = quizSet[nextQuestionIndex];
 
                 await gameRef.update({
                     gamePhase: 'question_active',
-                    currentQuizIndexInOrder: currentQuizIndex + 1, // Advance to next quiz index
-                    currentCategory: nextQuiz.category,
-                    currentAllAnswers: nextQuiz.allAnswers,
-                    currentRoundGuessedAnswers: [], // Reset guessed answers for new round
-                    roundStartTime: Date.now(),
-                    currentTime: gameData.timeLimitPerRound, // Reset timer
-                    // Reset player-specific correct guesses from previous round for results screen
-                    playerRoundCorrectGuesses: {} 
+                    currentQuestionIndexInGame: nextQuestionIndex + 1, // Advance question index for *next* question setup
+                    currentCategory: nextQuestion.category,
+                    currentQuestionText: nextQuestion.question, // Set the current question text
+                    currentCorrectAnswers: nextQuestion.allAnswers, // Set the correct answers for this question
+                    currentQuestionGuessedAnswers: [], // Reset guessed answers for new question
+                    questionStartTime: Date.now(), // New timestamp for question start
+                    currentTime: gameData.timeLimitPerQuestion, // Reset timer
                 });
 
-                // Clear player's correct guesses for the *new* round on their local UI
+                // Crucially, reset players' playerCorrectAnswersForCurrentQuestion in their sub-documents
+                const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
+                const playersDocs = await playersCollectionRef.get();
+                const batch = db.batch();
+                playersDocs.docs.forEach(playerDoc => {
+                    const playerRef = playerDoc.ref;
+                    batch.update(playerRef, { playerCorrectAnswersForCurrentQuestion: [] });
+                });
+                await batch.commit();
+                console.log("Cleared all players' playerCorrectAnswersForCurrentQuestion for new question.");
+
+                // Clear player's correct guesses for the *new* question on their local UI
                 if (playerCorrectGuessesList) playerCorrectGuessesList.innerHTML = ''; 
                 if (gameGuessInput) {
                     gameGuessInput.value = '';
                     gameGuessInput.focus();
                 }
 
-                console.log(`Starting round ${currentQuizIndex + 1}: ${nextQuiz.category}`);
+                console.log(`Starting question ${nextQuestionIndex + 1}: ${nextQuestion.category} - Question: ${nextQuestion.question}`);
 
             } catch (error) {
-                console.error("Error starting next round:", error);
-                showCustomMessageBox("خطأ", error.message || "فشل بدء الجولة التالية.");
+                console.error("Error starting next question:", error);
+                showCustomMessageBox("خطأ", error.message || "فشل بدء السؤال التالي.");
             } finally {
                 hideLoading();
             }
         }
 
         // --- Host Specific Functions ---
-        // Allows host to end the current round early
-        async function endRoundEarly() {
+        // Allows host to end the current question early
+        async function endQuestionEarly() { // Renamed from endRoundEarly
             if (!isHost || !gameId) return; // Only host can do this in an active game
 
             showLoading();
             try {
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
                 await gameRef.update({
-                    gamePhase: 'round_results', // Move to showing round results
+                    gamePhase: 'question_results', // Move to showing question results
                     currentTime: 0 // Ensure timer is at zero
                 });
-                console.log("Host ended round early.");
+                console.log("Host ended question early.");
             } catch (error) {
-                console.error("Error ending round early:", error);
-                showCustomMessageBox("خطأ", "فشل إنهاء الجولة مبكراً.");
+                console.error("Error ending question early:", error);
+                showCustomMessageBox("خطأ", "فشل إنهاء السؤال مبكراً.");
             } finally {
                 hideLoading();
             }
@@ -949,14 +1053,14 @@
                 userNickname = nickname; // Set current user's nickname
                 localStorage.setItem('playerNickname', nickname); // Save nickname locally for future use
 
-                // Add player to the game's players subcollection
+                // Add player to the game's subcollection
                 const playerRef = gameRef.collection('players').doc(userId);
                 console.log("Attempting to add player at path:", playerRef.path); // Log path
                 await playerRef.set({ // Use set with merge to avoid overwriting if player rejoins
                     nickname: nickname,
                     score: 0, // Overall score
                     joinedAt: Date.now(),
-                    correctGuesses: [] // Overall correct guesses
+                    playerCorrectAnswersForCurrentQuestion: [] // Player's correct guesses for the *current* question
                 }, { merge: true });
 
                 console.log("Joined game:", gameId);
@@ -1006,7 +1110,7 @@
             showLoading(); // Show loading spinner
             try {
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
-                const playerRef = gameRef.collection('players').doc(userId);
+                const playerRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId); // Use direct path for playerRef
 
                 // Use a Firestore transaction to ensure atomic updates
                 await db.runTransaction(async (transaction) => {
@@ -1020,27 +1124,27 @@
                     const gameData = gameDoc.data();
                     const playerData = playerDoc.data();
 
-                    const currentAllAnswers = gameData.currentAllAnswers || []; // All possible answers for the current round
-                    const currentRoundGuessedAnswers = gameData.currentRoundGuessedAnswers || []; // Answers guessed in THIS round by ANY player
+                    const currentCorrectAnswers = gameData.currentCorrectAnswers || []; // All correct answers for the current question
+                    const currentQuestionGuessedAnswers = gameData.currentQuestionGuessedAnswers || []; // Answers guessed in THIS question by ANY player
                     let playerOverallScore = playerData.score || 0; // Player's overall score
-                    // Ensure playerRoundCorrectGuesses is properly initialized and fetched from player data
-                    let playerRoundCorrectGuesses = playerData.currentRoundCorrectGuesses || [];
+                    // Ensure playerCorrectAnswersForCurrentQuestion is properly initialized and fetched from player data
+                    let playerCorrectAnswersForCurrentQuestion = playerData.playerCorrectAnswersForCurrentQuestion || [];
 
-                    // Check if guess is correct AND has not been guessed by ANYONE yet for THIS round
-                    if (currentAllAnswers.includes(guess) && !currentRoundGuessedAnswers.includes(guess)) {
-                        // Add guess to the shared list of guessed answers for THIS round
+                    // Check if guess is correct AND has not been guessed by ANYONE yet for THIS question
+                    if (currentCorrectAnswers.includes(guess) && !currentQuestionGuessedAnswers.includes(guess)) {
+                        // Add guess to the shared list of guessed answers for THIS question
                         transaction.update(gameRef, {
-                            currentRoundGuessedAnswers: firebase.firestore.FieldValue.arrayUnion(guess)
+                            currentQuestionGuessedAnswers: firebase.firestore.FieldValue.arrayUnion(guess)
                         });
 
-                        // Update player's overall score and their own list of correct guesses for THIS round
+                        // Update player's overall score and their own list of correct guesses for THIS question
                         transaction.update(playerRef, {
                             score: playerOverallScore + 10, // Increase overall score by 10
-                            currentRoundCorrectGuesses: firebase.firestore.FieldValue.arrayUnion(guess)
+                            playerCorrectAnswersForCurrentQuestion: firebase.firestore.FieldValue.arrayUnion(guess)
                         });
                         console.log("Correct guess:", guess);
-                    } else if (currentAllAnswers.includes(guess) && currentRoundGuessedAnswers.includes(guess)) {
-                        console.log("Answer already guessed by someone (or self) this round:", guess);
+                    } else if (currentCorrectAnswers.includes(guess) && currentQuestionGuessedAnswers.includes(guess)) {
+                        console.log("Answer already guessed by someone (or self) this question:", guess);
                         // Optionally provide visual feedback to user: already guessed
                     } else {
                         console.log("Incorrect guess:", guess);
@@ -1068,14 +1172,14 @@
                     const gameData = docSnap.data();
                     const gamePhase = gameData.gamePhase;
 
-                    // Phase: Waiting room / Lobby
+                    // Phase: Lobby (Waiting room)
                     if (gamePhase === 'lobby') {
                         showScreen(waitingRoomScreen);
-                        // Host sees 'Start Game' (which starts first round)
+                        // Host sees 'Start Game' (which starts first question)
                         if (isHost) {
                             if (startGameButton) {
                                 startGameButton.textContent = "بدء الجولة الأولى!";
-                                startGameButton.onclick = startNextRound; // Change function for start button
+                                startGameButton.onclick = startNextQuestion; // Change function for start button
                                 if (joinedPlayersList && joinedPlayersList.children.length > 1) { // If at least host + 1 player
                                     startGameButton.classList.remove('hidden');
                                 } else {
@@ -1086,13 +1190,14 @@
                             if (startGameButton) startGameButton.classList.add('hidden'); // Players don't see this button
                         }
                     } 
-                    // Phase: Question is active
+                    // Phase: Question is active (Game Play)
                     else if (gamePhase === 'question_active') {
                         showScreen(gamePlayScreen);
                         if (gameCategoryDisplay) gameCategoryDisplay.textContent = gameData.currentCategory;
+                        if (gameQuestionDisplay) gameQuestionDisplay.textContent = gameData.currentQuestionText; // Display current question text
                         if (gameGuessInput) gameGuessInput.focus();
                         
-                        // Show/hide "End Round Early" button for host only during game play
+                        // Show/hide "End Question Early" button for host only during game play
                         if (isHost) {
                             if (endRoundEarlyButton) endRoundEarlyButton.classList.remove('hidden');
                         } else {
@@ -1104,9 +1209,9 @@
                             clearInterval(timerInterval); // Clear any old timer
                             timerInterval = setInterval(async () => {
                                 const now = Date.now();
-                                // Calculate elapsed time since round started
-                                const elapsed = Math.floor((now - gameData.roundStartTime) / 1000);
-                                const remainingTime = gameData.timeLimitPerRound - elapsed;
+                                // Calculate elapsed time since question started
+                                const elapsed = Math.floor((now - gameData.questionStartTime) / 1000); // Use questionStartTime
+                                const remainingTime = gameData.timeLimitPerQuestion - elapsed; // Use timeLimitPerQuestion
                                 
                                 if (remainingTime >= 0) {
                                     // Update Firestore with current time and last update timestamp
@@ -1114,21 +1219,21 @@
                                     if (gameTimerDisplay) gameTimerDisplay.textContent = remainingTime; // Update timer display
                                 } else {
                                     clearInterval(timerInterval); // Stop timer
-                                    // If time runs out, move to round results phase
-                                    await gameRef.update({ gamePhase: 'round_results', currentTime: 0 });
+                                    // If time runs out, move to question results phase
+                                    await gameRef.update({ gamePhase: 'question_results', currentTime: 0 });
                                 }
                             }, 1000); // Update every second
                         } else {
                             // Player-specific timer logic: Players display time from host's update
                             const timeFromHost = gameData.currentTime;
                             if (gameTimerDisplay) gameTimerDisplay.textContent = timeFromHost;
-                            // Game status change to 'round_results' or 'final_results' will trigger screen change for players
+                            // Game status change to 'question_results' or 'final_results' will trigger screen change for players
                         }
 
-                        // Update shared correct guesses list for the CURRENT ROUND for all players
+                        // Update shared correct guesses list for the CURRENT QUESTION for all players
                         if (sharedRoundGuessesList) {
                             sharedRoundGuessesList.innerHTML = ''; // Clear existing list
-                            (gameData.currentRoundGuessedAnswers || []).forEach(answer => {
+                            (gameData.currentQuestionGuessedAnswers || []).forEach(answer => {
                                 const listItem = document.createElement('li');
                                 listItem.textContent = answer;
                                 listItem.classList.add('text-purple-700', 'font-semibold', 'opacity-0', 'animate-fade-in-up');
@@ -1136,28 +1241,29 @@
                             });
                         }
 
-                        // Auto-advance if all answers for the current round are guessed
-                        if ((gameData.currentRoundGuessedAnswers || []).length === (gameData.currentAllAnswers || []).length && (gameData.currentAllAnswers || []).length > 0) {
+                        // Auto-advance if all answers for the current question are guessed
+                        if ((gameData.currentQuestionGuessedAnswers || []).length === (gameData.currentCorrectAnswers || []).length && (gameData.currentCorrectAnswers || []).length > 0) {
                             if (gamePhase === 'question_active') { // Only auto-advance if currently in active question phase
-                                gameRef.update({ gamePhase: 'round_results' }); // Move to showing round results
+                                gameRef.update({ gamePhase: 'question_results' }); // Move to showing question results
                             }
                         }
 
                     } 
-                    // Phase: Showing Round Results
-                    else if (gamePhase === 'round_results') {
-                        showScreen(roundResultsScreen);
+                    // Phase: Showing Question Results
+                    else if (gamePhase === 'question_results') {
+                        showScreen(roundResultsScreen); // Reusing roundResultsScreen for question results
                         clearInterval(timerInterval); // Stop any timer
 
                         if (resultsCategory) resultsCategory.textContent = gameData.currentCategory;
+                        if (resultsQuestion) resultsQuestion.textContent = gameData.currentQuestionText; // Display current question in results
                         
-                        // Display all correct answers for this specific round
+                        // Display all correct answers for this specific question
                         if (roundCorrectAnswersList) {
                             roundCorrectAnswersList.innerHTML = '';
-                            (gameData.currentAllAnswers || []).forEach(answer => {
+                            (gameData.currentCorrectAnswers || []).forEach(answer => { // Use currentCorrectAnswers for this question
                                 const listItem = document.createElement('li');
-                                // Highlight if it was guessed
-                                if ((gameData.currentRoundGuessedAnswers || []).includes(answer)) {
+                                // Highlight if it was guessed by anyone
+                                if ((gameData.currentQuestionGuessedAnswers || []).includes(answer)) {
                                     listItem.innerHTML = `<i class="fas fa-check text-green-500 mr-2"></i> ${answer}`;
                                 } else {
                                     listItem.innerHTML = `<i class="fas fa-times text-red-500 mr-2"></i> ${answer}`;
@@ -1166,18 +1272,18 @@
                             });
                         }
 
-                        // Display player scores for this round (fetching live data from players subcollection)
-                        showRoundPlayerScores();
+                        // Display player scores for this question (fetching live data from players subcollection)
+                        showQuestionPlayerScores(); // New function for question-specific scores
 
-                        // Host controls for next round or end game
+                        // Host controls for next question or end game
                         if (isHost && roundResultsHostControls) {
                             roundResultsHostControls.classList.remove('hidden');
-                            // Check if there are more quizzes
-                            if (gameData.currentQuizIndexInOrder < gameData.quizSet.length) {
+                            // Check if there are more questions in the quizSet
+                            if (gameData.currentQuestionIndexInGame < gameData.quizSet.length) { 
                                 if (nextRoundButton) nextRoundButton.classList.remove('hidden');
-                                if (endGameFinalButton) endGameFinalButton.classList.add('hidden'); // Hide end game button if more rounds
-                            } else {
-                                if (nextRoundButton) nextRoundButton.classList.add('hidden'); // Hide next round button
+                                if (endGameFinalButton) endGameFinalButton.classList.add('hidden'); // Hide end game button if more questions
+                            } else { // No more questions, show end game button
+                                if (nextRoundButton) nextRoundButton.classList.add('hidden'); // Hide next question button
                                 if (endGameFinalButton) endGameFinalButton.classList.remove('hidden'); // Show end game button
                             }
                         } else {
@@ -1210,10 +1316,10 @@
 
             playersSnapshotUnsubscribe = q.onSnapshot((snapshot) => {
                 if (joinedPlayersList) joinedPlayersList.innerHTML = ''; // Clear current list of joined players
-                if (playerCorrectGuessesList) playerCorrectGuessesList.innerHTML = ''; // Clear player's own current round guesses display
+                if (playerCorrectGuessesList) playerCorrectGuessesList.innerHTML = ''; // Clear player's own current question guesses display
 
                 let currentPlayerOverallScore = 0;
-                let currentPlayerRoundCorrectGuesses = [];
+                let currentPlayerCorrectAnswersForCurrentQuestion = [];
 
                 snapshot.forEach((doc) => {
                     const playerData = doc.data();
@@ -1227,17 +1333,17 @@
                         joinedPlayersList.appendChild(listItem);
                     }
 
-                    // Update current player's overall score and current round guesses (only for self)
+                    // Update current player's overall score and current question guesses (only for self)
                     if (playerId === userId) {
                         currentPlayerOverallScore = playerData.score || 0;
-                        currentPlayerRoundCorrectGuesses = playerData.currentRoundCorrectGuesses || [];
+                        currentPlayerCorrectAnswersForCurrentQuestion = playerData.playerCorrectAnswersForCurrentQuestion || [];
                     }
                 });
                 if (playerScoreDisplay) playerScoreDisplay.textContent = currentPlayerOverallScore; // Update UI with overall score
 
-                // Populate the current player's specific correct guesses list for THIS ROUND
+                // Populate the current player's specific correct guesses list for THIS QUESTION
                 if (playerCorrectGuessesList) {
-                    currentPlayerRoundCorrectGuesses.forEach(guess => {
+                    currentPlayerCorrectAnswersForCurrentQuestion.forEach(guess => {
                         const listItem = document.createElement('li');
                         listItem.textContent = guess;
                         listItem.classList.add('text-green-700', 'font-semibold', 'opacity-0', 'animate-fade-in-up');
@@ -1264,38 +1370,38 @@
             });
         }
 
-        // Displays scores of players for the CURRENT round on the results screen
-        async function showRoundPlayerScores() {
+        // Displays scores of players for the CURRENT QUESTION on the results screen
+        async function showQuestionPlayerScores() { // Renamed from showRoundPlayerScores
             if (roundPlayerScoresList) roundPlayerScoresList.innerHTML = ''; // Clear previous scores
             try {
                 const playersRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
                 const playersSnapshot = await playersRef.get();
 
-                let roundScores = [];
+                let questionScores = [];
                 playersSnapshot.forEach(doc => {
                     const playerData = doc.data();
-                    roundScores.push({
+                    questionScores.push({
                         nickname: playerData.nickname,
-                        roundCorrectGuessesCount: (playerData.currentRoundCorrectGuesses || []).length, // Count correct guesses for this round
+                        questionCorrectAnswersCount: (playerData.playerCorrectAnswersForCurrentQuestion || []).length, // Count correct answers for this question
                         overallScore: playerData.score || 0 // Display overall score as well
                     });
                 });
 
-                // Sort by round correct guesses count descending
-                roundScores.sort((a, b) => b.roundCorrectGuessesCount - a.roundCorrectGuessesCount);
+                // Sort by question correct answers count descending
+                questionScores.sort((a, b) => b.questionCorrectAnswersCount - a.questionCorrectAnswersCount);
 
                 if (roundPlayerScoresList) {
-                    roundScores.forEach(player => {
+                    questionScores.forEach(player => {
                         const listItem = document.createElement('li');
                         listItem.classList.add('py-2', 'px-4', 'rounded-lg', 'mb-2', 'bg-gray-50');
-                        listItem.textContent = `${player.nickname}: ${player.roundCorrectGuessesCount} إجابة صحيحة في هذه الجولة (إجمالي النقاط: ${player.overallScore})`;
+                        listItem.textContent = `${player.nickname}: ${player.questionCorrectAnswersCount} إجابة صحيحة لهذا السؤال (إجمالي النقاط: ${player.overallScore})`;
                         roundPlayerScoresList.appendChild(listItem);
                     });
                 }
 
             } catch (error) {
-                console.error("Error showing round player scores:", error);
-                showCustomMessageBox("خطأ", "فشل عرض نتائج الجولة.");
+                console.error("Error showing question player scores:", error);
+                showCustomMessageBox("خطأ", "فشل عرض نتائج السؤال.");
             }
         }
 
@@ -1379,16 +1485,16 @@
         // Host clicks to create the game instance in Firebase
         if (createGameButton) createGameButton.addEventListener('click', createGame);
 
-        // Host clicks to start the game (first round) from waiting room
-        if (startGameButton) startGameButton.addEventListener('click', startNextRound); // Reassigned to startNextRound
+        // Host clicks to start the game (first question) from waiting room
+        if (startGameButton) startGameButton.addEventListener('click', startNextQuestion); 
 
-        // Host clicks to end the current round early
-        if (endRoundEarlyButton) endRoundEarlyButton.addEventListener('click', endRoundEarly);
+        // Host clicks to end the current question early
+        if (endRoundEarlyButton) endRoundEarlyButton.addEventListener('click', endQuestionEarly); // Renamed
 
-        // Host clicks to proceed to the next round from round results screen
-        if (nextRoundButton) nextRoundButton.addEventListener('click', startNextRound);
+        // Host clicks to proceed to the next question from question results screen
+        if (nextRoundButton) nextRoundButton.addEventListener('click', startNextQuestion); // Renamed
 
-        // Host clicks to end the entire game from round results screen
+        // Host clicks to end the entire game from question results screen
         if (endGameFinalButton) endGameFinalButton.addEventListener('click', endGame);
 
 
