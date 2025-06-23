@@ -16,9 +16,9 @@
     <style>
         /* Base font and direction for Arabic */
         body {
-            font-family: 'Cairo', sans-serif; /* Changed to Cairo font */
+            font-family: 'Cairo', sans-serif;
             direction: rtl; /* For Arabic text */
-            text-align: right; /* For Arabic text */
+            /* REMOVED: text-align: right; -- relying on Tailwind classes now */
         }
         /* Custom animation for list items - Tailwind's default doesn't have this exact one */
         @keyframes fadeInFromBottom {
@@ -428,6 +428,8 @@
         let currentQuestionSoundInterval = null; // Interval for repeated sound effect
         let soundStarted = false; // Flag to control sound playback for time running out
         let hostSelectedCategoriesForGame = []; // Store selected categories by host for replay
+        let hostTotalQuestionsSetting = 0; // Store total questions setting by host for replay
+        let hostTimeLimitSetting = 0; // Store time limit setting by host for replay
 
         // Quiz data - IMPORTANT: Each object in quizzes now represents a CATEGORY with multiple questions.
         // Each question has a questionText and correctAnswers.
@@ -491,7 +493,7 @@
                     { questionText: "ما هي عاصمة سويسرا؟", displayAnswer: "برن", correctAnswers: ["برن", "bern"] },
                     { questionText: "ما هي عاصمة الدنمارك؟", displayAnswer: "كوبنهاغن", correctAnswers: ["كوبنهاغن", "copenhagen"] },
                     { questionText: "ما هي عاصمة فنلندا؟", displayAnswer: "هلسنكي", correctAnswers: ["هلسنكي", "helsinki"] },
-                    { questionText: "ما هي عاصمة النرويج؟", displayAnswer: "أوسلو", correctAnswers: ["أوسلو", "oslo"] },
+                    { questionText: "ما هي عاصمة النرويج؟", displayAnswer: "أوسلو", correctతిరేഴ്സ് ["أوسلو", "oslo"] },
                     { questionText: "ما هي عاصمة إيرلندا؟", displayAnswer: "دبلن", correctAnswers: ["دبلن", "dublin"] },
                     { questionText: "ما هي عاصمة كرواتيا؟", displayAnswer: "زغرب", correctAnswers: ["زغرب", "zagreb"] }
                 ]
@@ -793,7 +795,7 @@
         const endMessage = document.getElementById('end-message');
         const finalScoresList = document.getElementById('final-scores-list');
         const playAgainButton = document.getElementById('play-again-button');
-        const waitingForHostToRestartMsg = document.getElementById('waiting-for-host-to-restart-message'); // Renamed variable
+        const waitingForHostToRestartMsg = document.getElementById('waiting-for-host-to-restart-message'); 
         const customMessageBox = document.getElementById('custom-message-box');
         const customMessageTitle = document.getElementById('custom-message-title');
         const customMessageContent = document.getElementById('custom-message-content');
@@ -851,7 +853,7 @@
                 'questionCounterDisplay': questionCounterDisplay,
                 'hostSubmissionStatusList': hostSubmissionStatusList,  
                 'hostGameplayControls': hostGameplayControls,
-                'waitingForHostToRestartMessage': waitingForHostToRestartMsg // Added check for the new message element
+                'waitingForHostToRestartMessage': waitingForHostToRestartMsg 
             };
 
             for (const id in requiredElements) {
@@ -1012,7 +1014,7 @@
 
         // Hides all game screens and shows the specified one
         function showScreen(screenElement) {
-            console.log("Attempting to show screen:", screenElement ? screenElement.id : "undefined/null screenElement");
+            console.log("Calling showScreen with:", screenElement ? screenElement.id : "undefined/null screenElement");
 
             // Ensure screenElement is a valid DOM element
             if (!screenElement || !(screenElement instanceof HTMLElement)) {
@@ -1121,7 +1123,11 @@
                 localStorage.setItem('hostNickname', hostNickname); // Save host nickname locally
                 const timeLimit = parseInt(timeLimitSelect.value); // Get selected time limit
                 const totalQuestions = parseInt(totalQuestionsPerGameSelect.value); // Get total questions for game
-                hostSelectedCategoriesForGame = [...selectedQuizIndices]; // Save categories for replay
+                
+                // Store host settings for replay
+                hostSelectedCategoriesForGame = [...selectedQuizIndices]; 
+                hostTotalQuestionsSetting = totalQuestions;
+                hostTimeLimitSetting = timeLimit;
 
                 // Prepare the quiz order for the game
                 // Flatten all questions from selected categories into a single array
@@ -1176,7 +1182,7 @@
                     currentTime: timeLimit, // Initialize current time with full time limit
                     countdownStartTime: null, // For countdown before question
                     countdownDuration: 5, // Duration of countdown
-                    lastUpdate: Date.now() // Timestamp for host's last update (for real-time timer sync)
+                    lastUpdate: Date.now()
                 });
 
                 // Add host as a player in the game's subcollection (Host can also play)
@@ -1267,6 +1273,7 @@
 
         // Initiates the game start countdown (only once at the very beginning)
         async function initiateGameStartCountdown() {  
+            console.log("initiateGameStartCountdown called.");
             showLoading();
             try {
                 if (!gameId) throw new Error("لا يوجد معرف لعبة.");
@@ -1279,7 +1286,7 @@
                 const gameData = gameDoc.data();
                 // Check if it's already past lobby (game has started or is in countdown)
                 if (gameData.gamePhase !== 'lobby') {
-                    console.log("Game already started or in countdown phase.");
+                    console.log("Game already started or in countdown phase. Not initiating countdown again.");
                     hideLoading();
                     return;
                 }
@@ -1290,7 +1297,7 @@
                     countdownStartTime: Date.now(),
                     countdownDuration: 5 // 5 seconds countdown for game start
                 });
-                console.log("Initiated game start countdown.");
+                console.log("Firestore updated to game_countdown.");
 
             } catch (error) {
                 console.error("Error initiating game start countdown:", error);
@@ -1303,6 +1310,7 @@
 
         // Actually starts the next question (after initial countdown or from results screen)
         async function startNextQuestion() {
+            console.log("startNextQuestion called.");
             showLoading();
             try {
                 if (!gameId) throw new Error("لا يوجد معرف لعبة.");
@@ -1313,17 +1321,18 @@
                 if (!gameDoc.exists) throw new Error("اللعبة غير موجودة.");
 
                 const gameData = gameDoc.data();
-                const currentQuestionIndex = gameData.currentQuestionIndexInGame; // This is the index for the question we are starting NOW
+                const currentQuestionIndex = gameData.currentQuestionIndexInGame; 
                 const quizSet = gameData.quizSet;
 
+                console.log(`Current Question Index (before update): ${currentQuestionIndex}. Total Questions in quizSet: ${quizSet.length}`);
+
                 if (currentQuestionIndex >= quizSet.length) {
-                    console.log("All questions played. Transitioning to final_results.");
-                    // All questions played, end the game
+                    console.log("All questions played in current quizSet. Transitioning to final_results.");
                     await gameRef.update({ gamePhase: 'final_results' });
                     return;
                 }
 
-                const currentQuestion = quizSet[currentQuestionIndex]; // Get the question for THIS round
+                const currentQuestion = quizSet[currentQuestionIndex]; 
 
                 await gameRef.update({
                     gamePhase: 'question_active',
@@ -1338,6 +1347,8 @@
                     timeLimitPerQuestion: gameData.timeLimitPerQuestion, // Use stored time limit
                     currentTime: gameData.timeLimitPerQuestion, // Reset timer
                 });
+                console.log("Firestore updated for next question. Game phase: question_active.");
+
 
                 // Crucially, reset players' per-question flags/data in their sub-documents
                 const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
@@ -1353,15 +1364,18 @@
                     });
                 });
                 await batch.commit();
-                console.log("Reset player-specific question data for new question.");
+                console.log("Players' per-question data reset in Firestore.");
 
                 // Reset player's local UI for the new question
                 if (gameGuessInput) {
                     gameGuessInput.value = ''; // Clear input field for ALL players
+                    gameGuessInput.disabled = false; // Ensure input is enabled
                 }
                 // Reset points button selection to default (1) and re-enable them
                 selectedPointsBet = 1;
-                populatePointsButtons(); // Re-render buttons to reset selection visually and enable
+                populatePointsButtons(); // Re-render buttons to reset selection visually and enable them
+                if (submitAnswerButton) submitAnswerButton.disabled = false; // Re-enable submit button
+
 
                 // Clear shared guesses list at the start of a new question
                 if (sharedRoundGuessesList) {
@@ -1389,6 +1403,7 @@
         // --- Host Specific Functions ---
         // Allows host to end the current question early
         async function endQuestionEarly() {  
+            console.log("endQuestionEarly called.");
             if (!isHost || !gameId) return;  
 
             showLoading();
@@ -1400,9 +1415,10 @@
                     currentTime: 0, // Ensure timer is at zero
                     scoresReconciledForCurrentQuestion: false // Mark for reconciliation
                 });
+                console.log("Firestore updated to question_results phase by host (early end).");
                 // Host also triggers score reconciliation here, after updating phase.
                 reconcileQuestionScores();
-                console.log("Host ended question early.");
+                console.log("Host ended question early and triggered score reconciliation.");
             } catch (error) {
                 console.error("Error ending question early:", error);
                 showCustomMessageBox("خطأ", "فشل إنهاء السؤال مبكراً.");
@@ -1413,6 +1429,7 @@
 
         // Ends the entire game
         async function endGame() {
+            console.log("endGame called.");
             if (!isHost || !gameId) return;
             showLoading();
             try {
@@ -1420,7 +1437,7 @@
                 await gameRef.update({
                     gamePhase: 'final_results' // Move to final results
                 });
-                console.log("Host ended the entire game.");
+                console.log("Host ended the entire game. Firestore updated to final_results.");
             } catch (error) {
                 console.error("Error ending game:", error);
                 showCustomMessageBox("خطأ", "فشل إنهاء اللعبة.");
@@ -1431,13 +1448,14 @@
 
         // Function to reconcile scores for all players after a question ends (called by host)
         async function reconcileQuestionScores() {
+            console.log("reconcileQuestionScores called.");
             if (!isHost || !gameId) return; // Only host performs this
-            console.log("Reconciling scores for the ended question...");
+            console.log("Attempting to reconcile scores for the ended question...");
             // Ensure this runs only once per question results phase
             const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
             const gameDoc = await gameRef.get();
             if (!gameDoc.exists || gameDoc.data().scoresReconciledForCurrentQuestion) {
-                console.log("Scores already reconciled for this question, or game data missing.");
+                console.log("Scores already reconciled for this question, or game data missing. Skipping reconciliation.");
                 return; // Prevent double reconciliation if listener triggers again
             }
 
@@ -1454,25 +1472,20 @@
                 const gameData = gameDoc.data();
                 const currentCorrectAnswers = gameData.currentCorrectAnswers || [];
 
-
+                console.log("Starting player score reconciliation loop.");
                 for (const playerDoc of playersDocs.docs) {
-                    const playerId = playerDoc.id; // Correctly define playerId here
+                    const playerId = playerDoc.id; 
                     const playerRef = playerDoc.ref;
                     const playerData = playerDoc.data();
                     
                     let scoreChange = 0;
-                    let submittedAnswerForRound = playerData.playerSubmittedAnswer;
+                    let submittedAnswerForRound = playerData.playerSubmittedAnswer; // This is the answer they explicitly sent
 
-                    // If player hasn't submitted an answer, AND if it's the host's own client,
-                    // take the current input value. Otherwise, if no explicit submission, it's 'لم يجب'.
-                    if (!playerData.hasSubmittedAnswer && playerId === userId && gameGuessInput) {
-                        submittedAnswerForRound = gameGuessInput.value.trim();
-                    } else if (!playerData.hasSubmittedAnswer) {
-                        // If not submitted by player, and not the host's own live input
-                        submittedAnswerForRound = 'لم يجب';
-                    }
+                    // Important: if the player did NOT click submit (hasSubmittedAnswer is false),
+                    // their playerSubmittedAnswer will be empty string, thus it counts as "لم يجب".
+                    // This behavior is now explicitly what the code reflects.
 
-                    if (submittedAnswerForRound !== 'لم يجب') { // Only check correctness if an answer was provided
+                    if (playerData.hasSubmittedAnswer && submittedAnswerForRound !== '') { // Only check correctness if an answer was provided
                         const normalizedSubmittedAnswer = normalize(submittedAnswerForRound);
                         
                         if (isCorrectAnswer(normalizedSubmittedAnswer, currentCorrectAnswers)) {
@@ -1483,6 +1496,8 @@
                         } else {
                             scoreChange = -playerData.playerSelectedPoints; // Deduct points
                         }
+                    } else if (!playerData.hasSubmittedAnswer) {
+                        submittedAnswerForRound = 'لم يجب'; // Explicitly set if no submission
                     }
                     
                     const newScore = (playerData.score || 0) + scoreChange;
@@ -1491,10 +1506,10 @@
                     tempPlayerResults.push({
                         id: playerId,
                         nickname: playerData.nickname,
-                        submittedAnswer: submittedAnswerForRound, // Use captured answer
+                        submittedAnswer: submittedAnswerForRound, 
                         selectedPoints: playerData.playerSelectedPoints || 0,
                         scoreChange: scoreChange,
-                        overallScore: newScore // This is the updated score after this question
+                        overallScore: newScore 
                     });
 
                     batch.update(playerRef, {
@@ -1504,13 +1519,14 @@
                         playerScoreChange: 0,
                         hasSubmittedAnswer: false // Reset submitted flag for next round
                     });
+                    console.log(`Player ${playerData.nickname} (${playerId}) - Answer: '${submittedAnswerForRound}', Score Change: ${scoreChange}, New Score: ${newScore}`);
                 }
 
                 // Update the game document with the collected correct guesses AND player results for this round
                 batch.update(gameRef, { 
-                    currentQuestionGuessedAnswers: roundCorrectGuesses, // Shared guesses (only correct ones)
-                    lastQuestionPlayerResults: tempPlayerResults, // Store all players' results for this round
-                    scoresReconciledForCurrentQuestion: true // Mark as reconciled
+                    currentQuestionGuessedAnswers: roundCorrectGuesses, 
+                    lastQuestionPlayerResults: tempPlayerResults, 
+                    scoresReconciledForCurrentQuestion: true 
                 });
                 await batch.commit();
                 console.log("Scores reconciled and player flags reset for the question. Shared guesses and player results updated by host.");
@@ -1526,6 +1542,7 @@
         // --- Player Specific Functions ---
         // Allows a player to join an existing game
         async function joinGame(code, nickname) {
+            console.log("joinGame called with code:", code, "nickname:", nickname);
             showLoading(); // Show loading spinner
             try {
                 if (!code || !nickname) {
@@ -1604,6 +1621,7 @@
 
         // Submits a player's guess to Firestore
         async function submitGuess() {
+            console.log("submitGuess called.");
             // Only allow submission if gameId is set and we are on the game play screen.
             if (!gameId || (gamePlayScreen && gamePlayScreen.classList.contains('hidden'))) {
                  return; // Do nothing if not in active game play
@@ -1946,13 +1964,11 @@
                         // Host controls for next question or end game
                         if (isHost && questionResultsHostControls) {
                             questionResultsHostControls.classList.remove('hidden');
-                            // Check if there are more questions in the quizSet
-                            // gameData.currentQuestionIndexInGame holds the index of the *next* question to be played
-                            if (gameData.currentQuestionIndexInGame <= gameData.quizSet.length) { // Use <= to show "Next" for the *last* question, leading to final results
+                            // Check if there are more questions in the quizSet (current index points to the *next* question)
+                            if (gameData.currentQuestionIndexInGame < gameData.quizSet.length) {  
                                 if (nextQuestionButton) nextQuestionButton.classList.remove('hidden');
                                 if (endGameFinalButton) endGameFinalButton.classList.add('hidden'); // Hide end game button if more questions
-                            } 
-                            if (gameData.currentQuestionIndexInGame > gameData.quizSet.length) { // All questions played, show end game
+                            } else { // No more questions, show end game button
                                 console.log("All questions done, showing End Game button.");
                                 if (nextQuestionButton) nextQuestionButton.classList.add('hidden'); // Hide next question button
                                 if (endGameFinalButton) endGameFinalButton.classList.remove('hidden'); // Show end game button
@@ -1963,6 +1979,7 @@
                     }
                     // Phase: Final Game Results
                     else if (gamePhase === 'final_results') {
+                        console.log("In final_results phase.");
                         clearInterval(timerInterval); // Stop any active timers
                         clearInterval(currentQuestionSoundInterval); // Stop sound interval
                         soundStarted = false; // Reset sound flag
@@ -2081,6 +2098,7 @@
 
         // Displays detailed scores of players for the CURRENT QUESTION on the results screen
         async function showQuestionPlayerScoresDetailed() { // Renamed from showRoundPlayerScores
+            console.log("showQuestionPlayerScoresDetailed called.");
             if (questionPlayerScoresList) questionPlayerScoresList.innerHTML = ''; // Clear previous scores
             try {
                 // Fetch the main game document to get the stored results for the last question
@@ -2092,8 +2110,9 @@
                 }
                 const gameData = gameDoc.data();
                 const questionScores = gameData.lastQuestionPlayerResults || []; // Get the stored results
+                console.log("Retrieved lastQuestionPlayerResults:", questionScores);
 
-                // No need to sort again if they were sorted when stored, but ensure descending order
+                // Sort by overall score for this question (as requested)
                 questionScores.sort((a, b) => b.overallScore - a.overallScore);
 
                 if (questionPlayerScoresList) {
@@ -2144,7 +2163,7 @@
 
         // Displays the final overall scores screen and results
         async function showFinalScores() {
-            console.log("Showing final scores.");
+            console.log("showFinalScores called.");
             showLoading(); // Show loading spinner
             try {
                 // Unsubscribe from real-time listeners to prevent further updates
@@ -2276,6 +2295,7 @@
         // Button to play again after a game ends (Host initiates full game reset for new round)
         if (playAgainButton) {
             playAgainButton.addEventListener('click', async () => {
+                console.log("Play Again button clicked. Is Host:", isHost, "Game ID:", gameId);
                 if (!isHost || !gameId) {
                     console.warn("Play Again clicked by non-host or without gameId. Ignoring.");
                     return;
@@ -2287,6 +2307,15 @@
                     
                     // Re-generate quiz set from previously selected categories
                     let allPossibleQuestions = [];
+                    // Ensure hostSelectedCategoriesForGame is populated (from previous game creation)
+                    if (!hostSelectedCategoriesForGame || hostSelectedCategoriesForGame.length === 0) {
+                        console.warn("hostSelectedCategoriesForGame is empty. Reverting to all categories or showing error.");
+                        // Fallback: if categories were not captured, use all, or prompt user.
+                        // For simplicity, let's assume it was captured during initial game creation.
+                        // If not, this could lead to an empty quizSet.
+                        // For a robust solution, you might store these in Firestore with the game settings.
+                    }
+
                     hostSelectedCategoriesForGame.forEach(catIndex => { // Use saved categories
                         const category = quizzes[catIndex];
                         if (category && category.questions) {
@@ -2306,11 +2335,13 @@
                         const j = Math.floor(Math.random() * (i + 1));
                         [allPossibleQuestions[i], allPossibleQuestions[j]] = [allPossibleQuestions[j], allPossibleQuestions[i]];
                     }
-                    const totalQuestionsForNewRound = parseInt(totalQuestionsPerGameSelect.value); // Use current setting for total questions
+                    const totalQuestionsForNewRound = hostTotalQuestionsSetting || 10; // Use saved setting or default
+                    const timeLimitForNewRound = hostTimeLimitSetting || 20; // Use saved setting or default
+
                     const newQuizSetForGame = allPossibleQuestions.slice(0, totalQuestionsForNewRound);
 
                     if (newQuizSetForGame.length === 0) {
-                        throw new Error("لا توجد أسئلة كافية في الفئات المختارة لبدء جولة جديدة.");
+                        throw new Error("لا توجد أسئلة كافية في الفئات المختارة لبدء جولة جديدة. يرجى اختيار المزيد من الفئات.");
                     }
 
                     // Reset game document state in Firestore for the new round
@@ -2325,12 +2356,14 @@
                         currentQuestionGuessedAnswers: [],
                         lastQuestionPlayerResults: [],
                         questionStartTime: null,
-                        timeLimitPerQuestion: parseInt(timeLimitSelect.value), // Use current time limit setting
-                        currentTime: parseInt(timeLimitSelect.value),
+                        timeLimitPerQuestion: timeLimitForNewRound, 
+                        currentTime: timeLimitForNewRound,
                         countdownStartTime: null,
                         scoresReconciledForCurrentQuestion: false,
                         lastUpdate: Date.now()
                     });
+                    console.log(`Game ${gameId} main document reset to lobby phase.`);
+
 
                     // Reset all players' scores and states in the subcollection
                     const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
@@ -2348,14 +2381,14 @@
                         });
                     });
                     await batch.commit();
+                    console.log("All players' data reset for new round.");
 
                     // Reset local state for the host
                     userUsedPointsBets = [];
                     populatePointsButtons(); // Re-render point buttons for new game
-                    console.log(`Game ${gameId} restarted for a new round.`);
+                    console.log(`Game ${gameId} restarted for a new round within the same room.`);
 
-                    // No need to change URL or re-listen, as we stay in the same gameId.
-                    // The listeners will automatically pick up the 'lobby' phase change.
+                    // The listeners will automatically pick up the 'lobby' phase change and update UI.
 
                 } catch (error) {
                     console.error("Error restarting game for new round:", error);
