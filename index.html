@@ -285,7 +285,7 @@
             <div class="w-full mb-6">
                 <label class="block text-xl font-semibold text-gray-700 mb-2 text-center">راهن بالنقاط:</label>
                 <div id="points-button-group" class="points-button-group">
-                    <!-- Points buttons (1-20) will be generated here -->
+                    <!-- Points buttons (1-20) will be generated here by JS -->
                 </div>
             </div>
 
@@ -1060,6 +1060,7 @@
                     currentCorrectAnswers: nextQuestion.correctAnswers, // Set the correct answers for this question (already normalized when stored)
                     currentQuestionGuessedAnswers: [], // Reset guessed answers for new question (from all players)
                     questionStartTime: Date.now(), // New timestamp for question start
+                    timeLimitPerQuestion: gameData.timeLimitPerQuestion, // Use stored time limit
                     currentTime: gameData.timeLimitPerQuestion, // Reset timer
                 });
 
@@ -1079,18 +1080,20 @@
                 await batch.commit();
                 console.log("Reset player-specific question data for new question.");
 
-                // Clear player's local UI for the new question
+                // Reset player's local UI for the new question
                 if (playerCorrectGuessesList) playerCorrectGuessesList.innerHTML = ''; 
                 if (gameGuessInput) {
                     gameGuessInput.value = '';
                 }
-                // Reset points button selection to default (1)
+                // Reset points button selection to default (1) and re-enable them
                 selectedPointsBet = 1;
-                populatePointsButtons(); // Re-render buttons to reset selection visually
+                populatePointsButtons(); // Re-render buttons to reset selection visually and enable
 
-                // Re-enable input and select for current player if they are not the host
-                // This is now handled in listenToPlayers based on hasSubmittedAnswer
-                
+                // Re-enable input and select for current player (this is also handled by listenToChanges but good here too)
+                if (gameGuessInput) gameGuessInput.disabled = false;
+                if (submitAnswerButton) submitAnswerButton.disabled = false;
+                if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = false);
+
                 console.log(`Starting question ${nextQuestionIndex + 1}: ${nextQuestion.category} - Question: ${nextQuestion.question}`);
 
             } catch (error) {
@@ -1343,26 +1346,21 @@
                         if (gameCategoryDisplay) gameCategoryDisplay.textContent = gameData.currentCategory;
                         if (gameQuestionDisplay) gameQuestionDisplay.textContent = gameData.currentQuestionText; // Display current question text
                         
-                        // Handle input state for current player based on their submission status
-                        if (!isHost) { // Only for players (host doesn't submit here, they manage)
-                            db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId).get().then(playerDoc => {
-                                if (playerDoc.exists && !playerDoc.data().hasSubmittedAnswer) {
-                                    if (gameGuessInput) gameGuessInput.disabled = false;
-                                    if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = false);
-                                    if (submitAnswerButton) submitAnswerButton.disabled = false;
-                                } else { // Player has submitted
-                                    if (gameGuessInput) gameGuessInput.disabled = true;
-                                    if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
-                                    if (submitAnswerButton) submitAnswerButton.disabled = true;
-                                }
-                            }).catch(e => console.error("Error checking player submission status:", e));
-                        } else { // Host
-                            if (gameGuessInput) gameGuessInput.disabled = true;
-                            if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
-                            if (submitAnswerButton) submitAnswerButton.disabled = true;
-                        }
-                        if (gameGuessInput) gameGuessInput.focus();
+                        // Handle input state for current player (including host) based on their submission status
+                        db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId).get().then(playerDoc => {
+                            if (playerDoc.exists && !playerDoc.data().hasSubmittedAnswer) {
+                                if (gameGuessInput) gameGuessInput.disabled = false;
+                                if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = false);
+                                if (submitAnswerButton) submitAnswerButton.disabled = false;
+                            } else { // Player (or Host) has submitted for this question
+                                if (gameGuessInput) gameGuessInput.disabled = true;
+                                if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
+                                if (submitAnswerButton) submitAnswerButton.disabled = true;
+                            }
+                        }).catch(e => console.error("Error checking player submission status:", e));
                         
+                        if (gameGuessInput) gameGuessInput.focus(); // Keep focus
+
                         // Show/hide "End Question Early" button for host only during game play
                         if (isHost) {
                             if (endQuestionEarlyButton) endQuestionEarlyButton.classList.remove('hidden');
