@@ -971,38 +971,61 @@
         async function initializeFirebase() {
             showLoading(); // Show loading overlay
             try {
-                // *** FIREBASE CONFIGURATION (YOUR PROJECT'S SETTINGS) ***
-                // IMPORTANT: Use __firebase_config and __app_id global variables provided by Canvas environment.
-                const canvasAppId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-                const canvasFirebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-                    apiKey: "YOUR_API_KEY", // Fallback for local testing, will be overridden by Canvas
-                    authDomain: "YOUR_AUTH_DOMAIN",
-                    projectId: "YOUR_PROJECT_ID",
-                    storageBucket: "YOUR_STORAGE_BUCKET",
-                    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-                    appId: "YOUR_APP_ID",
-                    measurementId: "YOUR_MEASUREMENT_ID"
-                };
+                let firebaseConfig = {};
+                let canvasAppIdFromGlobal = 'default-app-id'; // Default value
 
-                app = initializeApp(canvasFirebaseConfig); // Initialize Firebase app
+                // Safely parse __firebase_config if it exists
+                if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                    try {
+                        firebaseConfig = JSON.parse(__firebase_config);
+                        // Also try to get projectId from firebaseConfig if it exists and use it as appId fallback
+                        if (firebaseConfig.projectId) {
+                            canvasAppIdFromGlobal = firebaseConfig.projectId;
+                        }
+                        console.log("Successfully parsed __firebase_config:", firebaseConfig);
+                    } catch (parseError) {
+                        console.error("Error parsing __firebase_config (It might be malformed JSON):", parseError);
+                        showCustomMessageBox("خطأ في التهيئة", "فشل تحليل إعدادات Firebase. الرجاء إبلاغ المطور.");
+                        hideLoading();
+                        return; // Stop initialization
+                    }
+                } else {
+                    console.warn("Global variable __firebase_config is undefined or null. Using fallback config. This may cause 'api-key-not-valid' if not running in a Canvas environment.");
+                    // Fallback config for development/testing if __firebase_config is not provided by the environment.
+                    // IMPORTANT: In a production Canvas environment, __firebase_config *should* be available.
+                    firebaseConfig = {
+                        apiKey: "YOUR_API_KEY_PLACEHOLDER", // This will cause error if actually used.
+                        authDomain: "YOUR_AUTH_DOMAIN_PLACEHOLDER",
+                        projectId: "YOUR_PROJECT_ID_PLACEHOLDER",
+                        storageBucket: "YOUR_STORAGE_BUCKET_PLACEHOLDER",
+                        messagingSenderId: "YOUR_MESSAGING_SENDER_ID_PLACEHOLDER",
+                        appId: "YOUR_APP_ID_PLACEHOLDER",
+                        measurementId: "YOUR_MEASUREMENT_ID_PLACEHOLDER"
+                    };
+                    canvasAppIdFromGlobal = "default-app-id-fallback";
+                }
+
+                // Use __app_id if it exists, otherwise fall back to projectId from firebaseConfig or default
+                window.appId = typeof __app_id !== 'undefined' ? __app_id : canvasAppIdFromGlobal;
+
+                console.log("Final Firebase Config used:", firebaseConfig);
+                console.log("Final App ID (for Firestore paths) used:", window.appId);
+
+                app = initializeApp(firebaseConfig); // Initialize Firebase app
                 db = getFirestore(app); // Get Firestore instance
                 auth = getAuth(app); // Get Auth instance
-                
-                // IMPORTANT: Assign to the GLOBAL appId variable declared at the top.
-                // This `window.appId` is used in Firestore paths to ensure data isolation.
-                window.appId = canvasAppId; // Set the global appId based on Canvas environment
-
-                console.log("Using Firebase Config (from Canvas):", canvasFirebaseConfig);
-                console.log("Derived App ID for Firestore path (Global):", window.appId);
 
                 // Sign in anonymously for game functionality.
-                // Use __initial_auth_token if provided, otherwise sign in anonymously.
                 const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
                 if (initialAuthToken) {
+                    console.log("Attempting sign-in with custom token...");
                     await signInWithCustomToken(auth, initialAuthToken);
+                    console.log("Signed in with custom token.");
                 } else {
+                    console.log("Custom token not provided. Attempting anonymous sign-in...");
                     await signInAnonymously(auth);
+                    console.log("Signed in anonymously.");
                 }
 
                 // Listen for authentication state changes
