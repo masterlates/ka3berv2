@@ -593,7 +593,7 @@
             }
         ];
         
-        // 🔁 دالة تطبيع النص (New normalization function from user)
+        // Function to normalize text for fuzzy matching (provided by user)
         function normalize(text) {
             return text
                 .toLowerCase()
@@ -606,7 +606,7 @@
                 .replace(/[^a-zA-Z0-9\u0600-\u06FF]/g, ''); // Keep Arabic and English alphanumeric
         }
 
-        // 🔁 دالة التشابه بين كلمتين (New similarity function from user)
+        // Function to calculate similarity between two normalized strings (provided by user)
         function similarity(a, b) {
             a = normalize(a);
             b = normalize(b);
@@ -621,16 +621,14 @@
             return matches / len;
         }
 
-        // ✅ التحقق من صحة الإجابة (New correctness check function from user)
+        // Function to check if a player's answer is correct using fuzzy matching (provided by user)
         function isCorrectAnswer(playerAnswer, acceptedAnswers) {
-            // Ensure playerAnswer is normalized before passing to similarity
             const normalizedPlayerAnswer = normalize(playerAnswer);
             return acceptedAnswers.some(ans => similarity(normalizedPlayerAnswer, ans) >= 0.8);
         }
 
         // Multi-select quiz categories logic
         let selectedQuizIndices = []; // Stores indices of selected CATEGORIES
-        // Defensive check for elements - getElementById returns null if not found
         const quizCategoryInput = document.getElementById('quiz-category-input');
         const quizCategoryDropdown = document.getElementById('quiz-category-dropdown');
         const selectedCategoriesTags = document.getElementById('selected-categories-tags');
@@ -638,7 +636,6 @@
         const totalQuestionsPerGameSelect = document.getElementById('total-questions-per-game-select'); // Total questions select
 
         // Function to populate and manage the multi-select dropdown
-        // This now lists the category and an example question from it for clarity
         function setupQuizCategorySelection() {
             if (!quizCategoryDropdown) {
                 console.error("Error: quizCategoryDropdown element not found.");
@@ -656,7 +653,6 @@
                 checkbox.checked = selectedQuizIndices.includes(index);
 
                 label.appendChild(checkbox);
-                // Display category name only
                 const displayText = quiz.category;  
                 label.appendChild(document.createTextNode(displayText));
                 quizCategoryDropdown.appendChild(label);
@@ -735,7 +731,6 @@
 
 
         // --- DOM Elements (Get references to HTML elements) ---
-        // Defensive checks for all DOM elements to catch missing ones early
         const loadingOverlay = document.getElementById('loading-overlay');
         const roleSelectionScreen = document.getElementById('role-selection-screen');
         const hostSetupScreen = document.getElementById('host-setup-screen');
@@ -1017,13 +1012,12 @@
             }
 
             // Hide all potential screens
-            // It's safer to ensure these elements exist before trying to modify their classes
             const allScreens = [
                 roleSelectionScreen, hostSetupScreen, waitingRoomScreen,
-                joinGameScreen, gamePlayScreen, questionResultsScreen, gameEndScreen, gameCountdownScreen // Include countdown screen
+                joinGameScreen, gamePlayScreen, questionResultsScreen, gameEndScreen, gameCountdownScreen
             ];
             allScreens.forEach(screen => {
-                if (screen && screen instanceof HTMLElement) { // Defensive check
+                if (screen && screen instanceof HTMLElement) {
                     screen.classList.add('hidden');
                 }
             });
@@ -1037,7 +1031,7 @@
             screenElement.classList.remove('hidden');
             // If the screen is supposed to be visible, ensure it's not also hidden by the message box logic
             if (screenElement !== customMessageBox) {
-                screenElement.classList.remove('flex', 'opacity-100'); // Ensure it doesn't get message box styles
+                screenElement.classList.remove('flex', 'opacity-100');
             }
         }
 
@@ -1118,7 +1112,6 @@
                 const totalQuestions = parseInt(totalQuestionsPerGameSelect.value); // Get total questions for game
 
                 // Prepare the quiz order for the game
-                // Flatten all questions from selected categories into a single array
                 let allPossibleQuestions = [];
                 selectedQuizIndices.forEach(catIndex => {
                     const category = quizzes[catIndex];
@@ -1149,9 +1142,7 @@
                     return;
                 }
 
-
                 // Reference to the new game document in Firestore
-                // Path: artifacts/{appId}/public/data/games/{gameId}
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
                 console.log("Attempting to create game at path:", gameRef.path); // Log path
                 await gameRef.set({ // Create the game document
@@ -1172,7 +1163,6 @@
                 });
 
                 // Add host as a player in the game's subcollection (Host can also play)
-                // Path: artifacts/{appId}/public/data/games/{gameId}/players/{userId}
                 const playerRef = gameRef.collection('players').doc(userId);
                 console.log("Attempting to add host player at path:", playerRef.path); // Log path
                 await playerRef.set({
@@ -1443,7 +1433,7 @@
                 const currentCorrectAnswers = gameData.currentCorrectAnswers || [];
 
 
-                for (const playerDoc of playersDocs.docs) { // Use for...of for await compatibility if needed, or simple forEach
+                for (const playerDoc of playersDocs.docs) {
                     const playerRef = playerDoc.ref;
                     const playerData = playerDoc.data();
                     
@@ -1617,7 +1607,6 @@
                     const gameData = gameDoc.data();
                     const playerData = playerDoc.data();
 
-                    const currentCorrectAnswers = gameData.currentCorrectAnswers || []; // All correct answers for the current question (normalized)
                     const hasSubmittedAnswer = playerData.hasSubmittedAnswer || false;
                     const playerUsedPointsBets = playerData.usedPointsBets || [];
 
@@ -1630,8 +1619,7 @@
                           throw new Error(`لقد استخدمت قيمة ${pointsBet} نقطة بالفعل في هذه اللعبة. الرجاء اختيار قيمة أخرى.`); // Throw specific error
                     }
 
-
-                    // Store current values. Actual score change will be calculated in reconcileQuestionScores.
+                    // Player updates their own submitted answer details directly
                     transaction.update(playerRef, {
                         playerSubmittedAnswer: guess, // Store the actual submitted guess
                         playerSelectedPoints: pointsBet,
@@ -1946,16 +1934,17 @@
                             let submittedAnswerText = '';
                             let scoreChangeText = '';
 
-                            // The playerScoreChange is updated during reconciliation phase by host.
-                            // During active question, it will be 0 until reconciliation.
-                            const scoreChangeValue = playerData.playerScoreChange || 0;
+                            const scoreChangeValue = playerData.playerScoreChange || 0; // Use scoreChange from player data
+                            const submittedAnswerActual = playerData.playerSubmittedAnswer;
+                            const selectedPointsActual = playerData.playerSelectedPoints || 0;
+
 
                             if (playerData.hasSubmittedAnswer) {
                                 statusIcon = '<i class="fas fa-check-circle text-green-500 ml-2"></i>';
-                                submittedAnswerText = `إجابة: ${playerData.playerSubmittedAnswer || 'لا توجد'}`;
-                                // Only show score change if it's not zero (meaning reconciliation has happened or it was correct)
-                                if (scoreChangeValue !== 0 || playerData.playerSelectedPoints > 0) { // Check if points were bet even if change is 0
-                                     scoreChangeText = `(راهن بـ ${playerData.playerSelectedPoints || 0} نقطة، تغيير: ${scoreChangeValue >= 0 ? '+' : ''}${scoreChangeValue} نقطة)`;
+                                submittedAnswerText = `إجابة: ${submittedAnswerActual || 'لا توجد'}`;
+                                // Only show score change if reconciliation has happened and there was a bet
+                                if (scoreChangeValue !== 0 || selectedPointsActual > 0) {
+                                     scoreChangeText = `(راهن بـ ${selectedPointsActual} نقطة، تغيير: ${scoreChangeValue >= 0 ? '+' : ''}${scoreChangeValue} نقطة)`;
                                 }
                             } else {  
                                 statusIcon = '<i class="fas fa-hourglass-half text-gray-500 ml-2"></i>';
@@ -1976,7 +1965,6 @@
                             userUsedPointsBets = playerData.usedPointsBets || [];  
                             populatePointsButtons(); // Re-render buttons with updated used points status
 
-                            // playerCorrectGuessesList remains local and is cleared on new question
                         }
                     });
                     if (playerScoreDisplay) playerScoreDisplay.innerHTML = currentPlayerOverallScore; // Update UI with overall score
@@ -1996,12 +1984,11 @@
 
             }, (error) => {
                 console.error("Error listening to players:", error);
-                // Optionally show error message about player list update issues
             });
         }
 
         // Displays detailed scores of players for the CURRENT QUESTION on the results screen
-        async function showQuestionPlayerScoresDetailed() { // Renamed from showRoundPlayerScores
+        async function showQuestionPlayerScoresDetailed() {
             if (questionPlayerScoresList) questionPlayerScoresList.innerHTML = ''; // Clear previous scores
             showLoading(); // Show loading while fetching
             try {
@@ -2009,7 +1996,7 @@
                 const playersSnapshot = await playersRef.get();
                 // Get main game data to retrieve the correct answers for the current question
                 const gameData = (await db.collection(`artifacts/${appId}/public/data/games`).doc(gameId).get()).data();
-                const currentCorrectAnswers = gameData.currentCorrectAnswers || []; // All valid answers for fuzzy matching
+                const currentCorrectAnswers = gameData.currentCorrectAnswers || [];
 
 
                 let questionScores = [];
@@ -2038,7 +2025,6 @@
                         // Check if player's submitted answer is one of the correct answers (using fuzzy logic)
                         let isPlayerAnswerCorrect = false;
                         if (player.submittedAnswer !== 'لم يجب') {
-                            // Using the new isCorrectAnswer function with the player's stored submitted answer
                             isPlayerAnswerCorrect = isCorrectAnswer(player.submittedAnswer, currentCorrectAnswers);
                         }
 
@@ -2230,34 +2216,5 @@
         // DOMContentLoaded listener is already used at the bottom of the script for initial checks and Firebase init.
     </script>
 
-
-<!-- مكتبة QR Code -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-<script>
-  function generateQRCode(link) {
-    const qrcodeContainer = document.getElementById("qrcode");
-    qrcodeContainer.innerHTML = ""; // ننظف القديم
-
-    new QRCode(qrcodeContainer, {
-      text: link,
-      width: 150,
-      height: 150,
-    });
-  }
-
-  // عند عرض رابط الغرفة
-  window.addEventListener('DOMContentLoaded', () => {
-    const link = window.location.href; // أو أي رابط الغرفة
-    const linkDisplay = document.getElementById("game-link-display");
-    if (linkDisplay) {
-      linkDisplay.textContent = link;
-    }
-    generateQRCode(link);
-  });
-</script>
-
-
-    
 </body>
 </html>
