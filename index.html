@@ -1471,8 +1471,8 @@
                     batch.update(playerRef, {
                         score: newScore,
                         playerScoreChange: scoreChange // Store the calculated change for results display
-                        // DO NOT reset playerSubmittedAnswer, playerSelectedPoints, hasSubmittedAnswer here.
-                        // These will be reset when the next question starts.
+                        // IMPORTANT: DO NOT reset playerSubmittedAnswer, playerSelectedPoints, hasSubmittedAnswer here.
+                        // These will be reset only when the NEXT question starts in startNextQuestion().
                     });
                 }
 
@@ -1630,8 +1630,6 @@
                           throw new Error(`لقد استخدمت قيمة ${pointsBet} نقطة بالفعل في هذه اللعبة. الرجاء اختيار قيمة أخرى.`); // Throw specific error
                     }
 
-
-                    let scoreChange = 0; // Points change for this question (will be calculated in reconcile)
 
                     // Store current values. Actual score change will be calculated in reconcileQuestionScores.
                     transaction.update(playerRef, {
@@ -1836,9 +1834,9 @@
                                 // Note: gameData.currentQuestionGuessedAnswers now contains ONLY the correct unique answers
                                 const wasPrimaryGuessed = (gameData.currentQuestionGuessedAnswers || []).some(guessed => isCorrectAnswer(primaryCorrectAnswer, [guessed]));
                                 if (wasPrimaryGuessed) {
-                                    listItem.innerHTML = `<i class="fas fa-check text-green-500 mr-2"></i> ${primaryCorrectAnswer}`;
+                                    listItem.innerHTML = `<i class="fas fa-check-circle text-green-500 mr-2"></i> ${primaryCorrectAnswer}`;
                                 } else {
-                                    listItem.innerHTML = `<i class="fas fa-times text-red-500 mr-2"></i> ${primaryCorrectAnswer}`;
+                                    listItem.innerHTML = `<i class="fas fa-times-circle text-red-500 mr-2"></i> ${primaryCorrectAnswer}`;
                                 }
                             } else {
                                 listItem.textContent = "لا توجد إجابة صحيحة أساسية محددة لهذا السؤال.";
