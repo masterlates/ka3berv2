@@ -788,7 +788,7 @@
         const hostGameplayControls = document.getElementById('host-gameplay-controls');  
 
         const endTitle = document.getElementById('end-title');
-        const endMessage = document.getElementById('end-message'); // Corrected declaration
+        const endMessage = document.getElementById('end-message');
         const finalScoresList = document.getElementById('final-scores-list');
         const playAgainButton = document.getElementById('play-again-button');
         const startNewRoundSameRoomButton = document.getElementById('start-new-round-same-room-button');
@@ -1631,8 +1631,6 @@
                     // Phase: Lobby (Waiting room)
                     if (gamePhase === 'lobby') {
                         console.log("[listenToGameChanges] Game phase is 'lobby'. Showing waiting room screen.");
-                        showScreen(waitingRoomScreen);
-                        
                         // FIX: Explicitly reset UI for players when returning to lobby
                         if (gameGuessInput) {
                             gameGuessInput.value = ''; // Clear previous answer
@@ -1647,6 +1645,8 @@
 
                         if (playerCorrectGuessesList) playerCorrectGuessesList.innerHTML = '';
                         if (sharedRoundGuessesList) sharedRoundGuessesList.innerHTML = '';
+                        
+                        showScreen(waitingRoomScreen); // Ensure player is moved to waiting screen
                         
                         if (isHost) {
                             if (startGameButton) {
@@ -2093,35 +2093,5 @@
 
         if (customMessageCloseButton) customMessageCloseButton.addEventListener('click', hideCustomMessageBox);
     </script>
-
-
-   
-<!-- مكتبة QR Code -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-<script>
-  function generateQRCode(link) {
-    const qrcodeContainer = document.getElementById("qrcode");
-    qrcodeContainer.innerHTML = ""; // ننظف القديم
-
-    new QRCode(qrcodeContainer, {
-      text: link,
-      width: 150,
-      height: 150,
-    });
-  }
-
-  // عند عرض رابط الغرفة
-  window.addEventListener('DOMContentLoaded', () => {
-    const link = window.location.href; // أو أي رابط الغرفة
-    const linkDisplay = document.getElementById("game-link-display");
-    if (linkDisplay) {
-      linkDisplay.textContent = link;
-    }
-    generateQRCode(link);
-  });
-</script>
-
-    
 </body>
 </html>
