@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar">
 <head>
@@ -174,7 +175,7 @@
 
     <!-- Main Game Container -->
     <div class="bg-white rounded-xl shadow-2xl p-8 max-w-3xl w-full flex flex-col items-center relative overflow-hidden transform transition-all duration-500 ease-in-out">
-        <h1 class="text-4xl font-extrabold text-gray-800 mb-6 text-center leading-tight">لعبة  حرقاسة HARGASA GAME <i class="fas fa-users text-blue-500"></i></h1>
+        <h1 class="text-4xl font-extrabold text-gray-800 mb-6 text-center leading-tight">لعبة حرقاسة HARGASA GAME <i class="fas fa-users text-blue-500"></i></h1>
         <p class="text-lg text-gray-600 mb-8 text-center" id="game-description">
             اختر دورك: إما مضيف لإنشاء غرفة، أو لاعب للانضمام إلى غرفة موجودة. <!-- Game description in Arabic -->
         </p>
@@ -285,18 +286,23 @@
 
         <!-- Game Play Screen (Host & Player) -->
         <div id="game-play-screen" class="w-full hidden">
-            <div class="flex flex-col md:flex-row justify-between items-center w-full mb-8 space-y-4 md:space-y-0">
-                <div class="flex items-center space-x-2 space-x-reverse text-2xl font-bold text-gray-700 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
-                    <i class="fas fa-hourglass-half text-blue-500"></i>
-                    <span>الوقت: <span id="game-timer" class="text-blue-600">--</span> ثانية</span> <!-- Game timer display -->
-                </div>
-                <div class="flex items-center space-x-2 space-x-reverse text-2xl font-bold text-gray-700 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
+            <!-- New layout for mobile-friendly information display -->
+            <div class="flex flex-col md:flex-row justify-between items-center w-full mb-4 md:mb-8 space-y-4 md:space-y-0">
+                <div class="flex items-center space-x-2 space-x-reverse text-2xl font-bold text-gray-700 bg-gray-100 px-5 py-3 rounded-lg shadow-md w-full md:w-auto">
                     <i class="fas fa-star text-yellow-500"></i>
                     <span>نقاطك: <span id="player-score" class="text-yellow-600">0</span></span> <!-- Player's score display -->
                 </div>
-                <div class="flex items-center space-x-2 space-x-reverse text-2xl font-bold text-gray-700 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
+                <div class="flex items-center space-x-2 space-x-reverse text-2xl font-bold text-gray-700 bg-gray-100 px-5 py-3 rounded-lg shadow-md w-full md:w-auto">
                     <i class="fas fa-question-circle text-purple-500"></i>
                     <span>السؤال: <span id="question-counter" class="text-purple-600">-- / --</span></span> <!-- Question counter -->
+                </div>
+            </div>
+
+            <!-- Timer moved closer to the input field for mobile -->
+            <div class="flex items-center justify-center w-full mb-6">
+                <div class="flex items-center space-x-2 space-x-reverse text-2xl font-bold text-gray-700 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
+                    <i class="fas fa-hourglass-half text-blue-500"></i>
+                    <span>الوقت: <span id="game-timer" class="text-blue-600">--</span> ثانية</span> <!-- Game timer display -->
                 </div>
             </div>
 
@@ -306,11 +312,11 @@
                 <p class="text-3xl font-extrabold text-gray-900" id="game-question"></p> <!-- Current question display -->
             </div>
 
-            <div class="flex items-center flex-wrap gap-2 w-full mb-4">
+            <div class="flex flex-col sm:flex-row items-center flex-wrap gap-2 w-full mb-4">
                 <label for="game-guess-input" class="sr-only">اكتب إجابتك هنا</label>
                 <input type="text" id="game-guess-input" placeholder="اكتب إجابتك هنا..."
                     class="flex-grow p-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50">
-                <button id="submit-answer-button" class="bg-blue-500 hover:bg-blue-600 text-white text-xl font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out flex-shrink-0">
+                <button id="submit-answer-button" class="bg-blue-500 hover:bg-blue-600 text-white text-xl font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out flex-shrink-0 w-full sm:w-auto mt-2 sm:mt-0">
                     <i class="fas fa-paper-plane"></i> إرسال
                 </button>
             </div>
@@ -403,19 +409,14 @@
         </div>
     </div>
 
-    <!-- Firebase CDN Scripts - MUST be included BEFORE main game script for global `firebase` object -->
-    <!-- These load the Firebase library globally, making `firebase.initializeApp`, etc., available -->
-    <script type="text/javascript" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script type="text/javascript" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script type="text/javascript" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <!-- Firebase CDN Scripts - Modular imports as per instructions -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    <!-- QRCode.js for generating QR codes -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode.js/1.0.0/qrcode.min.js"></script>
-
-    <!-- Main JavaScript Logic -->
-    <script type="text/javascript">
         // Global variables for Firebase and App
-        let app, db, auth, userId, userNickname, appId;
+        let app, db, auth, userId, userNickname;
         let gameId = null;
         let isHost = false;
         let gameSnapshotUnsubscribe = null; // Listener for game document changes
@@ -425,7 +426,8 @@
         let userUsedPointsBets = []; // Array to store points already used by the current player in the current GAME
         let currentQuestionSoundInterval = null; // Interval for repeated sound effect
         let soundStarted = false; // Flag to control sound playback for time running out
-  // Quiz data - IMPORTANT: Each object in quizzes now represents a CATEGORY with multiple questions.
+
+        // Quiz data - IMPORTANT: Each object in quizzes now represents a CATEGORY with multiple questions.
         // Each question has a questionText and correctAnswers.
         // `displayAnswer` is the primary correct answer shown in results.
         // `correctAnswers` is a list of normalized answers for fuzzy matching.
@@ -492,66 +494,62 @@
                     { questionText: "ما هي عاصمة كرواتيا؟", displayAnswer: "زغرب", correctAnswers: ["زغرب", "zagreb"] }
                 ]
             },
-
-
-{
-  category: "أمثال شعبية تونسية",
-  questions: [
-       { questionText: "كمل المثل: قلك عمرك ما تحط القزار في طريق الرجالة ...", displayAnswer: "يجي نهار و تقصدهم حفيان   ", correctAnswers: [" يجي نهار و تقصدهم حفيان ", "يجي نهار و تقصدهم حفيان  "] },
-    { questionText: "كمل المثل: إلّي في كرشه التبن...", displayAnswer: "يخاف من النار", correctAnswers: ["يخاف من النار", "يخاف من العافية"] },
-    { questionText: "كمل المثل: الباب إلّي يجيك منّو الريح...", displayAnswer: "سدّو واستريح", correctAnswers: ["سدّو واستريح", "سدّو"] },
-    { questionText: "كمل المثل: قطوسة تتغزل في خنافرها...", displayAnswer: "والفار يلعب قدّامها", correctAnswers: ["والفار يلعب قدّامها"] },
-    { questionText: "كمل المثل: إلّي ما يعرفك...", displayAnswer: "يجهلك", correctAnswers: ["يجهلك"] },
-    { questionText: "كمل المثل: العزوزة إذا تحفّت...", displayAnswer: "تحنّ للرقص", correctAnswers: ["تحنّ للرقص", "ترقص"] },
-    { questionText: "كمل المثل: تفرهد القطوس...", displayAnswer: "يلعب بديلو", correctAnswers: ["يلعب بديلو"] },
-    { questionText: "كمل المثل: طاحت الصمعة...", displayAnswer: "علّقو الحجام", correctAnswers: ["علّقو الحجام", "علقوا الحجام"] },
-    { questionText: "كمل المثل: لا يعجبه العجب...", displayAnswer: "ولا صيام رجب", correctAnswers: ["ولا صيام رجب"] },
-    { questionText: "كمل المثل: القطوس ما يهرّبش...", displayAnswer: "على دار فيها لحمة", correctAnswers: ["على دار فيها لحمة", "على الدار فيها لحمة"] },
-    { questionText: "كمل المثل: إلّي تحبو يكثر...", displayAnswer: "منو الهزار", correctAnswers: ["منو الهزار"] },
-    { questionText: "كمل المثل: ما يحس الجمرة...", displayAnswer: "كان إلي عافس عليها", correctAnswers: ["كان إلي عافس عليها", "كان الي عافس عليها"] },
-    { questionText: "كمل المثل: اللّي فيه طبّة...", displayAnswer: "ما ينساهاش", correctAnswers: ["ما ينساهاش"] },
-    { questionText: "كمل المثل: شد مشومك...", displayAnswer: "لا يجيك ما أشوم منّو", correctAnswers: ["لا يجيك ما أشوم منّو", "ما أشوم منو"] },
-    { questionText: "كمل المثل: الجمل ما يشوفش...", displayAnswer: "حدبتو", correctAnswers: ["حدبتو"] },
-    { questionText: "كمل المثل: إلّي يخاف من عشاه...", displayAnswer: "ما يشبعش", correctAnswers: ["ما يشبعش"] },
-    { questionText: "كمل المثل: قالولو زغرت، قال...", displayAnswer: "نعرف نبكي", correctAnswers: ["نعرف نبكي"] },
-    { questionText: "كمل المثل: كي تتفرهد العصفورة...", displayAnswer: "تجيها السقطة", correctAnswers: ["تجيها السقطة"] },
-    { questionText: "كمل المثل: كي تطيح البقرة...", displayAnswer: "يكثروا سكاكينها", correctAnswers: ["يكثروا سكاكينها", "تكتر سكاكينها"] },
-    { questionText: "كمل المثل: إلّي شاف البلا يصيح...", displayAnswer: "و إلّي ما شافش يقول سحر", correctAnswers: ["و إلّي ما شافش يقول سحر", "اللي ما شافش يقول سحر"] },
-    { questionText: "كمل المثل: الهدرة كيف السكاكين...", displayAnswer: "تجرح", correctAnswers: ["تجرح"] },
-    { questionText: "كمل المثل: إلّي ما ربحك...", displayAnswer: "ما يجرحكش", correctAnswers: ["ما يجرحكش"] },
-    { questionText: "كمل المثل: إلّي يحبك...", displayAnswer: "ما يضربكش بالعصا", correctAnswers: ["ما يضربكش بالعصا"] },
-    { questionText: "كمل المثل: الطماع يغلبو...", displayAnswer: "الكذاب", correctAnswers: ["الكذاب"] },
-    { questionText: "كمل المثل: ما يفلّ الحديد...", displayAnswer: "كان الحديد", correctAnswers: ["كان الحديد"] },
-    { questionText: "كمل المثل: إلّي يعوم ما يخافش...", displayAnswer: "من الموج", correctAnswers: ["من الموج"] },
-    { questionText: "كمل المثل: قالو لو ثنيها، قال...", displayAnswer: "كي نعدلها", correctAnswers: ["كي نعدلها"] },
-    { questionText: "كمل المثل: الباهي كيف الذهب...", displayAnswer: "ما يتخبّاش", correctAnswers: ["ما يتخبّاش"] },
-    { questionText: "كمل المثل: سكران ومبلول...", displayAnswer: "ويطلب في النار", correctAnswers: ["ويطلب في النار"] },
-    { questionText: "كمل المثل: الجبان...", displayAnswer: "يموت ألف مرّة", correctAnswers: ["يموت ألف مرّة", "يموت ألف مرة"] },
-    { questionText: "كمل المثل: رزق البخيل...", displayAnswer: "ياكلو العيّار", correctAnswers: ["ياكلو العيّار"] },
-    { questionText: "كمل المثل: حوت ياكل حوت...", displayAnswer: "وقليل الجهد يموت", correctAnswers: ["وقليل الجهد يموت"] },
-    { questionText: "كمل المثل: كيف يضيق بيك الحال...", displayAnswer: "رد بالك من الرجال", correctAnswers: ["رد بالك من الرجال"] },
-    { questionText: "كمل المثل: كثر الهم...", displayAnswer: "يضحّك", correctAnswers: ["يضحّك"] },
-    { questionText: "كمل المثل: الدنيا كالبحر...", displayAnswer: "يوم هادي ويوم هايج", correctAnswers: ["يوم هادي ويوم هايج"] },
-    { questionText: "كمل المثل: نعرفك تعوم...", displayAnswer: "وقت الغرق", correctAnswers: ["وقت الغرق"] },
-    { questionText: "كمل المثل: دابّة ما تعضّيش...", displayAnswer: "ما تخوّفنيش", correctAnswers: ["ما تخوّفنيش"] },
-    { questionText: "كمل المثل: الكلب كيف يكثر نباحو...", displayAnswer: "ما يعضّيش", correctAnswers: ["ما يعضّيش"] },
-    { questionText: "كمل المثل: الزين...", displayAnswer: "زين الروح", correctAnswers: ["زين الروح"] },
-    { questionText: "كمل المثل: ما تشوف بعينك...", displayAnswer: "أصدق من إلّي تسمع بأذنك", correctAnswers: ["أصدق من إلّي تسمع بأذنك"] },
-    { questionText: "كمل المثل: من طيّب أصله...", displayAnswer: "ما يخونكش", correctAnswers: ["ما يخونكش"] },
-    { questionText: "كمل المثل: إلّي يطيّحك من السرج...", displayAnswer: "ما هوش صاحبك", correctAnswers: ["ما هوش صاحبك"] },
-    { questionText: "كمل المثل: ثمة ناس...", displayAnswer: "تلبس ذهب وتخونك", correctAnswers: ["تلبس ذهب وتخونك"] },
-    { questionText: "كمل المثل: الزوالي كيف...", displayAnswer: "يطيح تكسرولو ضرسو", correctAnswers: ["يطيح تكسرولو ضرسو"] },
-    { questionText: "كمل المثل: إلّي ما عندوش ظهر...", displayAnswer: "ما يسوى شي", correctAnswers: ["ما يسوى شي"] },
-    { questionText: "كمل المثل: إلّي يزرع ريح...", displayAnswer: "يحصد العاصفة", correctAnswers: ["يحصد العاصفة"] },
-    { questionText: "كمل المثل: الكلمة كيف الرصاصة...", displayAnswer: "إذا خرجت ما ترجعش", correctAnswers: ["إذا خرجت ما ترجعش"] },
-    { questionText: "كمل المثل: اللسان...", displayAnswer: "يكسر العظم", correctAnswers: ["يكسر العظم"] },
-    { questionText: "كمل المثل: باش تحكم عالناس...", displayAnswer: "شوف أفعالهم", correctAnswers: ["شوف أفعالهم"] },
-    { questionText: "كمل المثل: ثمة ناس في وجهك مراية...", displayAnswer: "وفي ظهرك سكاكية", correctAnswers: ["وفي ظهرك سكاكية"] },
-    { questionText: "كمل المثل: الصحبة الزينة...", displayAnswer: "كنز ما يفنى", correctAnswers: ["كنز ما يفنى"] }
-   ]
+            {
+                category: "أمثال شعبية تونسية",
+                questions: [
+                       { questionText: "كمل المثل: قلك عمرك ما تحط القزار في طريق الرجالة ...", displayAnswer: "يجي نهار و تقصدهم حفيان ", correctAnswers: [" يجي نهار و تقصدهم حفيان ", "يجي نهار و تقصدهم حفيان "] },
+                    { questionText: "كمل المثل: إلّي في كرشه التبن...", displayAnswer: "يخاف من النار", correctAnswers: ["يخاف من النار", "يخاف من العافية"] },
+                    { questionText: "كمل المثل: الباب إلّي يجيك منّو الريح...", displayAnswer: "سدّو واستريح", correctAnswers: ["سدّو واستريح", "سدّو"] },
+                    { questionText: "كمل المثل: قطوسة تتغزل في خنافرها...", displayAnswer: "والفار يلعب قدّامها", correctAnswers: ["والفار يلعب قدّامها"] },
+                    { questionText: "كمل المثل: إلّي ما يعرفك...", displayAnswer: "يجهلك", correctAnswers: ["يجهلك"] },
+                    { questionText: "كمل المثل: العزوزة إذا تحفّت...", displayAnswer: "تحنّ للرقص", correctAnswers: ["تحنّ للرقص", "ترقص"] },
+                    { questionText: "كمل المثل: تفرهد القطوس...", displayAnswer: "يلعب بديلو", correctAnswers: ["يلعب بديلو"] },
+                    { questionText: "كمل المثل: طاحت الصمعة...", displayAnswer: "علّقو الحجام", correctAnswers: ["علّقو الحجام", "علقوا الحجام"] },
+                    { questionText: "كمل المثل: لا يعجبه العجب...", displayAnswer: "ولا صيام رجب", correctAnswers: ["ولا صيام رجب"] },
+                    { questionText: "كمل المثل: القطوس ما يهرّبش...", displayAnswer: "على دار فيها لحمة", correctAnswers: ["على دار فيها لحمة", "على الدار فيها لحمة"] },
+                    { questionText: "كمل المثل: إلّي تحبو يكثر...", displayAnswer: "منو الهزار", correctAnswers: ["منو الهزار"] },
+                    { questionText: "كمل المثل: ما يحس الجمرة...", displayAnswer: "كان إلي عافس عليها", correctAnswers: ["كان إلي عافس عليها", "كان الي عافس عليها"] },
+                    { questionText: "كمل المثل: اللّي فيه طبّة...", displayAnswer: "ما ينساهاش", correctAnswers: ["ما ينساهاش"] },
+                    { questionText: "كمل المثل: شد مشومك...", displayAnswer: "لا يجيك ما أشوم منّو", correctAnswers: ["لا يجيك ما أشوم منّو", "ما أشوم منو"] },
+                    { questionText: "كمل المثل: الجمل ما يشوفش...", displayAnswer: "حدبتو", correctAnswers: ["حدبتو"] },
+                    { questionText: "كمل المثل: إلّي يخاف من عشاه...", displayAnswer: "ما يشبعش", correctAnswers: ["ما يشبعش"] },
+                    { questionText: "كمل المثل: قالولو زغرت، قال...", displayAnswer: "نعرف نبكي", correctAnswers: ["نعرف نبكي"] },
+                    { questionText: "كمل المثل: كي تتفرهد العصفورة...", displayAnswer: "تجيها السقطة", correctAnswers: ["تجيها السقطة"] },
+                    { questionText: "كمل المثل: كي تطيح البقرة...", displayAnswer: "يكثروا سكاكينها", correctAnswers: ["يكثروا سكاكينها", "تكتر سكاكينها"] },
+                    { questionText: "كمل المثل: إلّي شاف البلا يصيح...", displayAnswer: "و إلّي ما شافش يقول سحر", correctAnswers: ["و إلّي ما شافش يقول سحر", "اللي ما شافش يقول سحر"] },
+                    { questionText: "كمل المثل: الهدرة كيف السكاكين...", displayAnswer: "تجرح", correctAnswers: ["تجرح"] },
+                    { questionText: "كمل المثل: إلّي ما ربحك...", displayAnswer: "ما يجرحكش", correctAnswers: ["ما يجرحكش"] },
+                    { questionText: "كمل المثل: إلّي يحبك...", displayAnswer: "ما يضربكش بالعصا", correctAnswers: ["ما يضربكش بالعصا"] },
+                    { questionText: "كمل المثل: الطماع يغلبو...", displayAnswer: "الكذاب", correctAnswers: ["الكذاب"] },
+                    { questionText: "كمل المثل: ما يفلّ الحديد...", displayAnswer: "كان الحديد", correctAnswers: ["كان الحديد"] },
+                    { questionText: "كمل المثل: إلّي يعوم ما يخافش...", displayAnswer: "من الموج", correctAnswers: ["من الموج"] },
+                    { questionText: "كمل المثل: قالو لو ثنيها، قال...", displayAnswer: "كي نعدلها", correctAnswers: ["كي نعدلها"] },
+                    { questionText: "كمل المثل: الباهي كيف الذهب...", displayAnswer: "ما يتخبّاش", correctAnswers: ["ما يتخبّاش"] },
+                    { questionText: "كمل المثل: سكران ومبلول...", displayAnswer: "ويطلب في النار", correctAnswers: ["ويطلب في النار"] },
+                    { questionText: "كمل المثل: الجبان...", displayAnswer: "يموت ألف مرّة", correctAnswers: ["يموت ألف مرّة", "يموت ألف مرة"] },
+                    { questionText: "كمل المثل: رزق البخيل...", displayAnswer: "ياكلو العيّار", correctAnswers: ["ياكلو العيّار"] },
+                    { questionText: "كمل المثل: حوت ياكل حوت...", displayAnswer: "وقليل الجهد يموت", correctAnswers: ["وقليل الجهد يموت"] },
+                    { questionText: "كمل المثل: كيف يضيق بيك الحال...", displayAnswer: "رد بالك من الرجال", correctAnswers: ["رد بالك من الرجال"] },
+                    { questionText: "كمل المثل: كثر الهم...", displayAnswer: "يضحّك", correctAnswers: ["يضحّك"] },
+                    { questionText: "كمل المثل: الدنيا كالبحر...", displayAnswer: "يوم هادي ويوم هايج", correctAnswers: ["يوم هادي ويوم هايج"] },
+                    { questionText: "كمل المثل: نعرفك تعوم...", displayAnswer: "وقت الغرق", correctAnswers: ["وقت الغرق"] },
+                    { questionText: "كمل المثل: دابّة ما تعضّيش...", displayAnswer: "ما تخوّفنيش", correctAnswers: ["ما تخوّفنيش"] },
+                    { questionText: "كمل المثل: الكلب كيف يكثر نباحو...", displayAnswer: "ما يعضّيش", correctAnswers: ["ما يعضّيش"] },
+                    { questionText: "كمل المثل: الزين...", displayAnswer: "زين الروح", correctAnswers: ["زين الروح"] },
+                    { questionText: "كمل المثل: ما تشوف بعينك...", displayAnswer: "أصدق من إلّي تسمع بأذنك", correctAnswers: ["أصدق من إلّي تسمع بأذنك"] },
+                    { questionText: "كمل المثل: من طيّب أصله...", displayAnswer: "ما يخونكش", correctAnswers: ["ما يخونكش"] },
+                    { questionText: "كمل المثل: إلّي يطيّحك من السرج...", displayAnswer: "ما هوش صاحبك", correctAnswers: ["ما هوش صاحبك"] },
+                    { questionText: "كمل المثل: ثمة ناس...", displayAnswer: "تلبس ذهب وتخونك", correctAnswers: ["تلبس ذهب وتخونك"] },
+                    { questionText: "كمل المثل: الزوالي كيف...", displayAnswer: "يطيح تكسرولو ضرسو", correctAnswers: ["يطيح تكسرولو ضرسو"] },
+                    { questionText: "كمل المثل: إلّي ما عندوش ظهر...", displayAnswer: "ما يسوى شي", correctAnswers: ["ما يسوى شي"] },
+                    { questionText: "كمل المثل: إلّي يزرع ريح...", displayAnswer: "يحصد العاصفة", correctAnswers: ["يحصد العاصفة"] },
+                    { questionText: "كمل المثل: الكلمة كيف الرصاصة...", displayAnswer: "إذا خرجت ما ترجعش", correctAnswers: ["إذا خرجت ما ترجعش"] },
+                    { questionText: "كمل المثل: اللسان...", displayAnswer: "يكسر العظم", correctAnswers: ["يكسر العظم"] },
+                    { questionText: "كمل المثل: باش تحكم عالناس...", displayAnswer: "شوف أفعالهم", correctAnswers: ["شوف أفعالهم"] },
+                    { questionText: "كمل المثل: ثمة ناس في وجهك مراية...", displayAnswer: "وفي ظهرك سكاكية", correctAnswers: ["وفي ظهرك سكاكية"] },
+                    { questionText: "كمل المثل: الصحبة الزينة...", displayAnswer: "كنز ما يفنى", correctAnswers: ["كنز ما يفنى"] }
+                ]
             },
-
-            
             {
                 category: "حيوانات الغابة",
                 questions: [
@@ -592,7 +590,6 @@
                     { questionText: "في أي ولاية تونسية توجد مدينة دقة الأثرية؟", displayAnswer: "باجة", correctAnswers: ["باجة", "beja"] }
                 ]
             },
-            // New "شوفلي حل" category starts here
             {
                 category: "شوفلي حل",
                 questions: [
@@ -648,9 +645,8 @@
                     { questionText: "ما هي الأكلة التي اشتهرت بها فضيلة وكانت تطبخها كثيراً؟", displayAnswer: "الملوخية", correctAnswers: ["الملوخية", "ملوخية", "mloukhiya"] }
                 ]
             }
-            // New "شوفلي حل" category ends here
         ];
-        
+            
         // 🔁 دالة تطبيع النص (New normalization function from user)
         function normalize(text) {
             return text
@@ -877,7 +873,7 @@
         }
 
         // Initial check for all important DOM elements
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => { // Made async to await initializeFirebase
             const requiredElements = {
                 'loadingOverlay': loadingOverlay,
                 'roleSelectionScreen': roleSelectionScreen,
@@ -924,7 +920,7 @@
             // Populate points buttons (1-20)
             populatePointsButtons();
             // If all critical elements are found, proceed with Firebase init
-            initializeFirebase();
+            await initializeFirebase(); // Await Firebase initialization
         });
 
         // Function to populate and manage the points buttons (1-20)
@@ -976,35 +972,41 @@
             showLoading(); // Show loading overlay
             try {
                 // *** FIREBASE CONFIGURATION (YOUR PROJECT'S SETTINGS) ***
-                // This is the configuration you provided for your Firebase project 'ka3boura-dbcf5'.
-                const firebaseConfig = {
-                  apiKey: "AIzaSyCwdZjTwrnjKZU_AilP5_GZJeEuUZjVcUY",
-                  authDomain: "ka3boura-dbcf5.firebaseapp.com",
-                  projectId: "ka3boura-dbcf5",
-                  storageBucket: "ka3boura-dbcf5.firebasestorage.app",
-                  messagingSenderId: "1051115240747",
-                  appId: "1:1051115240747:web:694751eef3173327f5596e",
-                  measurementId: "G-9413DFK5DF"
+                // IMPORTANT: Use __firebase_config and __app_id global variables provided by Canvas environment.
+                const canvasAppId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const canvasFirebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+                    apiKey: "YOUR_API_KEY",
+                    authDomain: "YOUR_AUTH_DOMAIN",
+                    projectId: "YOUR_PROJECT_ID",
+                    storageBucket: "YOUR_STORAGE_BUCKET",
+                    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+                    appId: "YOUR_APP_ID",
+                    measurementId: "YOUR_MEASUREMENT_ID"
                 };
-                // ***********************************************************************************
 
-                // Log the Firebase config to console to help debugging if there's an issue
-                console.log("Using Firebase Config:", firebaseConfig);
-
+                app = initializeApp(canvasFirebaseConfig); // Initialize Firebase app
+                db = getFirestore(app); // Get Firestore instance
+                auth = getAuth(app); // Get Auth instance
+                
                 // IMPORTANT: Assign to the GLOBAL appId variable declared at the top.
-                appId = firebaseConfig.projectId;
-                console.log("Derived App ID for Firestore path (Global):", appId);
+                // This `appId` is used in Firestore paths to ensure data isolation.
+                window.appId = canvasAppId; // Set the global appId based on Canvas environment
 
-
-                app = firebase.initializeApp(firebaseConfig); // Initialize Firebase app
-                db = firebase.firestore(app); // Get Firestore instance
-                auth = firebase.auth(app); // Get Auth instance
+                console.log("Using Firebase Config (from Canvas):", canvasFirebaseConfig);
+                console.log("Derived App ID for Firestore path (Global):", window.appId);
 
                 // Sign in anonymously for game functionality.
-                await auth.signInAnonymously();
+                // Use __initial_auth_token if provided, otherwise sign in anonymously.
+                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
 
                 // Listen for authentication state changes
-                auth.onAuthStateChanged((user) => {
+                onAuthStateChanged(auth, (user) => {
                     if (user) {
                         userId = user.uid; // Store the authenticated user ID
                         console.log("Authenticated with userId:", userId);
@@ -1134,9 +1136,9 @@
                 // Generate a random 3-digit number (100-999)
                 newGameId = String(Math.floor(100 + Math.random() * 900));
                 
-                const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(newGameId);
-                const docSnap = await gameRef.get();
-                if (!docSnap.exists) {
+                const gameRef = doc(db, `artifacts/${window.appId}/public/data/games`, newGameId);
+                const docSnap = await getDoc(gameRef);
+                if (!docSnap.exists()) {
                     isUnique = true;
                 } else {
                     console.warn(`Generated ID ${newGameId} is already in use. Retrying...`);
@@ -1210,9 +1212,9 @@
 
                 // Reference to the new game document in Firestore
                 // Path: artifacts/{appId}/public/data/games/{gameId}
-                const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
+                const gameRef = doc(db, `artifacts/${window.appId}/public/data/games`, gameId);
                 console.log("Attempting to create game at path:", gameRef.path); // Log path
-                await gameRef.set({ // Create the game document
+                await setDoc(gameRef, { // Create the game document
                     hostId: userId, // Store host's userId
                     gamePhase: 'lobby', // Initial phase
                     quizSet: quizSetForGame, // Array of ALL questions for this game
@@ -1227,14 +1229,15 @@
                     currentTime: timeLimit, // Initialize current time with full time limit
                     countdownStartTime: null, // For countdown before question
                     countdownDuration: 5, // Duration of countdown
+                    scoresReconciledForCurrentQuestion: true, // Initially true for lobby, set false when question ends
                     lastUpdate: Date.now() // Timestamp for host's last update (for real-time timer sync)
                 });
 
                 // Add host as a player in the game's subcollection (Host can also play)
                 // Path: artifacts/{appId}/public/data/games/{gameId}/players/{userId}
-                const playerRef = gameRef.collection('players').doc(userId);
+                const playerRef = doc(db, `artifacts/${window.appId}/public/data/games/${gameId}/players`, userId);
                 console.log("Attempting to add host player at path:", playerRef.path); // Log path
-                await playerRef.set({
+                await setDoc(playerRef, {
                     nickname: hostNickname, // Use host's provided nickname
                     score: 0, // Overall score
                     joinedAt: Date.now(),
@@ -1276,7 +1279,7 @@
                 } catch (qrError) {
                     console.warn("Failed to generate QR Code:", qrError);
                     if (qrcodeFallbackMessage) {
-                        qrcodeFallbackMessage.textContent = "فشل توليد رمز QR. يرجى استخدام الرابط أعلاه للانضمام.";
+                        qrcodeFallbackMessage.textContent = "فشل توليد رمز QR. يرجى استخدام الرابط أعلاه للانضمate.";
                     }
                     if (qrcodeDiv) { // Optionally style qrcodeDiv to show the message better
                         qrcodeDiv.style.minHeight = 'auto';
@@ -1323,9 +1326,9 @@
                 if (!gameId) throw new Error("لا يوجد معرف لعبة.");
                 if (!isHost) throw new Error("فقط المضيف يمكنه بدء اللعبة.");
 
-                const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
-                const gameDoc = await gameRef.get();
-                if (!gameDoc.exists) throw new Error("اللعبة غير موجودة.");
+                const gameRef = doc(db, `artifacts/${window.appId}/public/data/games`, gameId);
+                const gameDoc = await getDoc(gameRef);
+                if (!gameDoc.exists()) throw new Error("اللعبة غير موجودة.");
 
                 const gameData = gameDoc.data();
                 // Check if it's already past lobby (game has started or is in countdown)
@@ -1336,7 +1339,7 @@
                 }
 
                 // Update game phase to game_countdown and set countdown start time
-                await gameRef.update({
+                await updateDoc(gameRef, {
                     gamePhase: 'game_countdown', // Phase for initial game countdown
                     countdownStartTime: Date.now(),
                     countdownDuration: 5 // 5 seconds countdown for game start
@@ -1359,9 +1362,9 @@
                 if (!gameId) throw new Error("لا يوجد معرف لعبة.");
                 if (!isHost) throw new Error("فقط المضيف يمكنه بدء السؤال التالي."); // Clarified host role
 
-                const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
-                const gameDoc = await gameRef.get();
-                if (!gameDoc.exists) throw new Error("اللعبة غير موجودة.");
+                const gameRef = doc(db, `artifacts/${window.appId}/public/data/games`, gameId);
+                const gameDoc = await getDoc(gameRef);
+                if (!gameDoc.exists()) throw new Error("اللعبة غير موجودة.");
 
                 const gameData = gameDoc.data();
                 const currentQuestionIndex = gameData.currentQuestionIndexInGame; // This is the index for the question we are starting NOW
@@ -1369,13 +1372,13 @@
 
                 if (currentQuestionIndex >= quizSet.length) {
                     // All questions played, end the game
-                    await gameRef.update({ gamePhase: 'final_results' });
+                    await updateDoc(gameRef, { gamePhase: 'final_results' });
                     return;
                 }
 
                 const currentQuestion = quizSet[currentQuestionIndex]; // Get the question for THIS round
 
-                await gameRef.update({
+                await updateDoc(gameRef, {
                     gamePhase: 'question_active',
                     currentQuestionIndexInGame: currentQuestionIndex + 1, // Advance for *next* potential question (for display X/Y)
                     currentCategory: currentQuestion.category,
@@ -1386,11 +1389,12 @@
                     questionStartTime: Date.now(), // New timestamp for question start
                     timeLimitPerQuestion: gameData.timeLimitPerQuestion, // Use stored time limit
                     currentTime: gameData.timeLimitPerQuestion, // Reset timer
+                    scoresReconciledForCurrentQuestion: false, // Reset reconciliation flag for the new question
                 });
 
                 // Crucially, reset players' per-question flags/data in their sub-documents
-                const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
-                const playersDocs = await playersCollectionRef.get();
+                const playersCollectionRef = collection(db, `artifacts/${window.appId}/public/data/games/${gameId}/players`);
+                const playersDocs = await getDocs(playersCollectionRef);
                 const batch = db.batch();
                 playersDocs.docs.forEach(playerDoc => {
                     const playerRef = playerDoc.ref;
@@ -1442,16 +1446,19 @@
 
             showLoading();
             try {
-                const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
+                const gameRef = doc(db, `artifacts/${window.appId}/public/data/games`, gameId);
                 // When host ends question early, also trigger score reconciliation
-                await gameRef.update({
+                await updateDoc(gameRef, {
                     gamePhase: 'question_results', // Move to showing question results
                     currentTime: 0, // Ensure timer is at zero
                     scoresReconciledForCurrentQuestion: false // Mark for reconciliation
                 });
                 // Host also triggers score reconciliation here, after updating phase.
-                reconcileQuestionScores();
-                console.log("Host ended question early.");
+                // The onSnapshot listener for game changes will call showQuestionPlayerScoresDetailed
+                // and if the host, reconcileQuestionScores, so this direct call is actually redundant.
+                // However, for immediate feedback if gamePhase listener is slightly delayed, keep this for now.
+                // reconcileQuestionScores(); // Moved this call to the game listener to prevent double calls and ensure flag check
+                console.log("Host ended question early, waiting for phase change to trigger reconciliation.");
             } catch (error) {
                 console.error("Error ending question early:", error);
                 showCustomMessageBox("خطأ", "فشل إنهاء السؤال مبكراً.");
@@ -1465,8 +1472,8 @@
             if (!isHost || !gameId) return;
             showLoading();
             try {
-                const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
-                await gameRef.update({
+                const gameRef = doc(db, `artifacts/${window.appId}/public/data/games`, gameId);
+                await updateDoc(gameRef, {
                     gamePhase: 'final_results' // Move to final results
                 });
                 console.log("Host ended the entire game.");
@@ -1479,79 +1486,83 @@
         }
 
         // Function to reconcile scores for all players after a question ends (called by host)
-        async function reconcileQuestionScores() {
+        async function reconcileQuestionScores() { // Renamed from showRoundPlayerScores
             if (!isHost || !gameId) return; // Only host performs this
             console.log("Reconciling scores for the ended question...");
-            // Ensure this runs only once per question results phase
-            const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
-            const gameDoc = await gameRef.get();
-            if (!gameDoc.exists || gameDoc.data().scoresReconciledForCurrentQuestion) {
-                console.log("Scores already reconciled for this question, or game data missing.");
+            
+            const gameRef = doc(db, `artifacts/${window.appId}/public/data/games`, gameId);
+            const gameDoc = await getDoc(gameRef);
+            if (!gameDoc.exists()) {
+                console.log("Game data missing, cannot reconcile scores.");
+                return;
+            }
+            const gameData = gameDoc.data();
+            if (gameData.scoresReconciledForCurrentQuestion) {
+                console.log("Scores already reconciled for this question.");
                 return; // Prevent double reconciliation if listener triggers again
             }
 
             showLoading();
             try {
-                const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
-                const playersDocs = await playersCollectionRef.get();
+                const playersCollectionRef = collection(db, `artifacts/${window.appId}/public/data/games/${gameId}/players`);
+                const playersDocs = await getDocs(playersCollectionRef);
                 
                 const batch = db.batch();
-                let roundCorrectGuesses = []; // To store correct guesses for this specific round
+                let roundCorrectGuesses = []; // To store unique correct guesses for this specific round
 
                 // Get the current correct answers for the question from game data (already normalized)
-                const gameData = gameDoc.data();
                 const currentCorrectAnswers = gameData.currentCorrectAnswers || [];
 
 
-                for (const playerDoc of playersDocs.docs) { // Use for...of for await compatibility if needed, or simple forEach
+                for (const playerDoc of playersDocs.docs) {
                     const playerRef = playerDoc.ref;
                     const playerData = playerDoc.data();
                     
                     let scoreChange = 0;
                     let submittedAnswer = playerData.playerSubmittedAnswer;
 
-                    // If player hasn't submitted an answer, consider their current input as their answer.
-                    // This is a client-side guess, and for a true multiplayer game, should be handled via server
-                    // or a continuous sync. For this client-side only context, we'll default to no answer if not submitted.
-                    // If you want to capture their last typed text *without* them pressing submit,
-                    // you would need to continuously update their `playerSubmittedAnswer` in Firestore.
-                    // As per requirement "يجب اخذ المكتوب في الاجابة حتى ان لم يضغظ اللاعب على زر ارسال",
-                    // This implies the client must have already saved the input.
-                    // For now, we rely on `playerSubmittedAnswer` which only updates on explicit submit.
-                    // To truly capture the *last typed* value, players would need to update Firestore on every input change,
-                    // which is very chatty. Given the current structure, if `hasSubmittedAnswer` is false,
-                    // it means no explicit submission was made. I will proceed with this interpretation.
+                    // Apply the rule: "يجب اخذ المكتوب في الاجابة حتى ان لم يضغظ اللاعب على زر ارسال"
+                    // This implies that even if `hasSubmittedAnswer` is false, we should evaluate the last typed input.
+                    // However, the current client-side architecture means `playerSubmittedAnswer` is *only* updated on explicit submit.
+                    // To truly capture the "last typed" value without explicit submit, players would need to update
+                    // `playerSubmittedAnswer` in Firestore on every keystroke, which is inefficient.
+                    // Given the current setup, we will use `playerSubmittedAnswer` as the source of truth for what was 'submitted' or last recorded.
+                    // If `hasSubmittedAnswer` is false, it means they didn't press 'إرسال'.
+                    // If we want to strictly enforce "take last typed", the player client needs to update Firestore more frequently.
+                    // For now, I will use `playerSubmittedAnswer` only if `hasSubmittedAnswer` is true.
+                    // If `hasSubmittedAnswer` is false, they get 0 score change for this round.
 
                     if (playerData.hasSubmittedAnswer) {
-                        // Use the submitted answer (already stored in playerSubmittedAnswer)
-                        // This answer might not be normalized if the user typed non-normalized characters.
-                        // We must normalize it before passing to isCorrectAnswer.
                         const normalizedSubmittedAnswer = normalize(submittedAnswer);
                         
                         if (isCorrectAnswer(normalizedSubmittedAnswer, currentCorrectAnswers)) {
                             scoreChange = playerData.playerSelectedPoints; // Award points
-                            if (!roundCorrectGuesses.includes(submittedAnswer)) { // Add unique correct guess to round list
+                            // Add original submitted answer to shared correct guesses if it's unique
+                            if (!roundCorrectGuesses.includes(submittedAnswer)) {
                                 roundCorrectGuesses.push(submittedAnswer);
                             }
                         } else {
                             scoreChange = -playerData.playerSelectedPoints; // Deduct points
                         }
+                    } else {
+                        // If no answer was explicitly submitted, scoreChange is 0, and submittedAnswer is empty.
+                        scoreChange = 0;
+                        submittedAnswer = ''; // Ensure it's clear they didn't answer
                     }
-                    // If player didn't submit, scoreChange remains 0 (no points change) and submittedAnswer is empty.
-                    // This implicitly covers "taking the written answer" as "if no answer was submitted, no points change."
-
+                    
                     const newScore = (playerData.score || 0) + scoreChange;
                     batch.update(playerRef, {
                         score: newScore,
                         playerSubmittedAnswer: '', // Clear previous answer for next round
                         playerSelectedPoints: 0,
-                        playerScoreChange: 0,
+                        playerScoreChange: scoreChange, // Store the calculated change for this round's results display
                         hasSubmittedAnswer: false // Reset submitted flag for next round
                     });
                 }
 
-                // Update the game document with the collected correct guesses for this round
-                batch.update(gameRef, { 
+                // Update the game document with the collected unique correct guesses for this round
+                // And mark scores as reconciled
+                batch.update(gameRef, {  
                     currentQuestionGuessedAnswers: roundCorrectGuesses, // Update shared guesses ONLY here (host controlled)
                     scoresReconciledForCurrentQuestion: true // Mark as reconciled
                 });
@@ -1576,11 +1587,11 @@
                 }
 
                 // Reference to the game document
-                const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(code);
+                const gameRef = doc(db, `artifacts/${window.appId}/public/data/games`, code);
                 console.log("Attempting to join game at path:", gameRef.path); // Log path
-                const gameDoc = await gameRef.get(); // Get game document
+                const gameDoc = await getDoc(gameRef); // Get game document
 
-                if (!gameDoc.exists) {
+                if (!gameDoc.exists()) {
                     showCustomMessageBox("اللعبة غير موجودة", "رمز اللعبة غير صحيح أو الغرفة غير موجودة.");
                     hideLoading();
                     showScreen(roleSelectionScreen); // Redirect to role selection
@@ -1601,9 +1612,9 @@
                 localStorage.setItem('playerNickname', nickname); // Save nickname locally for future use
 
                 // Add player to the game's subcollection
-                const playerRef = gameRef.collection('players').doc(userId);
+                const playerRef = doc(db, `artifacts/${window.appId}/public/data/games/${gameId}/players`, userId);
                 console.log("Attempting to add player at path:", playerRef.path); // Log path
-                await playerRef.set({ // Use set with merge to avoid overwriting if player rejoins
+                await setDoc(playerRef, { // Use set with merge to avoid overwriting if player rejoins
                     nickname: nickname,
                     score: 0, // Overall score
                     joinedAt: Date.now(),
@@ -1662,7 +1673,7 @@
             }
 
             // Get player's guess as typed, it will be normalized by isCorrectAnswer
-            const guess = gameGuessInput.value.trim(); 
+            const guess = gameGuessInput.value.trim();  
             const pointsBet = selectedPointsBet; // Get selected points from global variable
 
             if (guess === '') {
@@ -1676,16 +1687,16 @@
 
             showLoading(); // Show loading spinner
             try {
-                const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
-                const playerRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId);
+                const gameRef = doc(db, `artifacts/${window.appId}/public/data/games`, gameId);
+                const playerRef = doc(db, `artifacts/${window.appId}/public/data/games/${gameId}/players`, userId);
 
                 // Use a Firestore transaction to ensure atomic updates
                 await db.runTransaction(async (transaction) => {
                     const gameDoc = await transaction.get(gameRef); // Get current game data
                     const playerDoc = await transaction.get(playerRef); // Get current player data
 
-                    if (!gameDoc.exists || !playerDoc.exists) {
-                        throw "Game or player data not found.";
+                    if (!gameDoc.exists() || !playerDoc.exists()) {
+                        throw new Error("Game or player data not found.");
                     }
 
                     const gameData = gameDoc.data();
@@ -1712,8 +1723,6 @@
                     
                     if (isCorrect) {
                         scoreChange = pointsBet;
-                        // DO NOT update currentQuestionGuessedAnswers in the game document here.
-                        // This will be handled by the host in reconcileQuestionScores.
                         console.log("Correct guess:", guess, "Points:", pointsBet);
                         // Add to player's *local* correct guesses list (for temporary display if needed)
                         if (playerCorrectGuessesList) {
@@ -1732,7 +1741,7 @@
                         playerSelectedPoints: pointsBet,
                         playerScoreChange: scoreChange, // Store the calculated change
                         hasSubmittedAnswer: true, // Mark as submitted
-                        usedPointsBets: firebase.firestore.FieldValue.arrayUnion(pointsBet) // Add used points to player's array
+                        usedPointsBets: arrayUnion(pointsBet) // Add used points to player's array
                     });
                 });
 
@@ -1764,11 +1773,11 @@
         function listenToGameChanges() {
             if (gameSnapshotUnsubscribe) gameSnapshotUnsubscribe(); // Unsubscribe from previous listener if exists
 
-            const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
+            const gameRef = doc(db, `artifacts/${window.appId}/public/data/games`, gameId);
             console.log("Listening to game changes at path:", gameRef.path); // Log path
 
-            gameSnapshotUnsubscribe = gameRef.onSnapshot((docSnap) => {
-                if (docSnap.exists) {
+            gameSnapshotUnsubscribe = onSnapshot(gameRef, (docSnap) => {
+                if (docSnap.exists()) {
                     const gameData = docSnap.data();
                     const gamePhase = gameData.gamePhase;
 
@@ -1836,8 +1845,8 @@
                         if (gameQuestionDisplay) gameQuestionDisplay.textContent = gameData.currentQuestionText; // Display current question text
                         
                         // Handle input state for current player (including host) based on their submission status
-                        db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId).get().then(playerDoc => {
-                            if (playerDoc.exists) { // Ensure player doc exists
+                        doc(db, `artifacts/${window.appId}/public/data/games/${gameId}/players`, userId).get().then(playerDoc => {
+                            if (playerDoc.exists()) { // Ensure player doc exists
                                 const currentPlayerData = playerDoc.data();
                                 if (!currentPlayerData.hasSubmittedAnswer) {
                                     // Player has not submitted, enable inputs
@@ -1884,16 +1893,14 @@
                                         soundStarted = true; // Set flag to prevent starting multiple intervals
                                     }
                                     // Update Firestore with current time and last update timestamp
-                                    await gameRef.update({ currentTime: remainingTime, lastUpdate: now });
+                                    await updateDoc(gameRef, { currentTime: remainingTime, lastUpdate: now });
                                     if (gameTimerDisplay) gameTimerDisplay.textContent = remainingTime; // Update timer display
                                 } else {
                                     clearInterval(timerInterval); // Stop timer
                                     clearInterval(currentQuestionSoundInterval); // Stop sound interval
                                     soundStarted = false; // Reset sound flag
                                     // If time runs out, move to question results phase and reconcile scores
-                                    await gameRef.update({ gamePhase: 'question_results', currentTime: 0, scoresReconciledForCurrentQuestion: false }); // Reset reconciliation flag
-                                    // Host also triggers score reconciliation here
-                                    reconcileQuestionScores();  
+                                    await updateDoc(gameRef, { gamePhase: 'question_results', currentTime: 0, scoresReconciledForCurrentQuestion: false }); // Reset reconciliation flag
                                 }
                             }, 1000); // Update every second
                         } else {
@@ -1910,7 +1917,7 @@
 
                         // Shared guesses list should remain empty during active question phase
                         if (sharedRoundGuessesList) {
-                            sharedRoundGuessesList.innerHTML = ''; 
+                            sharedRoundGuessesList.innerHTML = '';  
                         }
                         // This part of UI is now handled by reconcileQuestionScores in question_results phase
                         if (playerCorrectGuessesList) {
@@ -1932,19 +1939,18 @@
                         if (resultsCategory) resultsCategory.textContent = gameData.currentCategory;
                         if (resultsQuestion) resultsQuestion.textContent = gameData.currentQuestionText; // Display current question in results
                         
-                        // Display all correct answers for this specific question
+                        // Display the primary correct answer for this specific question
                         if (roundCorrectAnswersList) {
                             roundCorrectAnswersList.innerHTML = '';
-                            // Display ONLY the displayAnswer (the primary correct one)
                             const primaryCorrectAnswer = gameData.currentDisplayAnswer;
                             const listItem = document.createElement('li');
                             if (primaryCorrectAnswer) {
                                 // Check if the primary correct answer was guessed by anyone using the new isCorrectAnswer
-                                // Note: gameData.currentQuestionGuessedAnswers now contains ONLY the correct unique answers
                                 const wasPrimaryGuessed = (gameData.currentQuestionGuessedAnswers || []).some(guessed => isCorrectAnswer(primaryCorrectAnswer, [guessed]));
                                 if (wasPrimaryGuessed) {
                                     listItem.innerHTML = `<i class="fas fa-check text-green-500 mr-2"></i> ${primaryCorrectAnswer}`;
                                 } else {
+                                    // If no one got it, or it wasn't among the "shared correct guesses" (which means no one got it)
                                     listItem.innerHTML = `<i class="fas fa-times text-red-500 mr-2"></i> ${primaryCorrectAnswer}`;
                                 }
                             } else {
@@ -1953,7 +1959,7 @@
                             roundCorrectAnswersList.appendChild(listItem);
                         }
 
-                        // Populate shared guesses list from gameData.currentQuestionGuessedAnswers
+                        // Populate shared guesses list from gameData.currentQuestionGuessedAnswers (contains only unique correct answers)
                         if (sharedRoundGuessesList) {
                             sharedRoundGuessesList.innerHTML = ''; // Clear existing list
                             (gameData.currentQuestionGuessedAnswers || []).forEach(answer => {
@@ -2006,20 +2012,20 @@
         function listenToPlayers() {
             if (playersSnapshotUnsubscribe) playersSnapshotUnsubscribe(); // Unsubscribe from previous listener
 
-            const playersRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
+            const playersRef = collection(db, `artifacts/${window.appId}/public/data/games/${gameId}/players`);
             console.log("Listening to players at path:", playersRef.path); // Log path
             const q = playersRef;
 
-            playersSnapshotUnsubscribe = q.onSnapshot((snapshot) => {
+            playersSnapshotUnsubscribe = onSnapshot(q, (snapshot) => {
                 if (joinedPlayersList) joinedPlayersList.innerHTML = ''; // Clear current list of joined players
                 
                 let currentPlayerOverallScore = 0;
                 
                 // Get gameData to determine who the host is
-                db.collection(`artifacts/${appId}/public/data/games`).doc(gameId).get().then(gameDoc => {
+                doc(db, `artifacts/${window.appId}/public/data/games`, gameId).get().then(gameDoc => {
                     let hostIdFromGame = null;
                     let gamePhase = 'lobby'; // Default for safety
-                    if (gameDoc.exists) {
+                    if (gameDoc.exists()) {
                         const gameData = gameDoc.data();
                         hostIdFromGame = gameData.hostId;
                         gamePhase = gameData.gamePhase;
@@ -2087,7 +2093,7 @@
                     // Only apply if host is in waiting room phase
                     if (gamePhase === 'lobby' && isHost) {
                         // For starting the game, require at least the host and one other player.
-                        if (snapshot.size >= 2) { 
+                        if (snapshot.size >= 2) {  
                             if (startGameButton) startGameButton.classList.remove('hidden'); // Show start button
                         } else {
                             if (startGameButton) startGameButton.classList.add('hidden'); // Hide if only host or no other players
@@ -2103,13 +2109,13 @@
         }
 
         // Displays detailed scores of players for the CURRENT QUESTION on the results screen
-        async function showQuestionPlayerScoresDetailed() { // Renamed from showRoundPlayerScores
+        async function showQuestionPlayerScoresDetailed() {
             if (questionPlayerScoresList) questionPlayerScoresList.innerHTML = ''; // Clear previous scores
             try {
-                const playersRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
-                const playersSnapshot = await playersRef.get();
+                const playersRef = collection(db, `artifacts/${window.appId}/public/data/games/${gameId}/players`);
+                const playersSnapshot = await getDocs(playersRef);
                 // Get main game data to retrieve the correct answers for the current question
-                const gameData = (await db.collection(`artifacts/${appId}/public/data/games`).doc(gameId).get()).data();
+                const gameData = (await getDoc(doc(db, `artifacts/${window.appId}/public/data/games`, gameId))).data();
                 const currentCorrectAnswers = gameData.currentCorrectAnswers || []; // All valid answers for fuzzy matching
 
 
@@ -2121,7 +2127,7 @@
                         submittedAnswer: playerData.playerSubmittedAnswer || 'لم يجب',
                         selectedPoints: playerData.playerSelectedPoints || 0,
                         scoreChange: playerData.playerScoreChange || 0,
-                        overallScore: playerData.score || 0
+                        overallScore: playerData.score || 0 // This is the player's total score after reconciliation
                     });
                 });
 
@@ -2138,12 +2144,11 @@
 
                         // Check if player's submitted answer is one of the correct answers (using fuzzy logic)
                         let isPlayerAnswerCorrect = false;
-                        if (player.submittedAnswer !== 'لم يجب') {
-                            // Using the new isCorrectAnswer function with the player's stored submitted answer
+                        if (player.submittedAnswer !== 'لم يجب' && player.submittedAnswer !== '') { // Also check for empty string
                             isPlayerAnswerCorrect = isCorrectAnswer(player.submittedAnswer, currentCorrectAnswers);
                         }
 
-                        if (player.submittedAnswer !== 'لم يجب') {
+                        if (player.submittedAnswer !== 'لم يجب' && player.submittedAnswer !== '') {
                             if (isPlayerAnswerCorrect) {
                                 answerStatusIcon = `<i class="fas fa-check-circle text-green-500 mr-2"></i>`;
                                 answerColorClass = 'text-green-700';
@@ -2154,6 +2159,7 @@
                         } else {
                             answerStatusIcon = `<i class="fas fa-question-circle text-gray-500 mr-2"></i>`; // Icon for no answer
                             answerColorClass = 'text-gray-500';
+                            player.submittedAnswer = 'لم يجب'; // Standardize display for empty
                         }
 
 
@@ -2194,8 +2200,8 @@
                 soundStarted = false; // Reset sound flag
 
                 // Fetch all player data one last time to get final scores
-                const playersRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
-                const playersSnapshot = await playersRef.get();
+                const playersRef = collection(db, `artifacts/${window.appId}/public/data/games/${gameId}/players`);
+                const playersSnapshot = await getDocs(playersRef);
 
                 let finalScores = [];
                 playersSnapshot.forEach(doc => {
@@ -2216,7 +2222,7 @@
                                 listItem.innerHTML = `<i class="fas fa-trophy text-yellow-600 mr-2"></i> المركز الأول: ${player.nickname} - ${player.score} نقطة`;
                             } else { // Other players
                                 listItem.classList.add('bg-gray-50');
-                                listItem.textContent = `${player.nickname} - ${player.score} نقطة`;
+                                listItem.textContent = `المركز ${index + 1}: ${player.nickname} - ${player.score} نقطة`; // Display rank for all
                             }
                             finalScoresList.appendChild(listItem);
                         });
@@ -2329,31 +2335,8 @@
         // --- Initial Load ---
         // DOMContentLoaded listener is already used at the bottom of the script for initial checks and Firebase init.
     </script>
-<!-- مكتبة QR Code -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-<script>
-  function generateQRCode(link) {
-    const qrcodeContainer = document.getElementById("qrcode");
-    qrcodeContainer.innerHTML = ""; // ننظف القديم
-
-    new QRCode(qrcodeContainer, {
-      text: link,
-      width: 150,
-      height: 150,
-    });
-  }
-
-  // عند عرض رابط الغرفة
-  window.addEventListener('DOMContentLoaded', () => {
-    const link = window.location.href; // أو أي رابط الغرفة
-    const linkDisplay = document.getElementById("game-link-display");
-    if (linkDisplay) {
-      linkDisplay.textContent = link;
-    }
-    generateQRCode(link);
-  });
-</script>
+    <!-- QRCode.js for generating QR codes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode.js/1.0.0/qrcode.min.js"></script>
 
 </body>
 </html>
