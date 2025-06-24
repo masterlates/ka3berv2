@@ -288,7 +288,7 @@
             <p class="text-2xl font-bold text-gray-800 mb-4 text-center">الفئة: <span id="game-category" class="text-indigo-600"></span></p> <!-- Current category display -->
             
             <div class="bg-blue-100 p-4 rounded-lg shadow-md mb-6 w-full text-center">
-                <p class="text-3xl font-extrabold text-gray-900" id="game-question"></p> <!-- Current question display -->
+                <p class="text-2xl font-extrabold text-gray-900" id="game-question"></p> <!-- Current question display (Reduced font size) -->
             </div>
 
             <!-- New responsive layout for Timer, Score, Question Counter -->
@@ -555,7 +555,7 @@
                     { questionText: "كمل المثل: الزوالي كيف...", displayAnswer: "يطيح تكسرولو ضرسو", correctAnswers: ["يطيح تكسرولو ضرسو"] },
                     { questionText: "كمل المثل: إلّي ما عندوش ظهر...", displayAnswer: "ما يسوى شي", correctAnswers: ["ما يسوى شي"] },
                     { questionText: "كمل المثل: إلّي يزرع ريح...", displayAnswer: "يحصد العاصفة", correctAnswers: ["يحصد العاصفة"] },
-                    { questionText: "كمل المثل: الكلمة كيف الرصاصة...", display: "إذا خرجت ما ترجعش", correctAnswers: ["إذا خرجت ما ترجعش"] },
+                    { questionText: "كمل المثل: الكلمة كيف الرصاصة...", displayAnswer: "إذا خرجت ما ترجعش", correctAnswers: ["إذا خرجت ما ترجعش"] },
                     { questionText: "كمل المثل: اللسان...", displayAnswer: "يكسر العظم", correctAnswers: ["يكسر العظم"] },
                     { questionText: "كمل المثل: باش تحكم عالناس...", displayAnswer: "شوف أفعالهم", correctAnswers: ["شوف أفعالهم"] },
                     { questionText: "كمل المثل: ثمة ناس في وجهك مراية...", displayAnswer: "وفي ظهرك سكاكية", correctAnswers: ["وفي ظهرك سكاكية"] },
@@ -788,7 +788,7 @@
         const hostGameplayControls = document.getElementById('host-gameplay-controls');  
 
         const endTitle = document.getElementById('end-title');
-        const endMessage = document.getElementById('end-message'); // Corrected declaration
+        const endMessage = document.getElementById('end-message');
         const finalScoresList = document.getElementById('final-scores-list');
         const playAgainButton = document.getElementById('play-again-button');
         const startNewRoundSameRoomButton = document.getElementById('start-new-round-same-room-button');
@@ -1118,7 +1118,10 @@
                     timeLimitPerQuestion: timeLimit,
                     countdownStartTime: null,
                     countdownDuration: 5,
-                    scoresReconciledForCurrentQuestion: false
+                    scoresReconciledForCurrentQuestion: false,
+                    // NEW: Add lastHostTimeUpdate and initial currentTime for synchronization
+                    lastHostTimeUpdate: null, 
+                    currentTime: timeLimit // Initialize current time on host side
                 });
 
                 const playerRef = gameRef.collection('players').doc(userId);
@@ -1245,7 +1248,10 @@
                     currentQuestionGuessedAnswers: [],
                     questionStartTime: Date.now(),
                     timeLimitPerQuestion: gameData.timeLimitPerQuestion,
-                    scoresReconciledForCurrentQuestion: false
+                    scoresReconciledForCurrentQuestion: false,
+                    // NEW: Initialize currentTime for host-driven synchronization
+                    currentTime: gameData.timeLimitPerQuestion, 
+                    lastHostTimeUpdate: Date.now()
                 });
 
                 const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
@@ -1286,7 +1292,9 @@
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
                 await gameRef.update({
                     gamePhase: 'question_results',
-                    scoresReconciledForCurrentQuestion: false
+                    scoresReconciledForCurrentQuestion: false,
+                    currentTime: 0, // Ensure timer stops on end early
+                    lastHostTimeUpdate: Date.now()
                 });
                 reconcileQuestionScores();
                 console.log("Host ended question early.");
@@ -1377,7 +1385,10 @@
                     currentQuestionGuessedAnswers: [],
                     questionStartTime: null,
                     countdownStartTime: null,
-                    scoresReconciledForCurrentQuestion: false
+                    scoresReconciledForCurrentQuestion: false,
+                    // FIX: Reset currentTime and lastHostTimeUpdate for new round lobby sync
+                    currentTime: 0, // Should be 0 in lobby or null, but for sync, 0 works.
+                    lastHostTimeUpdate: Date.now() 
                 });
 
                 // Reset all players' scores and states for the new round
@@ -1397,6 +1408,8 @@
                 await batch.commit();
                 console.log("New round data committed to Firestore.");
 
+                // FIX: Explicitly reset host's local score display and UI state for the new round.
+                if (playerScoreDisplay) playerScoreDisplay.textContent = '0'; // Reset host's score display
                 userUsedPointsBets = []; // Reset local state for host
                 populatePointsButtons(); // Update UI for points buttons (for host)
 
@@ -1630,9 +1643,7 @@
 
                     // Phase: Lobby (Waiting room)
                     if (gamePhase === 'lobby') {
-                        console.log("[listenToGameChanges] Game phase is 'lobby'. Showing waiting room screen.");
-                        showScreen(waitingRoomScreen);
-                        
+                        console.log("[listenToGameChanges] Game phase is 'lobby'. Showing waiting room screen. Resetting player UI.");
                         // FIX: Explicitly reset UI for players when returning to lobby
                         if (gameGuessInput) {
                             gameGuessInput.value = ''; // Clear previous answer
@@ -1647,6 +1658,8 @@
 
                         if (playerCorrectGuessesList) playerCorrectGuessesList.innerHTML = '';
                         if (sharedRoundGuessesList) sharedRoundGuessesList.innerHTML = '';
+                        
+                        showScreen(waitingRoomScreen); // Ensure player is moved to waiting screen
                         
                         if (isHost) {
                             if (startGameButton) {
@@ -1705,6 +1718,7 @@
                         if (sharedRoundGuessesList) { sharedRoundGuessesList.innerHTML = ''; }
 
                         // Re-fetch player data to update local 'used points' and re-render buttons
+                        // This uses a .then() to ensure the player data is fetched before populating buttons
                         db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId).get().then(playerDoc => {
                             if (playerDoc.exists) {
                                 const currentPlayerData = playerDoc.data();
@@ -1712,7 +1726,6 @@
                                 populatePointsButtons(); // Re-render buttons based on updated local state (disabling used ones)
                                 
                                 // After re-enabling globally, if player has ALREADY submitted for *this* question, re-disable.
-                                // This handles edge cases where client-side might be out of sync, though with host resetting, it should be rare.
                                 if (currentPlayerData.hasSubmittedAnswer) {
                                     console.log(`Player ${userId} has already submitted for this question. Re-disabling input.`);
                                     if (gameGuessInput) gameGuessInput.disabled = true;
@@ -1722,7 +1735,6 @@
                                     console.log(`Player ${userId} has NOT submitted for this question. Input enabled.`);
                                 }
                             } else {
-                                // Fallback if player doc is missing (shouldn't happen, but defensive)
                                 console.warn("Player document not found while updating input state.");
                                 if (gameGuessInput) gameGuessInput.disabled = true;
                                 if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
@@ -1744,18 +1756,22 @@
                         clearInterval(currentQuestionSoundInterval);
                         soundStarted = false;
 
+                        // FIX: Host-driven timer synchronization
                         timerInterval = setInterval(() => {
                             const now = Date.now();
-                            const elapsed = Math.floor((now - gameData.questionStartTime) / 1000);
-                            localTimerRemaining = gameData.timeLimitPerQuestion - elapsed;
+                            const lastHostTimeUpdate = gameData.lastHostTimeUpdate || now; // Fallback to now if not set
+                            const timeFromHost = gameData.currentTime || gameData.timeLimitPerQuestion; // Fallback
+                            // Compensate for network latency
+                            const compensatedTime = timeFromHost - Math.floor((now - lastHostTimeUpdate) / 1000);
                             
-                            if (localTimerRemaining >= 0) {
-                                if (gameTimerDisplay) gameTimerDisplay.textContent = localTimerRemaining;
-                                if (localTimerRemaining <= 5 && !soundStarted) {
-                                    currentQuestionSoundInterval = setInterval(playTimerSound, 500);
-                                    soundStarted = true;
-                                }
-                            } else {
+                            localTimerRemaining = Math.max(0, compensatedTime); // Ensure time doesn't go negative
+                            if (gameTimerDisplay) gameTimerDisplay.textContent = localTimerRemaining;
+
+                            if (localTimerRemaining <= 5 && !soundStarted) {
+                                currentQuestionSoundInterval = setInterval(playTimerSound, 500);
+                                soundStarted = true;
+                            }
+                            if (localTimerRemaining <= 0) {
                                 clearInterval(timerInterval);
                                 clearInterval(currentQuestionSoundInterval);
                                 soundStarted = false;
@@ -1887,7 +1903,7 @@
 
                             const scoreChangeValue = playerData.playerScoreChange || 0;
                             const submittedAnswerActual = playerData.playerSubmittedAnswer;
-                            const selectedPointsActual = playerData.playerSelectedPoints || 0;
+                            const selectedPointsActual = playerData.selectedPoints || 0;
 
 
                             if (playerData.hasSubmittedAnswer) {
@@ -2093,35 +2109,5 @@
 
         if (customMessageCloseButton) customMessageCloseButton.addEventListener('click', hideCustomMessageBox);
     </script>
-
-
-   
-<!-- مكتبة QR Code -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-<script>
-  function generateQRCode(link) {
-    const qrcodeContainer = document.getElementById("qrcode");
-    qrcodeContainer.innerHTML = ""; // ننظف القديم
-
-    new QRCode(qrcodeContainer, {
-      text: link,
-      width: 150,
-      height: 150,
-    });
-  }
-
-  // عند عرض رابط الغرفة
-  window.addEventListener('DOMContentLoaded', () => {
-    const link = window.location.href; // أو أي رابط الغرفة
-    const linkDisplay = document.getElementById("game-link-display");
-    if (linkDisplay) {
-      linkDisplay.textContent = link;
-    }
-    generateQRCode(link);
-  });
-</script>
-
-    
 </body>
 </html>
