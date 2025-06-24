@@ -174,7 +174,7 @@
 
     <!-- Main Game Container -->
     <div class="bg-white rounded-xl shadow-2xl p-8 max-w-3xl w-full flex flex-col items-center relative overflow-hidden transform transition-all duration-500 ease-in-out">
-        <h1 class="text-4xl font-extrabold text-gray-800 mb-6 text-center leading-tight">لعبة  حرقاسة HARGASA GAME <i class="fas fa-users text-blue-500"></i></h1>
+        <h1 class="text-4xl font-extrabold text-gray-800 mb-6 text-center leading-tight">لعبة حرقاسة HARGASA GAME <i class="fas fa-users text-blue-500"></i></h1>
         <p class="text-lg text-gray-600 mb-8 text-center" id="game-description">
             اختر دورك: إما مضيف لإنشاء غرفة، أو لاعب للانضمام إلى غرفة موجودة. <!-- Game description in Arabic -->
         </p>
@@ -285,25 +285,26 @@
 
         <!-- Game Play Screen (Host & Player) -->
         <div id="game-play-screen" class="w-full hidden">
-            <div class="flex flex-col md:flex-row justify-between items-center w-full mb-8 space-y-4 md:space-y-0">
-                <div class="flex items-center space-x-2 space-x-reverse text-2xl font-bold text-gray-700 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
-                    <i class="fas fa-hourglass-half text-blue-500"></i>
-                    <span>الوقت: <span id="game-timer" class="text-blue-600">--</span> ثانية</span> <!-- Game timer display -->
-                </div>
-                <div class="flex items-center space-x-2 space-x-reverse text-2xl font-bold text-gray-700 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
-                    <i class="fas fa-star text-yellow-500"></i>
-                    <span>نقاطك: <span id="player-score" class="text-yellow-600">0</span></span> <!-- Player's score display -->
-                </div>
-                <div class="flex items-center space-x-2 space-x-reverse text-2xl font-bold text-gray-700 bg-gray-100 px-5 py-3 rounded-lg shadow-md">
-                    <i class="fas fa-question-circle text-purple-500"></i>
-                    <span>السؤال: <span id="question-counter" class="text-purple-600">-- / --</span></span> <!-- Question counter -->
-                </div>
-            </div>
-
             <p class="text-2xl font-bold text-gray-800 mb-4 text-center">الفئة: <span id="game-category" class="text-indigo-600"></span></p> <!-- Current category display -->
             
             <div class="bg-blue-100 p-4 rounded-lg shadow-md mb-6 w-full text-center">
                 <p class="text-3xl font-extrabold text-gray-900" id="game-question"></p> <!-- Current question display -->
+            </div>
+
+            <!-- New responsive layout for Timer, Score, Question Counter -->
+            <div class="flex flex-col md:flex-row justify-around items-center w-full mb-8 space-y-4 md:space-y-0 md:space-x-4">
+                <div class="flex items-center space-x-2 space-x-reverse text-xl font-bold text-gray-700 bg-gray-100 px-4 py-2 rounded-lg shadow-md">
+                    <i class="fas fa-hourglass-half text-blue-500"></i>
+                    <span>الوقت: <span id="game-timer" class="text-blue-600">--</span> ثانية</span> <!-- Game timer display -->
+                </div>
+                <div class="flex items-center space-x-2 space-x-reverse text-xl font-bold text-gray-700 bg-gray-100 px-4 py-2 rounded-lg shadow-md">
+                    <i class="fas fa-star text-yellow-500"></i>
+                    <span>نقاطك: <span id="player-score" class="text-yellow-600">0</span></span> <!-- Player's score display -->
+                </div>
+                <div class="flex items-center space-x-2 space-x-reverse text-xl font-bold text-gray-700 bg-gray-100 px-4 py-2 rounded-lg shadow-md">
+                    <i class="fas fa-question-circle text-purple-500"></i>
+                    <span>السؤال: <span id="question-counter" class="text-purple-600">-- / --</span></span> <!-- Question counter -->
+                </div>
             </div>
 
             <div class="flex items-center flex-wrap gap-2 w-full mb-4">
@@ -420,12 +421,14 @@
         let isHost = false;
         let gameSnapshotUnsubscribe = null; // Listener for game document changes
         let playersSnapshotUnsubscribe = null; // Listener for players collection changes
-        let timerInterval = null; // Interval for host's game timer
+        let timerInterval = null; // Interval for local game timer (for all clients)
         let selectedPointsBet = 1; // Default selected points bet
         let userUsedPointsBets = []; // Array to store points already used by the current player in the current GAME
         let currentQuestionSoundInterval = null; // Interval for repeated sound effect
         let soundStarted = false; // Flag to control sound playback for time running out
-  // Quiz data - IMPORTANT: Each object in quizzes now represents a CATEGORY with multiple questions.
+        let localTimerRemaining = 0; // Local state for the timer, updated by clients
+    
+        // Quiz data - IMPORTANT: Each object in quizzes now represents a CATEGORY with multiple questions.
         // Each question has a questionText and correctAnswers.
         // `displayAnswer` is the primary correct answer shown in results.
         // `correctAnswers` is a list of normalized answers for fuzzy matching.
@@ -492,66 +495,62 @@
                     { questionText: "ما هي عاصمة كرواتيا؟", displayAnswer: "زغرب", correctAnswers: ["زغرب", "zagreb"] }
                 ]
             },
-
-
-{
-  category: "أمثال شعبية تونسية",
-  questions: [
-       { questionText: "كمل المثل: قلك عمرك ما تحط القزار في طريق الرجالة ...", displayAnswer: "يجي نهار و تقصدهم حفيان   ", correctAnswers: [" يجي نهار و تقصدهم حفيان ", "يجي نهار و تقصدهم حفيان  "] },
-    { questionText: "كمل المثل: إلّي في كرشه التبن...", displayAnswer: "يخاف من النار", correctAnswers: ["يخاف من النار", "يخاف من العافية"] },
-    { questionText: "كمل المثل: الباب إلّي يجيك منّو الريح...", displayAnswer: "سدّو واستريح", correctAnswers: ["سدّو واستريح", "سدّو"] },
-    { questionText: "كمل المثل: قطوسة تتغزل في خنافرها...", displayAnswer: "والفار يلعب قدّامها", correctAnswers: ["والفار يلعب قدّامها"] },
-    { questionText: "كمل المثل: إلّي ما يعرفك...", displayAnswer: "يجهلك", correctAnswers: ["يجهلك"] },
-    { questionText: "كمل المثل: العزوزة إذا تحفّت...", displayAnswer: "تحنّ للرقص", correctAnswers: ["تحنّ للرقص", "ترقص"] },
-    { questionText: "كمل المثل: تفرهد القطوس...", displayAnswer: "يلعب بديلو", correctAnswers: ["يلعب بديلو"] },
-    { questionText: "كمل المثل: طاحت الصمعة...", displayAnswer: "علّقو الحجام", correctAnswers: ["علّقو الحجام", "علقوا الحجام"] },
-    { questionText: "كمل المثل: لا يعجبه العجب...", displayAnswer: "ولا صيام رجب", correctAnswers: ["ولا صيام رجب"] },
-    { questionText: "كمل المثل: القطوس ما يهرّبش...", displayAnswer: "على دار فيها لحمة", correctAnswers: ["على دار فيها لحمة", "على الدار فيها لحمة"] },
-    { questionText: "كمل المثل: إلّي تحبو يكثر...", displayAnswer: "منو الهزار", correctAnswers: ["منو الهزار"] },
-    { questionText: "كمل المثل: ما يحس الجمرة...", displayAnswer: "كان إلي عافس عليها", correctAnswers: ["كان إلي عافس عليها", "كان الي عافس عليها"] },
-    { questionText: "كمل المثل: اللّي فيه طبّة...", displayAnswer: "ما ينساهاش", correctAnswers: ["ما ينساهاش"] },
-    { questionText: "كمل المثل: شد مشومك...", displayAnswer: "لا يجيك ما أشوم منّو", correctAnswers: ["لا يجيك ما أشوم منّو", "ما أشوم منو"] },
-    { questionText: "كمل المثل: الجمل ما يشوفش...", displayAnswer: "حدبتو", correctAnswers: ["حدبتو"] },
-    { questionText: "كمل المثل: إلّي يخاف من عشاه...", displayAnswer: "ما يشبعش", correctAnswers: ["ما يشبعش"] },
-    { questionText: "كمل المثل: قالولو زغرت، قال...", displayAnswer: "نعرف نبكي", correctAnswers: ["نعرف نبكي"] },
-    { questionText: "كمل المثل: كي تتفرهد العصفورة...", displayAnswer: "تجيها السقطة", correctAnswers: ["تجيها السقطة"] },
-    { questionText: "كمل المثل: كي تطيح البقرة...", displayAnswer: "يكثروا سكاكينها", correctAnswers: ["يكثروا سكاكينها", "تكتر سكاكينها"] },
-    { questionText: "كمل المثل: إلّي شاف البلا يصيح...", displayAnswer: "و إلّي ما شافش يقول سحر", correctAnswers: ["و إلّي ما شافش يقول سحر", "اللي ما شافش يقول سحر"] },
-    { questionText: "كمل المثل: الهدرة كيف السكاكين...", displayAnswer: "تجرح", correctAnswers: ["تجرح"] },
-    { questionText: "كمل المثل: إلّي ما ربحك...", displayAnswer: "ما يجرحكش", correctAnswers: ["ما يجرحكش"] },
-    { questionText: "كمل المثل: إلّي يحبك...", displayAnswer: "ما يضربكش بالعصا", correctAnswers: ["ما يضربكش بالعصا"] },
-    { questionText: "كمل المثل: الطماع يغلبو...", displayAnswer: "الكذاب", correctAnswers: ["الكذاب"] },
-    { questionText: "كمل المثل: ما يفلّ الحديد...", displayAnswer: "كان الحديد", correctAnswers: ["كان الحديد"] },
-    { questionText: "كمل المثل: إلّي يعوم ما يخافش...", displayAnswer: "من الموج", correctAnswers: ["من الموج"] },
-    { questionText: "كمل المثل: قالو لو ثنيها، قال...", displayAnswer: "كي نعدلها", correctAnswers: ["كي نعدلها"] },
-    { questionText: "كمل المثل: الباهي كيف الذهب...", displayAnswer: "ما يتخبّاش", correctAnswers: ["ما يتخبّاش"] },
-    { questionText: "كمل المثل: سكران ومبلول...", displayAnswer: "ويطلب في النار", correctAnswers: ["ويطلب في النار"] },
-    { questionText: "كمل المثل: الجبان...", displayAnswer: "يموت ألف مرّة", correctAnswers: ["يموت ألف مرّة", "يموت ألف مرة"] },
-    { questionText: "كمل المثل: رزق البخيل...", displayAnswer: "ياكلو العيّار", correctAnswers: ["ياكلو العيّار"] },
-    { questionText: "كمل المثل: حوت ياكل حوت...", displayAnswer: "وقليل الجهد يموت", correctAnswers: ["وقليل الجهد يموت"] },
-    { questionText: "كمل المثل: كيف يضيق بيك الحال...", displayAnswer: "رد بالك من الرجال", correctAnswers: ["رد بالك من الرجال"] },
-    { questionText: "كمل المثل: كثر الهم...", displayAnswer: "يضحّك", correctAnswers: ["يضحّك"] },
-    { questionText: "كمل المثل: الدنيا كالبحر...", displayAnswer: "يوم هادي ويوم هايج", correctAnswers: ["يوم هادي ويوم هايج"] },
-    { questionText: "كمل المثل: نعرفك تعوم...", displayAnswer: "وقت الغرق", correctAnswers: ["وقت الغرق"] },
-    { questionText: "كمل المثل: دابّة ما تعضّيش...", displayAnswer: "ما تخوّفنيش", correctAnswers: ["ما تخوّفنيش"] },
-    { questionText: "كمل المثل: الكلب كيف يكثر نباحو...", displayAnswer: "ما يعضّيش", correctAnswers: ["ما يعضّيش"] },
-    { questionText: "كمل المثل: الزين...", displayAnswer: "زين الروح", correctAnswers: ["زين الروح"] },
-    { questionText: "كمل المثل: ما تشوف بعينك...", displayAnswer: "أصدق من إلّي تسمع بأذنك", correctAnswers: ["أصدق من إلّي تسمع بأذنك"] },
-    { questionText: "كمل المثل: من طيّب أصله...", displayAnswer: "ما يخونكش", correctAnswers: ["ما يخونكش"] },
-    { questionText: "كمل المثل: إلّي يطيّحك من السرج...", displayAnswer: "ما هوش صاحبك", correctAnswers: ["ما هوش صاحبك"] },
-    { questionText: "كمل المثل: ثمة ناس...", displayAnswer: "تلبس ذهب وتخونك", correctAnswers: ["تلبس ذهب وتخونك"] },
-    { questionText: "كمل المثل: الزوالي كيف...", displayAnswer: "يطيح تكسرولو ضرسو", correctAnswers: ["يطيح تكسرولو ضرسو"] },
-    { questionText: "كمل المثل: إلّي ما عندوش ظهر...", displayAnswer: "ما يسوى شي", correctAnswers: ["ما يسوى شي"] },
-    { questionText: "كمل المثل: إلّي يزرع ريح...", displayAnswer: "يحصد العاصفة", correctAnswers: ["يحصد العاصفة"] },
-    { questionText: "كمل المثل: الكلمة كيف الرصاصة...", displayAnswer: "إذا خرجت ما ترجعش", correctAnswers: ["إذا خرجت ما ترجعش"] },
-    { questionText: "كمل المثل: اللسان...", displayAnswer: "يكسر العظم", correctAnswers: ["يكسر العظم"] },
-    { questionText: "كمل المثل: باش تحكم عالناس...", displayAnswer: "شوف أفعالهم", correctAnswers: ["شوف أفعالهم"] },
-    { questionText: "كمل المثل: ثمة ناس في وجهك مراية...", displayAnswer: "وفي ظهرك سكاكية", correctAnswers: ["وفي ظهرك سكاكية"] },
-    { questionText: "كمل المثل: الصحبة الزينة...", displayAnswer: "كنز ما يفنى", correctAnswers: ["كنز ما يفنى"] }
-   ]
+            {
+                category: "أمثال شعبية تونسية",
+                questions: [
+                    { questionText: "كمل المثل: قلك عمرك ما تحط القزار في طريق الرجالة ...", displayAnswer: "يجي نهار و تقصدهم حفيان ", correctAnswers: [" يجي نهار و تقصدهم حفيان ", "يجي نهار و تقصدهم حفيان "] },
+                    { questionText: "كمل المثل: إلّي في كرشه التبن...", displayAnswer: "يخاف من النار", correctAnswers: ["يخاف من النار", "يخاف من العافية"] },
+                    { questionText: "كمل المثل: الباب إلّي يجيك منّو الريح...", displayAnswer: "سدّو واستريح", correctAnswers: ["سدّو واستريح", "سدّو"] },
+                    { questionText: "كمل المثل: قطوسة تتغزل في خنافرها...", displayAnswer: "والفار يلعب قدّامها", correctAnswers: ["والفار يلعب قدّامها"] },
+                    { questionText: "كمل المثل: إلّي ما يعرفك...", displayAnswer: "يجهلك", correctAnswers: ["يجهلك"] },
+                    { questionText: "كمل المثل: العزوزة إذا تحفّت...", displayAnswer: "تحنّ للرقص", correctAnswers: ["تحنّ للرقص", "ترقص"] },
+                    { questionText: "كمل المثل: تفرهد القطوس...", displayAnswer: "يلعب بديلو", correctAnswers: ["يلعب بديلو"] },
+                    { questionText: "كمل المثل: طاحت الصمعة...", displayAnswer: "علّقو الحجام", correctAnswers: ["علّقو الحجام", "علقوا الحجام"] },
+                    { questionText: "كمل المثل: لا يعجبه العجب...", displayAnswer: "ولا صيام رجب", correctAnswers: ["ولا صيام رجب"] },
+                    { questionText: "كمل المثل: القطوس ما يهرّبش...", displayAnswer: "على دار فيها لحمة", correctAnswers: ["على دار فيها لحمة", "على الدار فيها لحمة"] },
+                    { questionText: "كمل المثل: إلّي تحبو يكثر...", displayAnswer: "منو الهزار", correctAnswers: ["منو الهزار"] },
+                    { questionText: "كمل المثل: ما يحس الجمرة...", displayAnswer: "كان إلي عافس عليها", correctAnswers: ["كان إلي عافس عليها", "كان الي عافس عليها"] },
+                    { questionText: "كمل المثل: اللّي فيه طبّة...", displayAnswer: "ما ينساهاش", correctAnswers: ["ما ينساهاش"] },
+                    { questionText: "كمل المثل: شد مشومك...", displayAnswer: "لا يجيك ما أشوم منّو", correctAnswers: ["لا يجيك ما أشوم منّو", "ما أشوم منو"] },
+                    { questionText: "كمل المثل: الجمل ما يشوفش...", displayAnswer: "حدبتو", correctAnswers: ["حدبتو"] },
+                    { questionText: "كمل المثل: إلّي يخاف من عشاه...", displayAnswer: "ما يشبعش", correctAnswers: ["ما يشبعش"] },
+                    { questionText: "كمل المثل: قالولو زغرت، قال...", displayAnswer: "نعرف نبكي", correctAnswers: ["نعرف نبكي"] },
+                    { questionText: "كمل المثل: كي تتفرهد العصفورة...", displayAnswer: "تجيها السقطة", correctAnswers: ["تجيها السقطة"] },
+                    { questionText: "كمل المثل: كي تطيح البقرة...", displayAnswer: "يكثروا سكاكينها", correctAnswers: ["يكثروا سكاكينها", "تكتر سكاكينها"] },
+                    { questionText: "كمل المثل: إلّي شاف البلا يصيح...", displayAnswer: "و إلّي ما شافش يقول سحر", correctAnswers: ["و إلّي ما شافش يقول سحر", "اللي ما شافش يقول سحر"] },
+                    { questionText: "كمل المثل: الهدرة كيف السكاكين...", displayAnswer: "تجرح", correctAnswers: ["تجرح"] },
+                    { questionText: "كمل المثل: إلّي ما ربحك...", displayAnswer: "ما يجرحكش", correctAnswers: ["ما يجرحكش"] },
+                    { questionText: "كمل المثل: إلّي يحبك...", displayAnswer: "ما يضربكش بالعصا", correctAnswers: ["ما يضربكش بالعصا"] },
+                    { questionText: "كمل المثل: الطماع يغلبو...", displayAnswer: "الكذاب", correctAnswers: ["الكذاب"] },
+                    { questionText: "كمل المثل: ما يفلّ الحديد...", displayAnswer: "كان الحديد", correctAnswers: ["كان الحديد"] },
+                    { questionText: "كمل المثل: إلّي يعوم ما يخافش...", displayAnswer: "من الموج", correctAnswers: ["من الموج"] },
+                    { questionText: "كمل المثل: قالو لو ثنيها، قال...", displayAnswer: "كي نعدلها", correctAnswers: ["كي نعدلها"] },
+                    { questionText: "كمل المثل: الباهي كيف الذهب...", displayAnswer: "ما يتخبّاش", correctAnswers: ["ما يتخبّاش"] },
+                    { questionText: "كمل المثل: سكران ومبلول...", displayAnswer: "ويطلب في النار", correctAnswers: ["ويطلب في النار"] },
+                    { questionText: "كمل المثل: الجبان...", displayAnswer: "يموت ألف مرّة", correctAnswers: ["يموت ألف مرّة", "يموت ألف مرة"] },
+                    { questionText: "كمل المثل: رزق البخيل...", displayAnswer: "ياكلو العيّار", correctAnswers: ["ياكلو العيّار"] },
+                    { questionText: "كمل المثل: حوت ياكل حوت...", displayAnswer: "وقليل الجهد يموت", correctAnswers: ["وقليل الجهد يموت"] },
+                    { questionText: "كمل المثل: كيف يضيق بيك الحال...", displayAnswer: "رد بالك من الرجال", correctAnswers: ["رد بالك من الرجال"] },
+                    { questionText: "كمل المثل: كثر الهم...", displayAnswer: "يضحّك", correctAnswers: ["يضحّك"] },
+                    { questionText: "كمل المثل: الدنيا كالبحر...", displayAnswer: "يوم هادي ويوم هايج", correctAnswers: ["يوم هادي ويوم هايج"] },
+                    { questionText: "كمل المثل: نعرفك تعوم...", displayAnswer: "وقت الغرق", correctAnswers: ["وقت الغرق"] },
+                    { questionText: "كمل المثل: دابّة ما تعضّيش...", displayAnswer: "ما تخوّفنيش", correctAnswers: ["ما تخوّفنيش"] },
+                    { questionText: "كمل المثل: الكلب كيف يكثر نباحو...", displayAnswer: "ما يعضّيش", correctAnswers: ["ما يعضّيش"] },
+                    { questionText: "كمل المثل: الزين...", displayAnswer: "زين الروح", correctAnswers: ["زين الروح"] },
+                    { questionText: "كمل المثل: ما تشوف بعينك...", displayAnswer: "أصدق من إلّي تسمع بأذنك", correctAnswers: ["أصدق من إلّي تسمع بأذنك"] },
+                    { questionText: "كمل المثل: من طيّب أصله...", displayAnswer: "ما يخونكش", correctAnswers: ["ما يخونكش"] },
+                    { questionText: "كمل المثل: إلّي يطيّحك من السرج...", displayAnswer: "ما هوش صاحبك", correctAnswers: ["ما هوش صاحبك"] },
+                    { questionText: "كمل المثل: ثمة ناس...", displayAnswer: "تلبس ذهب وتخونك", correctAnswers: ["تلبس ذهب وتخونك"] },
+                    { questionText: "كمل المثل: الزوالي كيف...", displayAnswer: "يطيح تكسرولو ضرسو", correctAnswers: ["يطيح تكسرولو ضرسو"] },
+                    { questionText: "كمل المثل: إلّي ما عندوش ظهر...", displayAnswer: "ما يسوى شي", correctAnswers: ["ما يسوى شي"] },
+                    { questionText: "كمل المثل: إلّي يزرع ريح...", displayAnswer: "يحصد العاصفة", correctAnswers: ["يحصد العاصفة"] },
+                    { questionText: "كمل المثل: الكلمة كيف الرصاصة...", displayAnswer: "إذا خرجت ما ترجعش", correctAnswers: ["إذا خرجت ما ترجعش"] },
+                    { questionText: "كمل المثل: اللسان...", displayAnswer: "يكسر العظم", correctAnswers: ["يكسر العظم"] },
+                    { questionText: "كمل المثل: باش تحكم عالناس...", displayAnswer: "شوف أفعالهم", correctAnswers: ["شوف أفعالهم"] },
+                    { questionText: "كمل المثل: ثمة ناس في وجهك مراية...", displayAnswer: "وفي ظهرك سكاكية", correctAnswers: ["وفي ظهرك سكاكية"] },
+                    { questionText: "كمل المثل: الصحبة الزينة...", displayAnswer: "كنز ما يفنى", correctAnswers: ["كنز ما يفنى"] }
+                ]
             },
-
-            
             {
                 category: "حيوانات الغابة",
                 questions: [
@@ -592,7 +591,6 @@
                     { questionText: "في أي ولاية تونسية توجد مدينة دقة الأثرية؟", displayAnswer: "باجة", correctAnswers: ["باجة", "beja"] }
                 ]
             },
-            // New "شوفلي حل" category starts here
             {
                 category: "شوفلي حل",
                 questions: [
@@ -619,7 +617,7 @@
                     { questionText: "ما هي جنسية المريض الذي كان يعاني من 'الخرشف'؟", displayAnswer: "إيطالي", correctAnswers: ["إيطالي", "ايطالي", "italien"] },
                     { questionText: "ما هو اسم الشاوش الذي جاء بعد سبوعي؟", displayAnswer: "فلفل", correctAnswers: ["فلفل", "felfel"] },
                     { questionText: "ما اسم خطيبة سبوعي الثانية التي كانت تعمل في مركز تجميل؟", displayAnswer: "بهيجة", correctAnswers: ["بهيجة", "behija"] },
-                    { questionText: "ما هو اسم الطبيب البديل لسليمان عندما غاب؟", displayAnswer: "الدكتور بن عمر", correctAnswers: ["الدكتور بن عمر", "بن عمر", "ben omar"] },
+                    { questionText: "ما اسم الطبيب البديل لسليمان عندما غاب؟", displayAnswer: "الدكتور بن عمر", correctAnswers: ["الدكتور بن عمر", "بن عمر", "ben omar"] },
                     { questionText: "من هي الشخصية التي لم تدخل أبداً منزل جنات العرافة؟", displayAnswer: "فاطمة", correctAnswers: ["فاطمة", "fatma"] },
                     { questionText: "ما هي الهدية التي أحضرها سيدي داود لجنات في إحدى الحلقات؟", displayAnswer: "جرة كبيرة", correctAnswers: ["جرة كبيرة", "جرة"] },
                     { questionText: "ما هو المشروع الذي أرادت جنات أن تقوم به في إحدى الحلقات لبيع منتجات التجميل؟", displayAnswer: "شركة فوفا كوزميتيك", correctAnswers: ["شركة فوفا كوزميتيك", "فوفا كوزميتيك", "fofa cosmetique"] },
@@ -648,7 +646,6 @@
                     { questionText: "ما هي الأكلة التي اشتهرت بها فضيلة وكانت تطبخها كثيراً؟", displayAnswer: "الملوخية", correctAnswers: ["الملوخية", "ملوخية", "mloukhiya"] }
                 ]
             }
-            // New "شوفلي حل" category ends here
         ];
         
         // 🔁 دالة تطبيع النص (New normalization function from user)
@@ -978,13 +975,13 @@
                 // *** FIREBASE CONFIGURATION (YOUR PROJECT'S SETTINGS) ***
                 // This is the configuration you provided for your Firebase project 'ka3boura-dbcf5'.
                 const firebaseConfig = {
-                  apiKey: "AIzaSyCwdZjTwrnjKZU_AilP5_GZJeEuUZjVcUY",
-                  authDomain: "ka3boura-dbcf5.firebaseapp.com",
-                  projectId: "ka3boura-dbcf5",
-                  storageBucket: "ka3boura-dbcf5.firebasestorage.app",
-                  messagingSenderId: "1051115240747",
-                  appId: "1:1051115240747:web:694751eef3173327f5596e",
-                  measurementId: "G-9413DFK5DF"
+                    apiKey: "AIzaSyCwdZjTwrnjKZU_AilP5_GZJeEuUZjVcUY",
+                    authDomain: "ka3boura-dbcf5.firebaseapp.com",
+                    projectId: "ka3boura-dbcf5",
+                    storageBucket: "ka3boura-dbcf5.firebasestorage.app",
+                    messagingSenderId: "1051115240747",
+                    appId: "1:1051115240747:web:694751eef3173327f5596e",
+                    measurementId: "G-9413DFK5DF"
                 };
                 // ***********************************************************************************
 
@@ -1224,10 +1221,9 @@
                     currentQuestionGuessedAnswers: [], // Guesses for the current question (from all players) - This will be populated by host later
                     questionStartTime: null, // Timestamp when current question started
                     timeLimitPerQuestion: timeLimit, // Renamed for clarity
-                    currentTime: timeLimit, // Initialize current time with full time limit
                     countdownStartTime: null, // For countdown before question
                     countdownDuration: 5, // Duration of countdown
-                    lastUpdate: Date.now() // Timestamp for host's last update (for real-time timer sync)
+                    scoresReconciledForCurrentQuestion: false // Flag to ensure reconciliation happens once
                 });
 
                 // Add host as a player in the game's subcollection (Host can also play)
@@ -1240,7 +1236,7 @@
                     joinedAt: Date.now(),
                     playerSubmittedAnswer: '', // Answer submitted for current question
                     playerSelectedPoints: 0, // Points selected for current question
-                    playerScoreChange: 0, // Points change for current question
+                    playerScoreChange: 0, // Points change for current question (for current question)
                     hasSubmittedAnswer: false, // Flag if player submitted for current question
                     usedPointsBets: [] // Initialize used points for this player
                 });
@@ -1385,7 +1381,7 @@
                     currentQuestionGuessedAnswers: [], // Reset guessed answers for new question (will be populated by host later)
                     questionStartTime: Date.now(), // New timestamp for question start
                     timeLimitPerQuestion: gameData.timeLimitPerQuestion, // Use stored time limit
-                    currentTime: gameData.timeLimitPerQuestion, // Reset timer
+                    scoresReconciledForCurrentQuestion: false // Reset reconciliation flag for the new question
                 });
 
                 // Crucially, reset players' per-question flags/data in their sub-documents
@@ -1446,7 +1442,7 @@
                 // When host ends question early, also trigger score reconciliation
                 await gameRef.update({
                     gamePhase: 'question_results', // Move to showing question results
-                    currentTime: 0, // Ensure timer is at zero
+                    // currentTime: 0, // No longer needed as time is local
                     scoresReconciledForCurrentQuestion: false // Mark for reconciliation
                 });
                 // Host also triggers score reconciliation here, after updating phase.
@@ -1510,42 +1506,32 @@
                     let scoreChange = 0;
                     let submittedAnswer = playerData.playerSubmittedAnswer;
 
-                    // If player hasn't submitted an answer, consider their current input as their answer.
-                    // This is a client-side guess, and for a true multiplayer game, should be handled via server
-                    // or a continuous sync. For this client-side only context, we'll default to no answer if not submitted.
-                    // If you want to capture their last typed text *without* them pressing submit,
-                    // you would need to continuously update their `playerSubmittedAnswer` in Firestore.
-                    // As per requirement "يجب اخذ المكتوب في الاجابة حتى ان لم يضغظ اللاعب على زر ارسال",
-                    // This implies the client must have already saved the input.
-                    // For now, we rely on `playerSubmittedAnswer` which only updates on explicit submit.
-                    // To truly capture the *last typed* value, players would need to update Firestore on every input change,
-                    // which is very chatty. Given the current structure, if `hasSubmittedAnswer` is false,
-                    // it means no explicit submission was made. I will proceed with this interpretation.
-
+                    // If player hasn't submitted an answer, their score change is 0.
+                    // This uses the answer they explicitly submitted, if any.
                     if (playerData.hasSubmittedAnswer) {
-                        // Use the submitted answer (already stored in playerSubmittedAnswer)
-                        // This answer might not be normalized if the user typed non-normalized characters.
-                        // We must normalize it before passing to isCorrectAnswer.
                         const normalizedSubmittedAnswer = normalize(submittedAnswer);
                         
                         if (isCorrectAnswer(normalizedSubmittedAnswer, currentCorrectAnswers)) {
                             scoreChange = playerData.playerSelectedPoints; // Award points
-                            if (!roundCorrectGuesses.includes(submittedAnswer)) { // Add unique correct guess to round list
+                            // Only add unique, correct, submitted answers to the shared list
+                            if (!roundCorrectGuesses.some(g => normalize(g) === normalizedSubmittedAnswer)) { 
                                 roundCorrectGuesses.push(submittedAnswer);
                             }
                         } else {
                             scoreChange = -playerData.playerSelectedPoints; // Deduct points
                         }
+                    } else {
+                        // If player did not submit, and no answer was 'taken' implicitly (as per current system), scoreChange is 0
+                        // The player's current input in the text box is *not* captured unless they press submit
+                        scoreChange = 0;
                     }
-                    // If player didn't submit, scoreChange remains 0 (no points change) and submittedAnswer is empty.
-                    // This implicitly covers "taking the written answer" as "if no answer was submitted, no points change."
-
+                    
                     const newScore = (playerData.score || 0) + scoreChange;
                     batch.update(playerRef, {
                         score: newScore,
+                        playerScoreChange: scoreChange, // Store the calculated change for results display
                         playerSubmittedAnswer: '', // Clear previous answer for next round
-                        playerSelectedPoints: 0,
-                        playerScoreChange: 0,
+                        playerSelectedPoints: 0, // Reset points for next round
                         hasSubmittedAnswer: false // Reset submitted flag for next round
                     });
                 }
@@ -1662,7 +1648,7 @@
             }
 
             // Get player's guess as typed, it will be normalized by isCorrectAnswer
-            const guess = gameGuessInput.value.trim(); 
+            const guess = gameGuessInput.value.trim();  
             const pointsBet = selectedPointsBet; // Get selected points from global variable
 
             if (guess === '') {
@@ -1700,8 +1686,8 @@
                         throw new Error("لقد أجبت بالفعل على هذا السؤال."); // Throw specific error to be caught below
                     }
                     if (playerUsedPointsBets.includes(pointsBet)) {
-                         console.log("Player already used this point value in this game (transaction check).");
-                         throw new Error(`لقد استخدمت قيمة ${pointsBet} نقطة بالفعل في هذه اللعبة. الرجاء اختيار قيمة أخرى.`); // Throw specific error
+                          console.log("Player already used this point value in this game (transaction check).");
+                          throw new Error(`لقد استخدمت قيمة ${pointsBet} نقطة بالفعل في هذه اللعبة. الرجاء اختيار قيمة أخرى.`); // Throw specific error
                     }
 
 
@@ -1747,9 +1733,9 @@
                 console.error("Error submitting guess:", error);
                 // Catch specific errors thrown from transaction
                 if (error.message.includes("لقد أجبت بالفعل")) {
-                     showCustomMessageBox("تم الإجابة", error.message);
+                       showCustomMessageBox("تم الإجابة", error.message);
                 } else if (error.message.includes("لقد استخدمت قيمة")) {  
-                     showCustomMessageBox("نقاط مستخدمة", error.message); // Show the specific message
+                       showCustomMessageBox("نقاط مستخدمة", error.message); // Show the specific message
                 }
                 else {
                     showCustomMessageBox("خطأ في الإجابة", error.message || "حدث خطأ أثناء إرسال الإجابة.");
@@ -1815,12 +1801,14 @@
                         const countdownDuration = gameData.countdownDuration || 5;
                         const countdownStartTime = gameData.countdownStartTime;
 
-                        timerInterval = setInterval(() => {
-                            const elapsed = Math.floor((Date.now() - countdownStartTime) / 1000);
-                            const remaining = countdownDuration - elapsed;
-                            if (countdownTimerDisplay) countdownTimerDisplay.textContent = remaining > 0 ? remaining : 'انطلق!';
+                        let currentCountdown = countdownDuration;
+                        if (countdownTimerDisplay) countdownTimerDisplay.textContent = currentCountdown;
 
-                            if (remaining <= 0) {
+                        timerInterval = setInterval(() => {
+                            currentCountdown--;
+                            if (countdownTimerDisplay) countdownTimerDisplay.textContent = currentCountdown > 0 ? currentCountdown : 'انطلق!';
+
+                            if (currentCountdown <= 0) {
                                 clearInterval(timerInterval);
                                 if (isHost) {
                                     // Host initiates the actual first question after countdown
@@ -1866,51 +1854,36 @@
                             if (hostGameplayControls) hostGameplayControls.classList.add('hidden'); // Hide host controls
                         }
 
-                        // Host-specific timer logic: Host updates time in Firestore
-                        if (isHost) {
-                            clearInterval(timerInterval); // Clear any old timer
-                            clearInterval(currentQuestionSoundInterval); // Clear any old sound interval
-                            soundStarted = false; // Reset sound flag
-                            timerInterval = setInterval(async () => {
-                                const now = Date.now();
-                                // Calculate elapsed time since question started
-                                const elapsed = Math.floor((now - gameData.questionStartTime) / 1000); // Use questionStartTime
-                                const remainingTime = gameData.timeLimitPerQuestion - elapsed; // Use timeLimitPerQuestion
-                                
-                                if (remainingTime >= 0) {
-                                    // Trigger sound effect when time is running out (e.g., last 5 seconds)
-                                    if (remainingTime <= 5 && !soundStarted) {
-                                        currentQuestionSoundInterval = setInterval(playTimerSound, 500); // Play every half second
-                                        soundStarted = true; // Set flag to prevent starting multiple intervals
-                                    }
-                                    // Update Firestore with current time and last update timestamp
-                                    await gameRef.update({ currentTime: remainingTime, lastUpdate: now });
-                                    if (gameTimerDisplay) gameTimerDisplay.textContent = remainingTime; // Update timer display
-                                } else {
-                                    clearInterval(timerInterval); // Stop timer
-                                    clearInterval(currentQuestionSoundInterval); // Stop sound interval
-                                    soundStarted = false; // Reset sound flag
-                                    // If time runs out, move to question results phase and reconcile scores
-                                    await gameRef.update({ gamePhase: 'question_results', currentTime: 0, scoresReconciledForCurrentQuestion: false }); // Reset reconciliation flag
-                                    // Host also triggers score reconciliation here
-                                    reconcileQuestionScores();  
+                        // Local timer logic for all clients
+                        clearInterval(timerInterval); // Clear any old timer
+                        clearInterval(currentQuestionSoundInterval); // Clear any old sound interval
+                        soundStarted = false; // Reset sound flag
+
+                        timerInterval = setInterval(() => {
+                            const now = Date.now();
+                            const elapsed = Math.floor((now - gameData.questionStartTime) / 1000);
+                            localTimerRemaining = gameData.timeLimitPerQuestion - elapsed;
+                            
+                            if (localTimerRemaining >= 0) {
+                                if (gameTimerDisplay) gameTimerDisplay.textContent = localTimerRemaining;
+                                if (localTimerRemaining <= 5 && !soundStarted) {
+                                    currentQuestionSoundInterval = setInterval(playTimerSound, 500);
+                                    soundStarted = true;
                                 }
-                            }, 1000); // Update every second
-                        } else {
-                            // Player-specific timer logic: Players display time from host's update
-                            const timeFromHost = gameData.currentTime;
-                            if (gameTimerDisplay) gameTimerDisplay.textContent = timeFromHost;
-                             // Trigger sound effect for players when time is running out (sync with host)
-                            if (timeFromHost <= 5 && !soundStarted) {
-                                currentQuestionSoundInterval = setInterval(playTimerSound, 500); // Play every half second
-                                soundStarted = true; // Set flag
+                            } else {
+                                clearInterval(timerInterval);
+                                clearInterval(currentQuestionSoundInterval);
+                                soundStarted = false;
+                                if (isHost) { // Only host advances phase
+                                    db.collection(`artifacts/${appId}/public/data/games`).doc(gameId).update({ gamePhase: 'question_results', scoresReconciledForCurrentQuestion: false });
+                                    reconcileQuestionScores(); // Host also triggers score reconciliation here
+                                }
                             }
-                            // Game status change to 'question_results' or 'final_results' will trigger screen change for players
-                        }
+                        }, 1000);
 
                         // Shared guesses list should remain empty during active question phase
                         if (sharedRoundGuessesList) {
-                            sharedRoundGuessesList.innerHTML = ''; 
+                            sharedRoundGuessesList.innerHTML = '';  
                         }
                         // This part of UI is now handled by reconcileQuestionScores in question_results phase
                         if (playerCorrectGuessesList) {
@@ -2055,14 +2028,18 @@
                             let submittedAnswerText = '';
                             let scoreChangeText = '';
 
+                            // The playerScoreChange is updated during reconciliation phase by host.
+                            // During active question, it will be 0 until reconciliation.
+                            const scoreChangeValue = playerData.playerScoreChange || 0;
+
                             if (playerData.hasSubmittedAnswer) {
                                 statusIcon = '<i class="fas fa-check-circle text-green-500 ml-2"></i>';
                                 submittedAnswerText = `إجابة: ${playerData.playerSubmittedAnswer || 'لا توجد'}`;
-                                const scoreChange = playerData.playerScoreChange || 0;
-                                scoreChangeText = `(${scoreChange >= 0 ? '+' : ''}${scoreChange} نقطة، رهان: ${playerData.playerSelectedPoints || 0})`;
+                                scoreChangeText = `(${playerData.playerSelectedPoints || 0} نقطة مرجحة، تغيير: ${scoreChangeValue >= 0 ? '+' : ''}${scoreChangeValue} نقطة)`;
                             } else {  
                                 statusIcon = '<i class="fas fa-hourglass-half text-gray-500 ml-2"></i>';
                                 submittedAnswerText = 'لم يجب';
+                                scoreChangeText = ''; // No score change info if not submitted
                             }
                             statusItem.innerHTML = `
                                 ${playerData.nickname || 'لاعب مجهول'}: ${statusIcon} ${submittedAnswerText} ${scoreChangeText}
@@ -2081,13 +2058,13 @@
                             // playerCorrectGuessesList remains local and is cleared on new question
                         }
                     });
-                    if (playerScoreDisplay) playerScoreDisplay.textContent = currentPlayerOverallScore; // Update UI with overall score
+                    if (playerScoreDisplay) playerScoreDisplay.innerHTML = currentPlayerOverallScore; // Update UI with overall score
 
                     // Host-specific logic: Show/hide start button based on number of players
                     // Only apply if host is in waiting room phase
                     if (gamePhase === 'lobby' && isHost) {
                         // For starting the game, require at least the host and one other player.
-                        if (snapshot.size >= 2) { 
+                        if (snapshot.size >= 2) {  
                             if (startGameButton) startGameButton.classList.remove('hidden'); // Show start button
                         } else {
                             if (startGameButton) startGameButton.classList.add('hidden'); // Hide if only host or no other players
@@ -2105,6 +2082,7 @@
         // Displays detailed scores of players for the CURRENT QUESTION on the results screen
         async function showQuestionPlayerScoresDetailed() { // Renamed from showRoundPlayerScores
             if (questionPlayerScoresList) questionPlayerScoresList.innerHTML = ''; // Clear previous scores
+            showLoading(); // Show loading while fetching
             try {
                 const playersRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
                 const playersSnapshot = await playersRef.get();
@@ -2120,12 +2098,12 @@
                         nickname: playerData.nickname,
                         submittedAnswer: playerData.playerSubmittedAnswer || 'لم يجب',
                         selectedPoints: playerData.playerSelectedPoints || 0,
-                        scoreChange: playerData.playerScoreChange || 0,
-                        overallScore: playerData.score || 0
+                        scoreChange: playerData.playerScoreChange || 0, // This is the actual change for THIS question
+                        overallScore: playerData.score || 0 // This is the total accumulated score
                     });
                 });
 
-                // Sort by overall score for this question (as requested)
+                // Sort by overall score for this question (as requested) to determine rank
                 questionScores.sort((a, b) => b.overallScore - a.overallScore);
 
                 if (questionPlayerScoresList) {
@@ -2192,6 +2170,7 @@
                 }
                 clearInterval(currentQuestionSoundInterval); // Stop sound interval
                 soundStarted = false; // Reset sound flag
+                clearInterval(timerInterval); // Stop any timer
 
                 // Fetch all player data one last time to get final scores
                 const playersRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
@@ -2216,7 +2195,7 @@
                                 listItem.innerHTML = `<i class="fas fa-trophy text-yellow-600 mr-2"></i> المركز الأول: ${player.nickname} - ${player.score} نقطة`;
                             } else { // Other players
                                 listItem.classList.add('bg-gray-50');
-                                listItem.textContent = `${player.nickname} - ${player.score} نقطة`;
+                                listItem.textContent = `المركز ${index + 1}: ${player.nickname} - ${player.score} نقطة`;
                             }
                             finalScoresList.appendChild(listItem);
                         });
@@ -2329,31 +2308,6 @@
         // --- Initial Load ---
         // DOMContentLoaded listener is already used at the bottom of the script for initial checks and Firebase init.
     </script>
-<!-- مكتبة QR Code -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-<script>
-  function generateQRCode(link) {
-    const qrcodeContainer = document.getElementById("qrcode");
-    qrcodeContainer.innerHTML = ""; // ننظف القديم
-
-    new QRCode(qrcodeContainer, {
-      text: link,
-      width: 150,
-      height: 150,
-    });
-  }
-
-  // عند عرض رابط الغرفة
-  window.addEventListener('DOMContentLoaded', () => {
-    const link = window.location.href; // أو أي رابط الغرفة
-    const linkDisplay = document.getElementById("game-link-display");
-    if (linkDisplay) {
-      linkDisplay.textContent = link;
-    }
-    generateQRCode(link);
-  });
-</script>
 
 </body>
 </html>
