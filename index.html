@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar">
 <head>
@@ -413,7 +412,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, query, where, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"; // Explicitly import getDocs
 
         // Global variables for Firebase and App
         let app, db, auth, userId, userNickname;
@@ -975,7 +975,7 @@
                 // IMPORTANT: Use __firebase_config and __app_id global variables provided by Canvas environment.
                 const canvasAppId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
                 const canvasFirebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-                    apiKey: "YOUR_API_KEY",
+                    apiKey: "YOUR_API_KEY", // Fallback for local testing, will be overridden by Canvas
                     authDomain: "YOUR_AUTH_DOMAIN",
                     projectId: "YOUR_PROJECT_ID",
                     storageBucket: "YOUR_STORAGE_BUCKET",
@@ -989,7 +989,7 @@
                 auth = getAuth(app); // Get Auth instance
                 
                 // IMPORTANT: Assign to the GLOBAL appId variable declared at the top.
-                // This `appId` is used in Firestore paths to ensure data isolation.
+                // This `window.appId` is used in Firestore paths to ensure data isolation.
                 window.appId = canvasAppId; // Set the global appId based on Canvas environment
 
                 console.log("Using Firebase Config (from Canvas):", canvasFirebaseConfig);
@@ -1279,7 +1279,7 @@
                 } catch (qrError) {
                     console.warn("Failed to generate QR Code:", qrError);
                     if (qrcodeFallbackMessage) {
-                        qrcodeFallbackMessage.textContent = "فشل توليد رمز QR. يرجى استخدام الرابط أعلاه للانضمate.";
+                        qrcodeFallbackMessage.textContent = "فشل توليد رمز QR. يرجى استخدام الرابط أعلاه للانضمام.";
                     }
                     if (qrcodeDiv) { // Optionally style qrcodeDiv to show the message better
                         qrcodeDiv.style.minHeight = 'auto';
@@ -1453,11 +1453,6 @@
                     currentTime: 0, // Ensure timer is at zero
                     scoresReconciledForCurrentQuestion: false // Mark for reconciliation
                 });
-                // Host also triggers score reconciliation here, after updating phase.
-                // The onSnapshot listener for game changes will call showQuestionPlayerScoresDetailed
-                // and if the host, reconcileQuestionScores, so this direct call is actually redundant.
-                // However, for immediate feedback if gamePhase listener is slightly delayed, keep this for now.
-                // reconcileQuestionScores(); // Moved this call to the game listener to prevent double calls and ensure flag check
                 console.log("Host ended question early, waiting for phase change to trigger reconciliation.");
             } catch (error) {
                 console.error("Error ending question early:", error);
@@ -1526,10 +1521,7 @@
                     // However, the current client-side architecture means `playerSubmittedAnswer` is *only* updated on explicit submit.
                     // To truly capture the "last typed" value without explicit submit, players would need to update
                     // `playerSubmittedAnswer` in Firestore on every keystroke, which is inefficient.
-                    // Given the current setup, we will use `playerSubmittedAnswer` as the source of truth for what was 'submitted' or last recorded.
-                    // If `hasSubmittedAnswer` is false, it means they didn't press 'إرسال'.
-                    // If we want to strictly enforce "take last typed", the player client needs to update Firestore more frequently.
-                    // For now, I will use `playerSubmittedAnswer` only if `hasSubmittedAnswer` is true.
+                    // Given the current setup, we will use `playerSubmittedAnswer` only if `hasSubmittedAnswer` is true.
                     // If `hasSubmittedAnswer` is false, they get 0 score change for this round.
 
                     if (playerData.hasSubmittedAnswer) {
@@ -1776,7 +1768,7 @@
             const gameRef = doc(db, `artifacts/${window.appId}/public/data/games`, gameId);
             console.log("Listening to game changes at path:", gameRef.path); // Log path
 
-            gameSnapshotUnsubscribe = onSnapshot(gameRef, (docSnap) => {
+            onSnapshot(gameRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const gameData = docSnap.data();
                     const gamePhase = gameData.gamePhase;
@@ -1845,7 +1837,7 @@
                         if (gameQuestionDisplay) gameQuestionDisplay.textContent = gameData.currentQuestionText; // Display current question text
                         
                         // Handle input state for current player (including host) based on their submission status
-                        doc(db, `artifacts/${window.appId}/public/data/games/${gameId}/players`, userId).get().then(playerDoc => {
+                        getDoc(doc(db, `artifacts/${window.appId}/public/data/games/${gameId}/players`, userId)).then(playerDoc => {
                             if (playerDoc.exists()) { // Ensure player doc exists
                                 const currentPlayerData = playerDoc.data();
                                 if (!currentPlayerData.hasSubmittedAnswer) {
@@ -2016,13 +2008,13 @@
             console.log("Listening to players at path:", playersRef.path); // Log path
             const q = playersRef;
 
-            playersSnapshotUnsubscribe = onSnapshot(q, (snapshot) => {
+            onSnapshot(q, (snapshot) => {
                 if (joinedPlayersList) joinedPlayersList.innerHTML = ''; // Clear current list of joined players
                 
                 let currentPlayerOverallScore = 0;
                 
                 // Get gameData to determine who the host is
-                doc(db, `artifacts/${window.appId}/public/data/games`, gameId).get().then(gameDoc => {
+                getDoc(doc(db, `artifacts/${window.appId}/public/data/games`, gameId)).then(gameDoc => {
                     let hostIdFromGame = null;
                     let gamePhase = 'lobby'; // Default for safety
                     if (gameDoc.exists()) {
@@ -2037,9 +2029,9 @@
                     }
 
 
-                    snapshot.forEach((doc) => {
-                        const playerData = doc.data();
-                        const playerId = doc.id;
+                    snapshot.forEach((playerDocSnapshot) => { // Renamed doc to playerDocSnapshot for clarity
+                        const playerData = playerDocSnapshot.data();
+                        const playerId = playerDocSnapshot.id;
 
                         // Update the list of joined players in the waiting room
                         if (joinedPlayersList) {
@@ -2120,8 +2112,8 @@
 
 
                 let questionScores = [];
-                playersSnapshot.forEach(doc => {
-                    const playerData = doc.data();
+                playersSnapshot.forEach(playerDocSnapshot => { // Renamed doc to playerDocSnapshot
+                    const playerData = playerDocSnapshot.data();
                     questionScores.push({
                         nickname: playerData.nickname,
                         submittedAnswer: playerData.playerSubmittedAnswer || 'لم يجب',
@@ -2204,8 +2196,8 @@
                 const playersSnapshot = await getDocs(playersRef);
 
                 let finalScores = [];
-                playersSnapshot.forEach(doc => {
-                    finalScores.push(doc.data());
+                playersSnapshot.forEach(playerDocSnapshot => { // Renamed doc to playerDocSnapshot
+                    finalScores.push(playerDocSnapshot.data());
                 });
 
                 // Sort players by overall score in descending order to determine winner
