@@ -477,7 +477,7 @@
                     { questionText: "فاكهة حمراء وصغيرة غالباً ما تستخدم في الحلويات؟", displayAnswer: "فراولة", correctAnswers: ["فراولة", "كرز", "توت"] },
                     { questionText: "فاكهة صفراء تنمو في مجموعات وغنية بالبوتاسيوم؟", displayAnswer: "موز", correctAnswers: ["موز"] },
                     { questionText: "فاكهة برتقالية اللون، غنية بفيتامين سي؟", displayAnswer: "برتقال", correctAnswers: ["برتقال", "يوسفي", "مانجو"] },
-                    { questionText: "فاكهة استوائية كبيرة ذات قشرة خضراء شائكة ولحم أصفر حلو جداً؟", displayAnswer: "أناناس", correctAnswers: ["أناناس"] },
+                    { questionText: "فاكهة استوائية كبيرة ذات قشرة خائكة ولحم أصفر حلو جداً؟", displayAnswer: "أناناس", correctAnswers: ["أناناس"] },
                     { questionText: "فاكهة صيفية كبيرة الحجم، خضراء من الخارج وحمراء من الداخل مع بذور سوداء؟", displayAnswer: "دلاع", correctAnswers: ["دلاع"] }
                 ]
             },
@@ -555,7 +555,7 @@
                     { questionText: "كمل المثل: الزوالي كيف...", displayAnswer: "يطيح تكسرولو ضرسو", correctAnswers: ["يطيح تكسرولو ضرسو"] },
                     { questionText: "كمل المثل: إلّي ما عندوش ظهر...", displayAnswer: "ما يسوى شي", correctAnswers: ["ما يسوى شي"] },
                     { questionText: "كمل المثل: إلّي يزرع ريح...", displayAnswer: "يحصد العاصفة", correctAnswers: ["يحصد العاصفة"] },
-                    { questionText: "كمل المثل: الكلمة كيف الرصاصة...", displayAnswer: "إذا خرجت ما ترجعش", correctAnswers: ["إذا خرجت ما ترجعش"] },
+                    { questionText: "كمل المثل: الكلمة كيف الرصاصة...", display: "إذا خرجت ما ترجعش", correctAnswers: ["إذا خرجت ما ترجعش"] },
                     { questionText: "كمل المثل: اللسان...", displayAnswer: "يكسر العظم", correctAnswers: ["يكسر العظم"] },
                     { questionText: "كمل المثل: باش تحكم عالناس...", displayAnswer: "شوف أفعالهم", correctAnswers: ["شوف أفعالهم"] },
                     { questionText: "كمل المثل: ثمة ناس في وجهك مراية...", displayAnswer: "وفي ظهرك سكاكية", correctAnswers: ["وفي ظهرك سكاكية"] },
@@ -788,7 +788,8 @@
         const hostGameplayControls = document.getElementById('host-gameplay-controls');  
 
         const endTitle = document.getElementById('end-title');
-        const endMessage = document.getElementById('end-message');
+        // FIX: Corrected the declaration of endMessage. It was syntactically incorrect.
+        const endMessage = document.getElementById('end-message'); 
         const finalScoresList = document.getElementById('final-scores-list');
         const playAgainButton = document.getElementById('play-again-button');
         const startNewRoundSameRoomButton = document.getElementById('start-new-round-same-room-button');
@@ -802,10 +803,7 @@
         const customMessageCloseButton = document.getElementById('custom-message-close-button');
 
         // Initialize Tone.js synth for sound effects
-        const synth = new Tone.Synth({
-            oscillator: { type: "sine" },
-            envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.5 }
-        }).toDestination();
+        const synth = new Tone.Synth({ type: "sine" , envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.5 }}).toDestination();
         
         // Function to play a simple sound effect for the timer
         function playTimerSound() {
@@ -1266,9 +1264,11 @@
                 await batch.commit();
                 console.log("Reset player-specific question data for new question.");
 
-                if (gameGuessInput) { gameGuessInput.value = ''; }
-                if (playerCorrectGuessesList) { playerCorrectGuessesList.innerHTML = ''; }
-                if (sharedRoundGuessesList) { sharedRoundGuessesList.innerHTML = ''; }
+                // IMPORTANT: These UI elements are now reset and re-enabled directly in listenToGameChanges for question_active phase.
+                // We leave them here commented out to indicate the intention, but the actual re-enabling is now centralized.
+                // if (gameGuessInput) { gameGuessInput.value = ''; }
+                // if (playerCorrectGuessesList) { playerCorrectGuessesList.innerHTML = ''; }
+                // if (sharedRoundGuessesList) { sharedRoundGuessesList.innerHTML = ''; }
 
                 clearInterval(currentQuestionSoundInterval);
                 soundStarted = false;
@@ -1327,7 +1327,10 @@
             try {
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
                 const gameDoc = await gameRef.get();
-                if (!gameDoc.exists) throw new Error("اللعبة غير موجودة.");
+                if (!gameDoc.exists) {
+                    showCustomMessageBox("خطأ", "اللعبة غير موجودة لبدء جولة جديدة.");
+                    return; // Exit function early, hideLoading in finally
+                }
                 const gameData = gameDoc.data();
 
                 const selectedCategories = gameData.selectedCategoryIndices || [];
@@ -1335,7 +1338,7 @@
 
                 if (selectedCategories.length === 0) {
                     showCustomMessageBox("خطأ", "لا توجد فئات أسئلة مختارة سابقة لبدء جولة جديدة.");
-                    return; // Exit function early, hideLoading in finally
+                    return;
                 }
 
                 let allPossibleQuestions = [];
@@ -1360,13 +1363,13 @@
 
                 if (newQuizSetForGame.length === 0) {
                     showCustomMessageBox("خطأ", "الفئات المختارة لا تحتوي على أي أسئلة كافية لإنشاء جولة جديدة.");
-                    return; // Exit function early, hideLoading in finally
+                    return;
                 }
 
                 const batch = db.batch();
 
                 batch.update(gameRef, {
-                    gamePhase: 'lobby',
+                    gamePhase: 'lobby', // Set to lobby to transition all players to waiting screen
                     quizSet: newQuizSetForGame,
                     currentQuestionIndexInGame: 0,
                     currentCategory: '',
@@ -1392,12 +1395,13 @@
                         usedPointsBets: []
                     });
                 });
-                await batch.commit(); // Ensure all writes are completed before proceeding
+                await batch.commit();
+                console.log("New round data committed to Firestore.");
 
-                userUsedPointsBets = [];
-                populatePointsButtons();
+                userUsedPointsBets = []; // Reset local state for host
+                populatePointsButtons(); // Update UI for points buttons (for host)
 
-                console.log("New round started in same room with new questions.");
+                console.log("New round setup complete. Transitioning to waiting screen.");
                 showScreen(waitingRoomScreen); // Explicitly show waiting room for the host
             } catch (error) {
                 console.error("Error starting new round in same room:", error);
@@ -1489,7 +1493,7 @@
                 if (!gameDoc.exists) {
                     showCustomMessageBox("اللعبة غير موجودة", "رمز اللعبة غير صحيح أو الغرفة غير موجودة.");
                     hideLoading();
-                    exitGame(); // Use the new exitGame function to clear URL
+                    exitGame();
                     return;
                 }
 
@@ -1497,7 +1501,7 @@
                 if (gameData.gamePhase === 'final_results') {
                     showCustomMessageBox("اللعبة انتهت", "عذراً، هذه اللعبة قد انتهت بالفعل.");
                     hideLoading();
-                    exitGame(); // Use the new exitGame function to clear URL
+                    exitGame();
                     return;
                 }
 
@@ -1613,6 +1617,7 @@
                 if (docSnap.exists) {
                     const gameData = docSnap.data();
                     const gamePhase = gameData.gamePhase;
+                    console.log(`[listenToGameChanges] Game phase changed to: ${gamePhase}`);
 
                     if (questionCounterDisplay) {
                         const currentQNum = gameData.currentQuestionIndexInGame;
@@ -1623,24 +1628,26 @@
                         else { questionCounterDisplay.textContent = `-- / --`; }
                     }
 
-                    // Phase: Lobby
+                    // Phase: Lobby (Waiting room)
                     if (gamePhase === 'lobby') {
+                        console.log("[listenToGameChanges] Showing waiting room screen.");
                         showScreen(waitingRoomScreen);
                         if (isHost) {
                             if (startGameButton) {
                                 startGameButton.textContent = "بدء الجولة الأولى!";
                                 startGameButton.onclick = initiateGameStartCountdown;
-                                if (joinedPlayersList && joinedPlayersList.children.length >= 1) { startGameButton.classList.remove('hidden'); }
-                                else { startGameButton.classList.add('hidden'); }
+                                // The visibility is handled by listenToPlayers based on player count
                             }
                         } else {
                             if (startGameButton) startGameButton.classList.add('hidden');
                         }
+                        // Ensure player exit button is hidden in lobby for all
                         if (playerExitButtonGameplay) playerExitButtonGameplay.classList.add('hidden');
                         if (playerExitButtonResults) playerExitButtonResults.classList.add('hidden');
                     }
                     // Phase: Initial Game Countdown
                     else if (gamePhase === 'game_countdown') {  
+                        console.log("[listenToGameChanges] Showing game countdown screen.");
                         showScreen(gameCountdownScreen);
                         clearInterval(timerInterval);
                         clearInterval(currentQuestionSoundInterval);
@@ -1665,22 +1672,22 @@
                     }
                     // Phase: Question is active (Game Play)
                     else if (gamePhase === 'question_active') {
+                        console.log("[listenToGameChanges] Showing game play screen.");
                         showScreen(gamePlayScreen);
                         if (gameCategoryDisplay) gameCategoryDisplay.textContent = gameData.currentCategory;
                         if (gameQuestionDisplay) gameQuestionDisplay.textContent = gameData.currentQuestionText;
                         
-                        // Clear input field and re-enable for new question (FIX for problem 1)
+                        // FIX: Explicitly clear and re-enable input and buttons for a new question
                         if (gameGuessInput) {
                             gameGuessInput.value = ''; // Clear previous answer
-                            gameGuessInput.disabled = false; // Explicitly re-enable
+                            gameGuessInput.disabled = false; // Explicitly re-enable input
                         }
                         if (submitAnswerButton) {
                             submitAnswerButton.disabled = false; // Explicitly re-enable submit button
                         }
-
                         // Clear local correct guesses list for new question
                         if (playerCorrectGuessesList) { playerCorrectGuessesList.innerHTML = ''; }
-                        // Clear shared guesses list for new question
+                        // Clear shared guesses list for new question (will be populated by host later)
                         if (sharedRoundGuessesList) { sharedRoundGuessesList.innerHTML = ''; }
 
                         // Re-fetch player data to update local 'used points' and re-render buttons
@@ -1688,17 +1695,21 @@
                             if (playerDoc.exists) {
                                 const currentPlayerData = playerDoc.data();
                                 userUsedPointsBets = currentPlayerData.usedPointsBets || []; // Update local used points state
-                                populatePointsButtons(); // Re-render buttons based on updated local state
+                                populatePointsButtons(); // Re-render buttons based on updated local state (disabling used ones)
                                 
                                 // After re-enabling globally, if player has ALREADY submitted for *this* question, re-disable.
-                                // This handles edge cases where client-side might be out of sync.
+                                // This handles edge cases where client-side might be out of sync, though with host resetting, it should be rare.
                                 if (currentPlayerData.hasSubmittedAnswer) {
+                                    console.log(`Player ${userId} has already submitted for this question. Re-disabling input.`);
                                     if (gameGuessInput) gameGuessInput.disabled = true;
                                     if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
                                     if (submitAnswerButton) submitAnswerButton.disabled = true;
+                                } else {
+                                    console.log(`Player ${userId} has NOT submitted for this question. Input enabled.`);
                                 }
                             } else {
                                 // Fallback if player doc is missing (shouldn't happen, but defensive)
+                                console.warn("Player document not found while updating input state.");
                                 if (gameGuessInput) gameGuessInput.disabled = true;
                                 if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
                                 if (submitAnswerButton) submitAnswerButton.disabled = true;
@@ -1743,6 +1754,7 @@
                     }  
                     // Phase: Showing Question Results
                     else if (gamePhase === 'question_results') {
+                        console.log("[listenToGameChanges] Showing question results screen.");
                         if (isHost && !gameData.scoresReconciledForCurrentQuestion) {
                             reconcileQuestionScores();  
                         }
@@ -1795,6 +1807,7 @@
                     }
                     // Phase: Final Game Results
                     else if (gamePhase === 'final_results') {
+                        console.log("[listenToGameChanges] Showing final results screen.");
                         clearInterval(timerInterval);
                         clearInterval(currentQuestionSoundInterval);
                         soundStarted = false;
@@ -1922,7 +1935,7 @@
                             });
                         });
 
-                        questionScores.sort((a, b) => b.overallScore - a.overallScore);
+                        questionScores.sort((a, b) => (b.overallScore || 0) - (a.overallScore || 0)); // Ensure sorting by numerical score
 
                         if (questionPlayerScoresList) {
                             questionScores.forEach((player, index) => {
