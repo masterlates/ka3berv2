@@ -203,7 +203,7 @@
                 <label for="quiz-category-input" class="block text-xl font-semibold text-gray-700 mb-2">اختر فئات الأسئلة (يمكن اختيار أكثر من واحدة):</label>
                 <div class="multiselect-container">
                     <input type="text" id="quiz-category-input" readonly placeholder="انقر هنا لاختيار الفئات..."
-                            class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50 cursor-pointer">
+                        class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50 cursor-pointer">
                     <div id="quiz-category-dropdown" class="multiselect-dropdown hidden">
                         <!-- Checkboxes will be populated by JS -->
                     </div>
@@ -436,8 +436,6 @@
         let gameSnapshotUnsubscribe = null; // Listener for game document changes
         let playersSnapshotUnsubscribe = null; // Listener for players collection changes
         let timerInterval = null; // Interval for local game timer (for all clients)
-        let hostTimerInterval = null; // NEW: Interval for host's authoritative timer updates
-        let hostLocalTimerRemaining = 0; // NEW: Host's authoritative local timer for the current question
         let selectedPointsBet = 1; // Default selected points bet
         let userUsedPointsBets = []; // Array to store points already used by the current player in the current GAME
         let currentQuestionSoundInterval = null; // Interval for repeated sound effect
@@ -564,97 +562,96 @@
                     { questionText: "كمل المثل: الصحبة الزينة...", displayAnswer: "كنز ما يفنى", correctAnswers: ["كنز ما يفنى"] }
                 ]
             },
-            
-            
-            {
-                category: "الثقافة العامة",
-                questions: [
-                    { questionText: "ما اسم عاصمة فلسطين؟", displayAnswer: "القدس", correctAnswers: ["القدس", "القدس الشريف"] },
-                    { questionText: "ما هو الحيوان الذي يُصدر أعلى صوت؟", displayAnswer: "الحوت الأزرق", correctAnswers: ["الحوت الأزرق"] },
-                    { questionText: "في أي سنة قامت الثورة الفرنسية؟", displayAnswer: "1789", correctAnswers: ["1789"] },
-                    { questionText: "من هو أول من رسم خريطة للعالم؟", displayAnswer: "الإدريسي", correctAnswers: ["الإدريسي"] },
-                    { questionText: "ما هو الشيء الذي لا يمشي إلا بالضرب؟", displayAnswer: "المسمار", correctAnswers: ["المسمار"] },
-                    { questionText: "ما اسم أقصر سورة في القرآن؟", displayAnswer: "سورة الكوثر", correctAnswers: ["سورة الكوثر", "الكوثر"] },
-                    { questionText: "كم عدد أسنان الطفل اللبنية؟", displayAnswer: "20", correctAnswers: ["20", "عشرون"] },
-                    { questionText: "ما هو الحيوان الذي يُعتبر أطول الحيوانات رقبة؟", displayAnswer: "الزرافة", correctAnswers: ["الزرافة"] },
-                    { questionText: "ما اسم أول دولة عربية نالت استقلالها؟", displayAnswer: "مصر", correctAnswers: ["مصر"] },
-                    { questionText: "من هو الصحابي الملقب بترجمان القرآن؟", displayAnswer: "عبد الله بن عباس", correctAnswers: ["عبد الله بن عباس", "ابن عباس"] },
-                    { questionText: "ما اسم العملة في بريطانيا؟", displayAnswer: "الجنيه الإسترليني", correctAnswers: ["الجنيه الإسترليني", "إسترليني"] },
-                    { questionText: "في أي دولة يوجد برج بيزا المائل؟", displayAnswer: "إيطاليا", correctAnswers: ["إيطاليا"] },
-                    { questionText: "من هو أول سفير في الإسلام؟", displayAnswer: "مصعب بن عمير", correctAnswers: ["مصعب بن عمير", "مصعب"] },
-                    { questionText: "من هو مؤسس الدولة العباسية؟", displayAnswer: "أبو العباس السفاح", correctAnswers: ["أبو العباس السفاح", "السفاح"] },
-                    { questionText: "ما هو أسرع المخلوقات البحرية؟", displayAnswer: "سمكة الزعنفة الشراعية", correctAnswers: ["سمكة الزعنفة الشراعية", "الزعنفة الشراعية"] },
-                    { questionText: "من أول من آمن من الصبيان؟", displayAnswer: "علي بن أبي طالب", correctAnswers: ["علي بن أبي طالب", "علي"] },
-                    { questionText: "ما اسم الدولة التي يُطلق عليها 'أرض الشمس المشرقة'؟", displayAnswer: "اليابان", correctAnswers: ["اليابان"] },
-                    { questionText: "كم عدد النجوم على علم الولايات المتحدة؟", displayAnswer: "50", correctAnswers: ["50", "خمسون"] },
-                    { questionText: "ما هو المضيق الذي يفصل بين إفريقيا وأوروبا؟", displayAnswer: "مضيق جبل طارق", correctAnswers: ["مضيق جبل طارق", "جبل طارق"] },
-                    { questionText: "من هو الفيلسوف الذي قال: 'أنا أفكر إذن أنا موجود'؟", displayAnswer: "ديكارت", correctAnswers: ["ديكارت", "رينيه ديكارت"] },
-                    { questionText: "ما اسم الكتاب السماوي الذي أُنزل على عيسى عليه السلام؟", displayAnswer: "الإنجيل", correctAnswers: ["الإنجيل"] },
-                    { questionText: "ما اسم المدينة التي تُعرف بمدينة الضباب؟", displayAnswer: "لندن", correctAnswers: ["لندن"] },
-                    { questionText: "كم عدد لاعبي فريق كرة القدم الأساسي؟", displayAnswer: "11", correctAnswers: ["11", "أحد عشر"] },
-                    { questionText: "من هو العالم المسلم الذي اشتهر بالطب والجراحة؟", displayAnswer: "الزهراوي", correctAnswers: ["الزهراوي"] },
-                    { questionText: "ما هو أقدم علم في التاريخ؟", displayAnswer: "الفلك", correctAnswers: ["الفلك", "علم الفلك"] },
-                    { questionText: "من أول من استخدم الشوكة في الأكل؟", displayAnswer: "العرب", correctAnswers: ["العرب"] },
-                    { questionText: "من هو أول من كتب بسم الله الرحمن الرحيم؟", displayAnswer: "سليمان عليه السلام", correctAnswers: ["سليمان", "سليمان عليه السلام"] },
-                    { questionText: "ما اسم الطائر الذي كلمه النبي سليمان؟", displayAnswer: "الهدهد", correctAnswers: ["الهدهد"] },
-                    { questionText: "ما اسم أكبر جزر العالم؟", displayAnswer: "جرينلاند", correctAnswers: ["جرينلاند", "غرينلاند"] },
-                    { questionText: "ما هو الحيوان الذي يمتلك حاسة شم أقوى من الكلب؟", displayAnswer: "الدب", correctAnswers: ["الدب"] },
-                    { questionText: "ما اسم عاصمة ليبيا؟", displayAnswer: "طرابلس", correctAnswers: ["طرابلس"] },
-                    { questionText: "ما اسم أكبر بحيرة عذبة في العالم؟", displayAnswer: "بحيرة سوبيريور", correctAnswers: ["بحيرة سوبيريور"] },
-                    { questionText: "ما هو العلم الذي يدرس الأحياء المجهرية؟", displayAnswer: "علم الميكروبيولوجيا", correctAnswers: ["علم الميكروبيولوجيا", "الميكروبيولوجيا"] },
-                    { questionText: "من هو القائد الذي فتح الأندلس؟", displayAnswer: "طارق بن زياد", correctAnswers: ["طارق بن زياد", "طارق"] },
-                    { questionText: "ما اسم العضو الذي يضخ الدم في الجسم؟", displayAnswer: "القلب", correctAnswers: ["القلب"] },
-                    { questionText: "ما اسم أول دولة فازت بكأس العالم؟", displayAnswer: "الأوروغواي", correctAnswers: ["الأوروغواي", "أوروغواي"] },
-                    { questionText: "من هو الصحابي الذي اهتز له عرش الرحمن؟", displayAnswer: "سعد بن معاذ", correctAnswers: ["سعد بن معاذ", "سعد"] },
-                    { questionText: "ما اسم أكبر مدينة في العالم من حيث عدد السكان؟", displayAnswer: "طوكيو", correctAnswers: ["طوكيو"] },
-                    { questionText: "ما اسم الحيوان الذي يعيش في الماء واليابسة؟", displayAnswer: "الضفدع", correctAnswers: ["الضفدع"] },
-                    { questionText: "كم عدد أجنحة الملَك؟", displayAnswer: "600", correctAnswers: ["600", "ستمئة"] },
-                    { questionText: "من هو الخليفة الذي أنشأ نظام البريد؟", displayAnswer: "عمر بن الخطاب", correctAnswers: ["عمر بن الخطاب", "عمر"] },
-                    { questionText: "من هو العالم الذي اخترع المصعد؟", displayAnswer: "إليشا أوتيس", correctAnswers: ["إليشا أوتيس", "أوتيس"] },
-                    { questionText: "ما هو أصل كلمة 'بنطلون'؟", displayAnswer: "فرنسية", correctAnswers: ["فرنسية"] },
-                    { questionText: "في أي قارة تقع دولة كينيا؟", displayAnswer: "أفريقيا", correctAnswers: ["أفريقيا"] },
-                    { questionText: "ما اسم الجهاز الذي يقيس سرعة الرياح؟", displayAnswer: "الأنيمومتر", correctAnswers: ["الأنيمومتر"] },
-                    { questionText: "من هو الشاعر الجاهلي الذي لقب بالملك الضليل؟", displayAnswer: "امرؤ القيس", correctAnswers: ["امرؤ القيس"] },
-                    { questionText: "كم عدد عيون النحلة؟", displayAnswer: "5", correctAnswers: ["5", "خمسة"] },
-                    { questionText: "ما اسم الجبل الذي كلم الله عليه موسى؟", displayAnswer: "جبل الطور", correctAnswers: ["جبل الطور", "الطور"] },
-                    { questionText: "ما اسم الكتاب الذي كتبه ابن خلدون؟", displayAnswer: "المقدمة", correctAnswers: ["المقدمة"] },
-                    { questionText: "ما اسم أكبر نهر في أوروبا؟", displayAnswer: "نهر الفولغا", correctAnswers: ["نهر الفولغا", "الفولغا"] },
-                    { questionText: "من هو أول من خطّ بالقلم؟", displayAnswer: "إدريس عليه السلام", correctAnswers: ["إدريس", "إدريس عليه السلام"] },
-                    { questionText: "ما هو أول شيء خلقه الله؟", displayAnswer: "القلم", correctAnswers: ["القلم"] },
-                    { questionText: "ما اسم الغاز الذي تنفثه السيارات؟", displayAnswer: "ثاني أكسيد الكربون", correctAnswers: ["ثاني أكسيد الكربون", "CO2"] },
-                    { questionText: "ما اسم أبطأ الكائنات في العالم؟", displayAnswer: "الكسلان", correctAnswers: ["الكسلان"] },
-                    { questionText: "من هو صاحب كتاب 'الأغاني'؟", displayAnswer: "أبو الفرج الأصفهاني", correctAnswers: ["أبو الفرج الأصفهاني"] },
-                    { questionText: "ما اسم أول دولة عربية استضافت كأس العالم؟", displayAnswer: "قطر", correctAnswers: ["قطر"] },
-                    { questionText: "ما اسم الدولة التي تتكون من 7000 جزيرة؟", displayAnswer: "الفلبين", correctAnswers: ["الفلبين"] },
-                    { questionText: "من هو الصحابي الذي جمع القرآن الكريم في عهد عثمان؟", displayAnswer: "زيد بن ثابت", correctAnswers: ["زيد بن ثابت", "زيد"] },
-                    { questionText: "كم عدد أرجل الحشرة؟", displayAnswer: "6", correctAnswers: ["6", "ستة"] },
-                    { questionText: "من أول من سكن مكة؟", displayAnswer: "قبيلة جرهم", correctAnswers: ["قبيلة جرهم", "جرهم"] },
-                    { questionText: "ما اسم أول كائن خلقه الله من الملائكة؟", displayAnswer: "جبريل", correctAnswers: ["جبريل"] },
-                    { questionText: "ما اسم المرض الذي يُصيب كريات الدم الحمراء؟", displayAnswer: "فقر الدم", correctAnswers: ["فقر الدم", "أنيميا"] },
-                    { questionText: "ما اسم وحدة قياس الضغط الجوي؟", displayAnswer: "بار", correctAnswers: ["بار"] },
-                    { questionText: "ما اسم أصغر قارة في العالم؟", displayAnswer: "أوقيانوسيا", correctAnswers: ["أوقيانوسيا"] }
-                ]
+          
+          
+          {
+  category: "الثقافة العامة",
+  questions: [
+    { questionText: "ما اسم عاصمة فلسطين؟", displayAnswer: "القدس", correctAnswers: ["القدس", "القدس الشريف"] },
+    { questionText: "ما هو الحيوان الذي يُصدر أعلى صوت؟", displayAnswer: "الحوت الأزرق", correctAnswers: ["الحوت الأزرق"] },
+    { questionText: "في أي سنة قامت الثورة الفرنسية؟", displayAnswer: "1789", correctAnswers: ["1789"] },
+    { questionText: "من هو أول من رسم خريطة للعالم؟", displayAnswer: "الإدريسي", correctAnswers: ["الإدريسي"] },
+    { questionText: "ما هو الشيء الذي لا يمشي إلا بالضرب؟", displayAnswer: "المسمار", correctAnswers: ["المسمار"] },
+    { questionText: "ما اسم أقصر سورة في القرآن؟", displayAnswer: "سورة الكوثر", correctAnswers: ["سورة الكوثر", "الكوثر"] },
+    { questionText: "كم عدد أسنان الطفل اللبنية؟", displayAnswer: "20", correctAnswers: ["20", "عشرون"] },
+    { questionText: "ما هو الحيوان الذي يُعتبر أطول الحيوانات رقبة؟", displayAnswer: "الزرافة", correctAnswers: ["الزرافة"] },
+    { questionText: "ما اسم أول دولة عربية نالت استقلالها؟", displayAnswer: "مصر", correctAnswers: ["مصر"] },
+    { questionText: "من هو الصحابي الملقب بترجمان القرآن؟", displayAnswer: "عبد الله بن عباس", correctAnswers: ["عبد الله بن عباس", "ابن عباس"] },
+    { questionText: "ما اسم العملة في بريطانيا؟", displayAnswer: "الجنيه الإسترليني", correctAnswers: ["الجنيه الإسترليني", "إسترليني"] },
+    { questionText: "في أي دولة يوجد برج بيزا المائل؟", displayAnswer: "إيطاليا", correctAnswers: ["إيطاليا"] },
+    { questionText: "من هو أول سفير في الإسلام؟", displayAnswer: "مصعب بن عمير", correctAnswers: ["مصعب بن عمير", "مصعب"] },
+    { questionText: "من هو مؤسس الدولة العباسية؟", displayAnswer: "أبو العباس السفاح", correctAnswers: ["أبو العباس السفاح", "السفاح"] },
+    { questionText: "ما هو أسرع المخلوقات البحرية؟", displayAnswer: "سمكة الزعنفة الشراعية", correctAnswers: ["سمكة الزعنفة الشراعية", "الزعنفة الشراعية"] },
+    { questionText: "من أول من آمن من الصبيان؟", displayAnswer: "علي بن أبي طالب", correctAnswers: ["علي بن أبي طالب", "علي"] },
+    { questionText: "ما اسم الدولة التي يُطلق عليها 'أرض الشمس المشرقة'؟", displayAnswer: "اليابان", correctAnswers: ["اليابان"] },
+    { questionText: "كم عدد النجوم على علم الولايات المتحدة؟", displayAnswer: "50", correctAnswers: ["50", "خمسون"] },
+    { questionText: "ما هو المضيق الذي يفصل بين إفريقيا وأوروبا؟", displayAnswer: "مضيق جبل طارق", correctAnswers: ["مضيق جبل طارق", "جبل طارق"] },
+    { questionText: "من هو الفيلسوف الذي قال: 'أنا أفكر إذن أنا موجود'؟", displayAnswer: "ديكارت", correctAnswers: ["ديكارت", "رينيه ديكارت"] },
+    { questionText: "ما اسم الكتاب السماوي الذي أُنزل على عيسى عليه السلام؟", displayAnswer: "الإنجيل", correctAnswers: ["الإنجيل"] },
+    { questionText: "ما اسم المدينة التي تُعرف بمدينة الضباب؟", displayAnswer: "لندن", correctAnswers: ["لندن"] },
+    { questionText: "كم عدد لاعبي فريق كرة القدم الأساسي؟", displayAnswer: "11", correctAnswers: ["11", "أحد عشر"] },
+    { questionText: "من هو العالم المسلم الذي اشتهر بالطب والجراحة؟", displayAnswer: "الزهراوي", correctAnswers: ["الزهراوي"] },
+    { questionText: "ما هو أقدم علم في التاريخ؟", displayAnswer: "الفلك", correctAnswers: ["الفلك", "علم الفلك"] },
+    { questionText: "من أول من استخدم الشوكة في الأكل؟", displayAnswer: "العرب", correctAnswers: ["العرب"] },
+    { questionText: "من هو أول من كتب بسم الله الرحمن الرحيم؟", displayAnswer: "سليمان عليه السلام", correctAnswers: ["سليمان", "سليمان عليه السلام"] },
+    { questionText: "ما اسم الطائر الذي كلمه النبي سليمان؟", displayAnswer: "الهدهد", correctAnswers: ["الهدهد"] },
+    { questionText: "ما اسم أكبر جزر العالم؟", displayAnswer: "جرينلاند", correctAnswers: ["جرينلاند", "غرينلاند"] },
+    { questionText: "ما هو الحيوان الذي يمتلك حاسة شم أقوى من الكلب؟", displayAnswer: "الدب", correctAnswers: ["الدب"] },
+    { questionText: "ما اسم عاصمة ليبيا؟", displayAnswer: "طرابلس", correctAnswers: ["طرابلس"] },
+    { questionText: "ما اسم أكبر بحيرة عذبة في العالم؟", displayAnswer: "بحيرة سوبيريور", correctAnswers: ["بحيرة سوبيريور"] },
+    { questionText: "ما هو العلم الذي يدرس الأحياء المجهرية؟", displayAnswer: "علم الميكروبيولوجيا", correctAnswers: ["علم الميكروبيولوجيا", "الميكروبيولوجيا"] },
+    { questionText: "من هو القائد الذي فتح الأندلس؟", displayAnswer: "طارق بن زياد", correctAnswers: ["طارق بن زياد", "طارق"] },
+    { questionText: "ما اسم العضو الذي يضخ الدم في الجسم؟", displayAnswer: "القلب", correctAnswers: ["القلب"] },
+    { questionText: "ما اسم أول دولة فازت بكأس العالم؟", displayAnswer: "الأوروغواي", correctAnswers: ["الأوروغواي", "أوروغواي"] },
+    { questionText: "من هو الصحابي الذي اهتز له عرش الرحمن؟", displayAnswer: "سعد بن معاذ", correctAnswers: ["سعد بن معاذ", "سعد"] },
+    { questionText: "ما اسم أكبر مدينة في العالم من حيث عدد السكان؟", displayAnswer: "طوكيو", correctAnswers: ["طوكيو"] },
+    { questionText: "ما اسم الحيوان الذي يعيش في الماء واليابسة؟", displayAnswer: "الضفدع", correctAnswers: ["الضفدع"] },
+    { questionText: "كم عدد أجنحة الملَك؟", displayAnswer: "600", correctAnswers: ["600", "ستمئة"] },
+    { questionText: "من هو الخليفة الذي أنشأ نظام البريد؟", displayAnswer: "عمر بن الخطاب", correctAnswers: ["عمر بن الخطاب", "عمر"] },
+    { questionText: "من هو العالم الذي اخترع المصعد؟", displayAnswer: "إليشا أوتيس", correctAnswers: ["إليشا أوتيس", "أوتيس"] },
+    { questionText: "ما هو أصل كلمة 'بنطلون'؟", displayAnswer: "فرنسية", correctAnswers: ["فرنسية"] },
+    { questionText: "في أي قارة تقع دولة كينيا؟", displayAnswer: "أفريقيا", correctAnswers: ["أفريقيا"] },
+    { questionText: "ما اسم الجهاز الذي يقيس سرعة الرياح؟", displayAnswer: "الأنيمومتر", correctAnswers: ["الأنيمومتر"] },
+    { questionText: "من هو الشاعر الجاهلي الذي لقب بالملك الضليل؟", displayAnswer: "امرؤ القيس", correctAnswers: ["امرؤ القيس"] },
+    { questionText: "كم عدد عيون النحلة؟", displayAnswer: "5", correctAnswers: ["5", "خمسة"] },
+    { questionText: "ما اسم الجبل الذي كلم الله عليه موسى؟", displayAnswer: "جبل الطور", correctAnswers: ["جبل الطور", "الطور"] },
+    { questionText: "ما اسم الكتاب الذي كتبه ابن خلدون؟", displayAnswer: "المقدمة", correctAnswers: ["المقدمة"] },
+    { questionText: "ما اسم أكبر نهر في أوروبا؟", displayAnswer: "نهر الفولغا", correctAnswers: ["نهر الفولغا", "الفولغا"] },
+    { questionText: "من هو أول من خطّ بالقلم؟", displayAnswer: "إدريس عليه السلام", correctAnswers: ["إدريس", "إدريس عليه السلام"] },
+    { questionText: "ما هو أول شيء خلقه الله؟", displayAnswer: "القلم", correctAnswers: ["القلم"] },
+    { questionText: "ما اسم الغاز الذي تنفثه السيارات؟", displayAnswer: "ثاني أكسيد الكربون", correctAnswers: ["ثاني أكسيد الكربون", "CO2"] },
+    { questionText: "ما اسم أبطأ الكائنات في العالم؟", displayAnswer: "الكسلان", correctAnswers: ["الكسلان"] },
+    { questionText: "من هو صاحب كتاب 'الأغاني'؟", displayAnswer: "أبو الفرج الأصفهاني", correctAnswers: ["أبو الفرج الأصفهاني"] },
+    { questionText: "ما اسم أول دولة عربية استضافت كأس العالم؟", displayAnswer: "قطر", correctAnswers: ["قطر"] },
+    { questionText: "ما اسم الدولة التي تتكون من 7000 جزيرة؟", displayAnswer: "الفلبين", correctAnswers: ["الفلبين"] },
+    { questionText: "من هو الصحابي الذي جمع القرآن الكريم في عهد عثمان؟", displayAnswer: "زيد بن ثابت", correctAnswers: ["زيد بن ثابت", "زيد"] },
+    { questionText: "كم عدد أرجل الحشرة؟", displayAnswer: "6", correctAnswers: ["6", "ستة"] },
+    { questionText: "من أول من سكن مكة؟", displayAnswer: "قبيلة جرهم", correctAnswers: ["قبيلة جرهم", "جرهم"] },
+    { questionText: "ما اسم أول كائن خلقه الله من الملائكة؟", displayAnswer: "جبريل", correctAnswers: ["جبريل"] },
+    { questionText: "ما اسم المرض الذي يُصيب كريات الدم الحمراء؟", displayAnswer: "فقر الدم", correctAnswers: ["فقر الدم", "أنيميا"] },
+    { questionText: "ما اسم وحدة قياس الضغط الجوي؟", displayAnswer: "بار", correctAnswers: ["بار"] },
+    { questionText: "ما اسم أصغر قارة في العالم؟", displayAnswer: "أوقيانوسيا", correctAnswers: ["أوقيانوسيا"] }
+  ]
             },
 
-            
-            
-            
+          
+          
             {
                 category: " اسئلة الشلة ",
                 questions: [
-                    { questionText: " كي نقولو كنترول شنوة يجي للبالك ؟  ", displayAnswer: "كعبورة", correctAnswers: ["لمكعبر", "كعبر" , " ka3boura " , " كعبورة "  ] },
-                    { questionText: "    شكون الي يفلم برشا في الشلة و يحب يجيبها يعرف كل شي ؟   ", displayAnswer: " ولد الورغي    ", correctAnswers: [" lou ", "لؤي" , " louay " , " ولد الورغي " ] },
+                    { questionText: " كي نقولو كنترول شنوة يجي للبالك ؟  ", displayAnswer: "كعبورة", correctAnswers: ["لمكعبر", "كعبر" , " ka3boura " , " كعبورة "   ] },
+                    { questionText: "   شكون الي يفلم برشا في الشلة و يحب يجيبها يعرف كل شي ؟   ", displayAnswer: " ولد الورغي   ", correctAnswers: [" lou ", "لؤي" , " louay " , " ولد الورغي " ] },
                     { questionText: " قلك عمرك ما ترمش القزاز في طريق الرجالة ... ", displayAnswer: "يجي نهار و تقصدهم حفيان ، و اضرب نعنبو الي بكاهم واطا واطططططط ", correctAnswers: ["يجي نهار و تقصدهم حفيان", "واطططططط"] },
                     { questionText: "حيوان طويل العنق ذو بقع بنية، يتغذى على أوراق الأشجار العالية؟", displayAnswer: "زرافة", correctAnswers: ["زرافة", "الزرافة"] },
                     { questionText: "حيوان ذكي يعيش في الغابات يأكل الموز ويتأرجح بين الأشجار؟", displayAnswer: "قرد", correctAnswers: ["قرد", "القرد"] }
                 ]
             },
-            
-            
-            
-            
-            
-            
+          
+          
+          
+          
+          
+          
             {
                 category: "حيوانات الغابة",
                 questions: [
@@ -889,7 +886,7 @@
         const playerExitButtonResults = document.getElementById('player-exit-button-results');
 
         // Reference to the new button container for custom message box
-        const customMessageButtonsContainer = document.getElementById('custom-message-buttons');  
+        const customMessageButtonsContainer = document.getElementById('custom-message-buttons'); 
         const customMessageBox = document.getElementById('custom-message-box');
         const customMessageTitle = document.getElementById('custom-message-title');
         const customMessageContent = document.getElementById('custom-message-content');
@@ -982,9 +979,6 @@
         async function initializeFirebase() {
             showLoading();
             try {
-                // IMPORTANT: In a real environment, __app_id and __firebase_config would be provided
-                // by the hosting environment. For this specific snippet, using hardcoded values
-                // as provided in the user's original code.
                 const firebaseConfig = {
                     apiKey: "AIzaSyCwdZjTwrnjKZU_AilP5_GZJeEuUZjVcUY",
                     authDomain: "ka3boura-dbcf5.firebaseapp.com",
@@ -996,7 +990,7 @@
                 };
                 
                 console.log("Using Firebase Config:", firebaseConfig);
-                appId = firebaseConfig.projectId; // Or use typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                appId = firebaseConfig.projectId;
                 console.log("Derived App ID for Firestore path (Global):", appId);
 
                 app = firebase.initializeApp(firebaseConfig);
@@ -1128,7 +1122,6 @@
             gameId = null; // Clear current game ID
             isHost = false; // Reset host status
             clearInterval(timerInterval);
-            clearInterval(hostTimerInterval); // NEW: Clear host's timer as well
             clearInterval(currentQuestionSoundInterval);
             soundStarted = false;
             if (gameSnapshotUnsubscribe) {
@@ -1235,7 +1228,6 @@
                     currentCorrectAnswers: [],
                     currentDisplayAnswer: '',
                     currentQuestionGuessedAnswers: [],
-                    currentQuestionGuessedAnswers: [], // This was duplicated, removed in fix below
                     questionStartTime: null,
                     timeLimitPerQuestion: timeLimit,
                     countdownStartTime: null,
@@ -1358,15 +1350,7 @@
                 }
 
                 const currentQuestion = quizSet[currentQuestionIndex];
-                const timeLimit = gameData.timeLimitPerQuestion; // Get time limit from game data
 
-                // NEW: Host sets its local authoritative timer for this question
-                hostLocalTimerRemaining = timeLimit;
-
-                // NEW: Clear any existing host timer before starting a new one
-                clearInterval(hostTimerInterval);
-
-                // Host initiates the question and updates Firestore with initial timer state
                 await gameRef.update({
                     gamePhase: 'question_active',
                     currentQuestionIndexInGame: currentQuestionIndex + 1,
@@ -1376,45 +1360,12 @@
                     currentDisplayAnswer: currentQuestion.displayAnswer,
                     currentQuestionGuessedAnswers: [],
                     questionStartTime: Date.now(),
-                    timeLimitPerQuestion: timeLimit,
+                    timeLimitPerQuestion: gameData.timeLimitPerQuestion,
                     scoresReconciledForCurrentQuestion: false,
-                    // Host publishes its initial time and timestamp
-                    currentTime: hostLocalTimerRemaining,
+                    // NEW: Initialize currentTime for host-driven synchronization
+                    currentTime: gameData.timeLimitPerQuestion, 
                     lastHostTimeUpdate: Date.now()
                 });
-
-                // NEW: Start the host's authoritative timer interval
-                // This interval runs ONLY on the host's client and updates Firestore regularly.
-                hostTimerInterval = setInterval(async () => {
-                    hostLocalTimerRemaining--;
-
-                    // Update Firestore with the host's current time and timestamp
-                    // This ensures all clients get a synchronized time
-                    await gameRef.update({
-                        currentTime: hostLocalTimerRemaining,
-                        lastHostTimeUpdate: Date.now()
-                    });
-
-                    // Host's timer ends, transition to question results
-                    if (hostLocalTimerRemaining <= 0) {
-                        clearInterval(hostTimerInterval);
-                        clearInterval(currentQuestionSoundInterval);
-                        soundStarted = false;
-                        // Host sets phase to 'question_results' when its timer ends
-                        await gameRef.update({
-                            gamePhase: 'question_results',
-                            scoresReconciledForCurrentQuestion: false,
-                            currentTime: 0, // Ensure timer is 0 in Firestore
-                            lastHostTimeUpdate: Date.now() // Update timestamp one last time
-                        });
-                        reconcileQuestionScores(); // Host reconciles scores
-                    } else if (hostLocalTimerRemaining <= 5 && !soundStarted) {
-                        // Play warning sound on host side, which will be reflected on clients too
-                        currentQuestionSoundInterval = setInterval(playTimerSound, 500);
-                        soundStarted = true;
-                    }
-                }, 1000); // Host updates its timer and Firestore every second
-
 
                 const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
                 const playersDocs = await playersCollectionRef.get();
@@ -1433,6 +1384,9 @@
 
                 // UI elements are now reset and re-enabled directly in listenToGameChanges for question_active phase.
 
+                clearInterval(currentQuestionSoundInterval);
+                soundStarted = false;
+
                 console.log(`Starting question ${currentQuestionIndex + 1}: ${currentQuestion.category} - Question: ${currentQuestion.question}`);
 
             } catch (error) {
@@ -1448,17 +1402,12 @@
 
             showLoading();
             try {
-                // NEW: Stop host's authoritative timer immediately
-                clearInterval(hostTimerInterval); 
-                clearInterval(currentQuestionSoundInterval);
-                soundStarted = false;
-
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
                 await gameRef.update({
                     gamePhase: 'question_results',
                     scoresReconciledForCurrentQuestion: false,
                     currentTime: 0, // Ensure timer stops on end early
-                    lastHostTimeUpdate: Date.now() // Update timestamp to reflect immediate stop
+                    lastHostTimeUpdate: Date.now()
                 });
                 reconcileQuestionScores();
                 console.log("Host ended question early.");
@@ -1474,11 +1423,6 @@
             if (!isHost || !gameId) return;
             showLoading();
             try {
-                // NEW: Stop host's authoritative timer
-                clearInterval(hostTimerInterval);
-                clearInterval(currentQuestionSoundInterval);
-                soundStarted = false;
-
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
                 await gameRef.update({
                     gamePhase: 'final_results'
@@ -1540,11 +1484,6 @@
 
                 const batch = db.batch();
 
-                // NEW: Stop host's timer before resetting game state for a new round
-                clearInterval(hostTimerInterval);
-                clearInterval(currentQuestionSoundInterval);
-                soundStarted = false;
-
                 // Update game document to start new round
                 batch.update(gameRef, {
                     gamePhase: 'lobby', // Set to lobby to transition all players to waiting screen
@@ -1558,7 +1497,7 @@
                     questionStartTime: null,
                     countdownStartTime: null,
                     scoresReconciledForCurrentQuestion: false,
-                    // Reset currentTime and lastHostTimeUpdate for new round lobby sync
+                    // FIX: Reset currentTime and lastHostTimeUpdate for new round lobby sync
                     currentTime: 0, // Should be 0 in lobby or null, but for sync, 0 works.
                     lastHostTimeUpdate: Date.now() 
                 });
@@ -1587,7 +1526,7 @@
 
                 console.log("New round setup complete. Transitioning to waiting screen.");
                 // Explicitly show waiting room screen for the host (and players will follow via listener)
-                showScreen(waitingRoomScreen);  
+                showScreen(waitingRoomScreen); 
             } catch (error) {
                 console.error("Error starting new round in same room:", error);
                 showCustomMessageBox("خطأ", error.message || "فشل بدء جولة جديدة في نفس الغرفة.");
@@ -1632,7 +1571,7 @@
                         
                         if (isCorrectAnswer(normalizedSubmittedAnswer, currentCorrectAnswers)) {
                             scoreChange = playerData.playerSelectedPoints;
-                            if (!roundCorrectGuesses.some(g => normalize(g) === normalizedSubmittedAnswer)) {  
+                            if (!roundCorrectGuesses.some(g => normalize(g) === normalizedSubmittedAnswer)) { 
                                 roundCorrectGuesses.push(submittedAnswer);
                             }
                         } else {
@@ -1649,7 +1588,7 @@
                     });
                 }
 
-                batch.update(gameRef, {  
+                batch.update(gameRef, { 
                     currentQuestionGuessedAnswers: roundCorrectGuesses,
                     scoresReconciledForCurrentQuestion: true
                 });
@@ -1765,8 +1704,8 @@
                         throw new Error("لقد أجبت بالفعل على هذا السؤال.");
                     }
                     if (playerUsedPointsBets.includes(pointsBet)) {
-                            console.log("Player already used this point value in this game (transaction check).");
-                            throw new Error(`لقد استخدمت قيمة ${pointsBet} نقطة بالفعل في هذه اللعبة. الرجاء اختيار قيمة أخرى.`);
+                          console.log("Player already used this point value in this game (transaction check).");
+                          throw new Error(`لقد استخدمت قيمة ${pointsBet} نقطة بالفعل في هذه اللعبة. الرجاء اختيار قيمة أخرى.`);
                     }
 
                     transaction.update(playerRef, {
@@ -1833,12 +1772,6 @@
                         
                         showScreen(waitingRoomScreen); // Ensure player is moved to waiting screen
                         
-                        // NEW: Clear all timer intervals when entering lobby
-                        clearInterval(timerInterval);
-                        clearInterval(hostTimerInterval); // Ensure host's timer is cleared too if returning to lobby
-                        clearInterval(currentQuestionSoundInterval);
-                        soundStarted = false;
-
                         if (isHost) {
                             if (startGameButton) {
                                 startGameButton.textContent = "بدء الجولة الأولى!";
@@ -1855,7 +1788,6 @@
                         console.log("[listenToGameChanges] Showing game countdown screen.");
                         showScreen(gameCountdownScreen);
                         clearInterval(timerInterval);
-                        clearInterval(hostTimerInterval); // NEW: Clear host timer on countdown phase
                         clearInterval(currentQuestionSoundInterval);
                         soundStarted = false;
                         const countdownDuration = gameData.countdownDuration || 5;
@@ -1870,8 +1802,7 @@
 
                             if (currentCountdown <= 0) {
                                 clearInterval(timerInterval);
-                                // The host will trigger the next phase (question_active) after its countdown
-                                // No action needed here for clients or host
+                                if (isHost) { startNextQuestion(); }
                             }
                         }, 1000);
                         if (playerExitButtonGameplay) playerExitButtonGameplay.classList.add('hidden');
@@ -1933,48 +1864,44 @@
                             if (playerExitButtonGameplay) playerExitButtonGameplay.classList.remove('hidden');
                         }
 
-                        clearInterval(timerInterval); // Clear any existing display timer
-                        clearInterval(currentQuestionSoundInterval); // Clear any existing sound interval
-                        soundStarted = false; // Reset sound flag
+                        clearInterval(timerInterval);
+                        clearInterval(currentQuestionSoundInterval);
+                        soundStarted = false;
 
-                        // NEW: This client-side interval now ONLY DISPLAYS the time based on host's Firestore updates
+                        // FIX: Host-driven timer synchronization
                         timerInterval = setInterval(() => {
                             const now = Date.now();
                             const lastHostTimeUpdate = gameData.lastHostTimeUpdate || now; // Fallback to now if not set
-                            const timeFromHost = gameData.currentTime || gameData.timeLimitPerQuestion; // Fallback to limit if not set
-                            
-                            // Compensate for network latency to calculate local display time
+                            const timeFromHost = gameData.currentTime || gameData.timeLimitPerQuestion; // Fallback
+                            // Compensate for network latency
                             const compensatedTime = timeFromHost - Math.floor((now - lastHostTimeUpdate) / 1000);
                             
                             localTimerRemaining = Math.max(0, compensatedTime); // Ensure time doesn't go negative
                             if (gameTimerDisplay) gameTimerDisplay.textContent = localTimerRemaining;
 
-                            // Play sound only if time is low and not already started
                             if (localTimerRemaining <= 5 && !soundStarted) {
                                 currentQuestionSoundInterval = setInterval(playTimerSound, 500);
                                 soundStarted = true;
                             }
-                            // IMPORTANT FIX: Do NOT trigger phase change or reconciliation here for non-hosts.
-                            // The host's authoritative timer will handle phase changes.
                             if (localTimerRemaining <= 0) {
                                 clearInterval(timerInterval);
                                 clearInterval(currentQuestionSoundInterval);
                                 soundStarted = false;
-                                // Clients will just wait for the host to update gamePhase to 'question_results'
+                                if (isHost) {
+                                    db.collection(`artifacts/${appId}/public/data/games`).doc(gameId).update({ gamePhase: 'question_results', scoresReconciledForCurrentQuestion: false });
+                                    reconcileQuestionScores();
+                                }
                             }
                         }, 1000);
                     }  
                     // Phase: Showing Question Results
                     else if (gamePhase === 'question_results') {
                         console.log("[listenToGameChanges] Showing question results screen.");
-                        // The reconcileQuestionScores is called by the host when it transitions to this phase or ends early.
-                        // No need for a redundant call here for all clients.
-                        // if (isHost && !gameData.scoresReconciledForCurrentQuestion) {
-                        //     reconcileQuestionScores();  
-                        // }
+                        if (isHost && !gameData.scoresReconciledForCurrentQuestion) {
+                            reconcileQuestionScores();  
+                        }
                         showScreen(questionResultsScreen);
                         clearInterval(timerInterval);
-                        clearInterval(hostTimerInterval); // NEW: Clear host timer on results phase
                         clearInterval(currentQuestionSoundInterval);
                         soundStarted = false;
 
@@ -2024,7 +1951,6 @@
                     else if (gamePhase === 'final_results') {
                         console.log("[listenToGameChanges] Showing final results screen.");
                         clearInterval(timerInterval);
-                        clearInterval(hostTimerInterval); // NEW: Clear host timer on final results phase
                         clearInterval(currentQuestionSoundInterval);
                         soundStarted = false;
                         showFinalScores();
@@ -2089,14 +2015,14 @@
 
                             const scoreChangeValue = playerData.playerScoreChange || 0;
                             const submittedAnswerActual = playerData.playerSubmittedAnswer;
-                            const selectedPointsActual = playerData.playerSelectedPoints || 0;
+                            const selectedPointsActual = playerData.selectedPoints || 0;
 
 
                             if (playerData.hasSubmittedAnswer) {
                                 statusIcon = '<i class="fas fa-check-circle text-green-500 ml-2"></i>';
                                 submittedAnswerText = `إجابة: ${submittedAnswerActual || 'لا توجد'}`;
                                 if (scoreChangeValue !== 0 || selectedPointsActual > 0) {
-                                    scoreInfo = `(راهن بـ ${selectedPointsActual} نقطة، تغيير: ${scoreChangeValue >= 0 ? '+' : ''}${scoreChangeValue} نقطة)`;
+                                     scoreInfo = `(راهن بـ ${selectedPointsActual} نقطة، تغيير: ${scoreChangeValue >= 0 ? '+' : ''}${scoreChangeValue} نقطة)`;
                                 }
                             } else {  
                                 statusIcon = '<i class="fas fa-hourglass-half text-gray-500 ml-2"></i>';
@@ -2209,7 +2135,6 @@
                 clearInterval(currentQuestionSoundInterval);
                 soundStarted = false;
                 clearInterval(timerInterval);
-                clearInterval(hostTimerInterval); // NEW: Clear host's timer when showing final scores
 
                 const playersRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
                 const playersSnapshot = await playersRef.get();
@@ -2300,35 +2225,35 @@
     </script>
 
 
-    
+
+   
 <!-- مكتبة QR Code -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <script>
-    function generateQRCode(link) {
-        const qrcodeContainer = document.getElementById("qrcode");
-        qrcodeContainer.innerHTML = ""; // ننظف القديم
+  function generateQRCode(link) {
+    const qrcodeContainer = document.getElementById("qrcode");
+    qrcodeContainer.innerHTML = ""; // ننظف القديم
 
-        new QRCode(qrcodeContainer, {
-            text: link,
-            width: 150,
-            height: 150,
-        });
-    }
-
-    // عند عرض رابط الغرفة
-    window.addEventListener('DOMContentLoaded', () => {
-        const link = window.location.href; // أو أي رابط الغرفة
-        const linkDisplay = document.getElementById("game-link-display");
-        if (linkDisplay) {
-            linkDisplay.textContent = link;
-        }
-        // This generateQRCode call is duplicated if the main script already calls it.
-        // It's better to ensure it's only called once when the game link is ready.
-        // Leaving it here for now as per "don't delete" instruction, but noting redundancy.
-        // generateQRCode(link); 
+    new QRCode(qrcodeContainer, {
+      text: link,
+      width: 150,
+      height: 150,
     });
+  }
+
+  // عند عرض رابط الغرفة
+  window.addEventListener('DOMContentLoaded', () => {
+    const link = window.location.href; // أو أي رابط الغرفة
+    const linkDisplay = document.getElementById("game-link-display");
+    if (linkDisplay) {
+      linkDisplay.textContent = link;
+    }
+    generateQRCode(link);
+  });
 </script>
+
+    
 
     
 </body>
