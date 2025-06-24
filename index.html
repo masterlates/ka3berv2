@@ -791,9 +791,9 @@
         const endMessage = document.getElementById('end-message');
         const finalScoresList = document.getElementById('final-scores-list');
         const playAgainButton = document.getElementById('play-again-button');
-        const startNewRoundSameRoomButton = document.getElementById('start-new-round-same-room-button'); // New button for host
-        const playerExitButtonGameplay = document.getElementById('player-exit-button-gameplay'); // New exit button for players during game
-        const playerExitButtonResults = document.getElementById('player-exit-button-results'); // New exit button for players during results
+        const startNewRoundSameRoomButton = document.getElementById('start-new-round-same-room-button');
+        const playerExitButtonGameplay = document.getElementById('player-exit-button-gameplay');
+        const playerExitButtonResults = document.getElementById('player-exit-button-results');
 
 
         const customMessageBox = document.getElementById('custom-message-box');
@@ -803,22 +803,13 @@
 
         // Initialize Tone.js synth for sound effects
         const synth = new Tone.Synth({
-            oscillator: {
-                type: "sine" // Simple sine wave
-            },
-            envelope: {
-                attack: 0.01,
-                decay: 0.1,
-                sustain: 0.1,
-                release: 0.5
-            }
+            oscillator: { type: "sine" },
+            envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.5 }
         }).toDestination();
         
         // Function to play a simple sound effect for the timer
         function playTimerSound() {
-            if (Tone.context.state !== 'running') {
-                Tone.start();
-            }
+            if (Tone.context.state !== 'running') { Tone.start(); }
             synth.triggerAttackRelease("C4", "16n");
         }
 
@@ -899,7 +890,6 @@
         async function initializeFirebase() {
             showLoading();
             try {
-                // Firebase config
                 const firebaseConfig = {
                     apiKey: "AIzaSyCwdZjTwrnjKZU_AilP5_GZJeEuUZjVcUY",
                     authDomain: "ka3boura-dbcf5.firebaseapp.com",
@@ -1120,7 +1110,7 @@
                     hostId: userId,
                     gamePhase: 'lobby',
                     quizSet: quizSetForGame,
-                    selectedCategoryIndices: selectedQuizIndices, // Store selected category indices for re-use
+                    selectedCategoryIndices: selectedQuizIndices,
                     currentQuestionIndexInGame: 0,
                     currentCategory: '',
                     currentQuestionText: '',
@@ -1241,7 +1231,6 @@
                 const currentQuestionIndex = gameData.currentQuestionIndexInGame;
                 const quizSet = gameData.quizSet;
 
-                // Check if all questions are played (for game restart or end)
                 if (currentQuestionIndex >= quizSet.length) {
                     await gameRef.update({ gamePhase: 'final_results' });
                     return;
@@ -1249,7 +1238,6 @@
 
                 const currentQuestion = quizSet[currentQuestionIndex];
 
-                // Update game document for the new question
                 await gameRef.update({
                     gamePhase: 'question_active',
                     currentQuestionIndexInGame: currentQuestionIndex + 1,
@@ -1263,7 +1251,6 @@
                     scoresReconciledForCurrentQuestion: false
                 });
 
-                // Reset player-specific data for the NEW question via batch write
                 const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
                 const playersDocs = await playersCollectionRef.get();
                 const batch = db.batch();
@@ -1272,22 +1259,16 @@
                     batch.update(playerRef, {  
                         playerSubmittedAnswer: '',
                         playerSelectedPoints: 0,
-                        playerScoreChange: 0, // Reset score change for this new round
+                        playerScoreChange: 0,
                         hasSubmittedAnswer: false
                     });
                 });
                 await batch.commit();
                 console.log("Reset player-specific question data for new question.");
 
-                // Reset player's local UI
-                if (gameGuessInput) {
-                    gameGuessInput.value = ''; // Clear input field for ALL players
-                }
-                selectedPointsBet = 1; // Reset selected points to 1
-                populatePointsButtons(); // Re-render buttons to reset selection visually and enable
-
-                if (sharedRoundGuessesList) { sharedRoundGuessesList.innerHTML = ''; }
+                if (gameGuessInput) { gameGuessInput.value = ''; }
                 if (playerCorrectGuessesList) { playerCorrectGuessesList.innerHTML = ''; }
+                if (sharedRoundGuessesList) { sharedRoundGuessesList.innerHTML = ''; }
 
                 clearInterval(currentQuestionSoundInterval);
                 soundStarted = false;
@@ -1350,15 +1331,13 @@
                 const gameData = gameDoc.data();
 
                 const selectedCategories = gameData.selectedCategoryIndices || [];
-                const totalQuestions = gameData.quizSet ? gameData.quizSet.length : 10; // Use previous total questions for same number of questions
+                const totalQuestions = gameData.quizSet ? gameData.quizSet.length : 10;
 
                 if (selectedCategories.length === 0) {
                     showCustomMessageBox("خطأ", "لا توجد فئات أسئلة مختارة سابقة لبدء جولة جديدة.");
-                    hideLoading(); // Ensure loading is hidden on error
-                    return;
+                    return; // Exit function early, hideLoading in finally
                 }
 
-                // Regenerate quiz set from stored categories
                 let allPossibleQuestions = [];
                 selectedCategories.forEach(catIndex => {
                     const category = quizzes[catIndex];
@@ -1373,7 +1352,6 @@
                         });
                     }
                 });
-                // Shuffle and pick new questions
                 for (let i = allPossibleQuestions.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [allPossibleQuestions[i], allPossibleQuestions[j]] = [allPossibleQuestions[j], allPossibleQuestions[i]];
@@ -1382,17 +1360,14 @@
 
                 if (newQuizSetForGame.length === 0) {
                     showCustomMessageBox("خطأ", "الفئات المختارة لا تحتوي على أي أسئلة كافية لإنشاء جولة جديدة.");
-                    hideLoading(); // Ensure loading is hidden on error
-                    return;
+                    return; // Exit function early, hideLoading in finally
                 }
 
-                // Use a batch to update game and reset all players' scores/statuses
                 const batch = db.batch();
 
-                // Update game document to start new round
                 batch.update(gameRef, {
-                    gamePhase: 'lobby', // Move to lobby for new round countdown
-                    quizSet: newQuizSetForGame, // New set of questions
+                    gamePhase: 'lobby',
+                    quizSet: newQuizSetForGame,
                     currentQuestionIndexInGame: 0,
                     currentCategory: '',
                     currentQuestionText: '',
@@ -1404,33 +1379,31 @@
                     scoresReconciledForCurrentQuestion: false
                 });
 
-                // Reset all players' scores and states for the new round
                 const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
                 const playersDocs = await playersCollectionRef.get();
                 playersDocs.docs.forEach(playerDoc => {
                     const playerRef = playerDoc.ref;
                     batch.update(playerRef, {
-                        score: 0, // Reset overall score for new round
+                        score: 0,
                         playerSubmittedAnswer: '',
                         playerSelectedPoints: 0,
                         playerScoreChange: 0,
                         hasSubmittedAnswer: false,
-                        usedPointsBets: [] // Clear used points for the new round
+                        usedPointsBets: []
                     });
                 });
-                await batch.commit();
+                await batch.commit(); // Ensure all writes are completed before proceeding
 
-                // Reset host's local used points for the new round
                 userUsedPointsBets = [];
-                populatePointsButtons(); // Update UI for points buttons
+                populatePointsButtons();
 
                 console.log("New round started in same room with new questions.");
-                // The gamePhase listener will handle showing the waiting room and initiating countdown
+                showScreen(waitingRoomScreen); // Explicitly show waiting room for the host
             } catch (error) {
                 console.error("Error starting new round in same room:", error);
                 showCustomMessageBox("خطأ", error.message || "فشل بدء جولة جديدة في نفس الغرفة.");
             } finally {
-                hideLoading(); // Ensure loading is hidden after all operations or errors
+                hideLoading(); // Always hide loading after operation
             }
         }
 
@@ -1696,36 +1669,36 @@
                         if (gameCategoryDisplay) gameCategoryDisplay.textContent = gameData.currentCategory;
                         if (gameQuestionDisplay) gameQuestionDisplay.textContent = gameData.currentQuestionText;
                         
-                        // IMPORTANT: Reset input field and re-enable for new question
+                        // Clear input field and re-enable for new question (FIX for problem 1)
                         if (gameGuessInput) {
                             gameGuessInput.value = ''; // Clear previous answer
+                            gameGuessInput.disabled = false; // Explicitly re-enable
                         }
-                        // Clear local correct guesses list for new question
-                        if (playerCorrectGuessesList) {
-                            playerCorrectGuessesList.innerHTML = '';
-                        }
-                        // Clear shared guesses list for new question
-                        if (sharedRoundGuessesList) {
-                            sharedRoundGuessesList.innerHTML = '';
+                        if (submitAnswerButton) {
+                            submitAnswerButton.disabled = false; // Explicitly re-enable submit button
                         }
 
-                        // Re-enable input and buttons based on player's current submission status for this new question
+                        // Clear local correct guesses list for new question
+                        if (playerCorrectGuessesList) { playerCorrectGuessesList.innerHTML = ''; }
+                        // Clear shared guesses list for new question
+                        if (sharedRoundGuessesList) { sharedRoundGuessesList.innerHTML = ''; }
+
+                        // Re-fetch player data to update local 'used points' and re-render buttons
                         db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId).get().then(playerDoc => {
                             if (playerDoc.exists) {
                                 const currentPlayerData = playerDoc.data();
-                                // If player hasn't submitted an answer for *this* question, enable inputs
-                                if (!currentPlayerData.hasSubmittedAnswer) {
-                                    if (gameGuessInput) gameGuessInput.disabled = false;
-                                    populatePointsButtons(); // Re-populate buttons to enable/disable based on usedPointsBets
-                                    if (submitAnswerButton) submitAnswerButton.disabled = false;
-                                } else {  
-                                    // Player has already submitted for this question, keep disabled
+                                userUsedPointsBets = currentPlayerData.usedPointsBets || []; // Update local used points state
+                                populatePointsButtons(); // Re-render buttons based on updated local state
+                                
+                                // After re-enabling globally, if player has ALREADY submitted for *this* question, re-disable.
+                                // This handles edge cases where client-side might be out of sync.
+                                if (currentPlayerData.hasSubmittedAnswer) {
                                     if (gameGuessInput) gameGuessInput.disabled = true;
                                     if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
                                     if (submitAnswerButton) submitAnswerButton.disabled = true;
                                 }
                             } else {
-                                // Fallback if player doc is missing (shouldn't happen)
+                                // Fallback if player doc is missing (shouldn't happen, but defensive)
                                 if (gameGuessInput) gameGuessInput.disabled = true;
                                 if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
                                 if (submitAnswerButton) submitAnswerButton.disabled = true;
@@ -2041,7 +2014,6 @@
 
                 showScreen(gameEndScreen);
 
-                // Host-only: show start new round button
                 if (isHost && startNewRoundSameRoomButton) {
                     startNewRoundSameRoomButton.classList.remove('hidden');
                 } else if (startNewRoundSameRoomButton) {
