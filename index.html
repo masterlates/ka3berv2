@@ -348,6 +348,11 @@
                     <i class="fas fa-flag-checkered"></i> إنهاء السؤال الآن <!-- End question early button -->
                 </button>
             </div>
+
+            <!-- Player-only Exit Button (visible during gameplay) -->
+            <button id="player-exit-button-gameplay" class="w-full bg-gray-500 hover:bg-gray-600 text-white text-xl font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out mt-6 hidden">
+                <i class="fas fa-sign-out-alt"></i> الخروج من اللعبة
+            </button>
         </div>
 
         <!-- Question Results Screen (New) -->
@@ -375,6 +380,10 @@
                     <i class="fas fa-times-circle"></i> إنهاء اللعبة
                 </button>
             </div>
+            <!-- Player-only Exit Button (visible during question results) -->
+            <button id="player-exit-button-results" class="w-full bg-gray-500 hover:bg-gray-600 text-white text-xl font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out mt-6 hidden">
+                <i class="fas fa-sign-out-alt"></i> الخروج من اللعبة
+            </button>
         </div>
 
         <!-- Game End Screen (Final Results) -->
@@ -387,8 +396,14 @@
                 <!-- Final scores will be listed here by JavaScript -->
             </ul>
 
+            <!-- Host only: Start new round in same room -->
+            <button id="start-new-round-same-room-button" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3 mb-4 hidden">
+                <i class="fas fa-sync-alt"></i> بدء جولة جديدة في نفس الغرفة
+            </button>
+
+            <!-- All players: Play again (go to role selection) -->
             <button id="play-again-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
-                <i class="fas fa-redo"></i> العب مرة أخرى <!-- Play again button -->
+                <i class="fas fa-redo"></i> العب مرة أخرى (غرفة جديدة)
             </button>
         </div>
 
@@ -593,7 +608,7 @@
             }
         ];
         
-        // Function to normalize text for fuzzy matching (provided by user)
+        // دالة تطبيع النص (Normalize text for fuzzy matching)
         function normalize(text) {
             return text
                 .toLowerCase()
@@ -606,13 +621,12 @@
                 .replace(/[^a-zA-Z0-9\u0600-\u06FF]/g, ''); // Keep Arabic and English alphanumeric
         }
 
-        // Function to calculate similarity between two normalized strings (provided by user)
+        // دالة التشابه بين كلمتين (Calculate similarity between two normalized strings)
         function similarity(a, b) {
             a = normalize(a);
             b = normalize(b);
             let matches = 0;
             const len = Math.max(a.length, b.length);
-            // Handle case where one string is empty after normalization
             if (len === 0) return 1; 
 
             for (let i = 0; i < len; i++) {
@@ -621,35 +635,34 @@
             return matches / len;
         }
 
-        // Function to check if a player's answer is correct using fuzzy matching (provided by user)
+        // التحقق من صحة الإجابة (Check if a player's answer is correct using fuzzy matching)
         function isCorrectAnswer(playerAnswer, acceptedAnswers) {
             const normalizedPlayerAnswer = normalize(playerAnswer);
             return acceptedAnswers.some(ans => similarity(normalizedPlayerAnswer, ans) >= 0.8);
         }
 
         // Multi-select quiz categories logic
-        let selectedQuizIndices = []; // Stores indices of selected CATEGORIES
+        let selectedQuizIndices = []; // Stores indices of selected CATEGORIES for host setup
         const quizCategoryInput = document.getElementById('quiz-category-input');
         const quizCategoryDropdown = document.getElementById('quiz-category-dropdown');
         const selectedCategoriesTags = document.getElementById('selected-categories-tags');
-        const hostNicknameInput = document.getElementById('host-nickname-input'); // Host nickname input
-        const totalQuestionsPerGameSelect = document.getElementById('total-questions-per-game-select'); // Total questions select
+        const hostNicknameInput = document.getElementById('host-nickname-input');
+        const totalQuestionsPerGameSelect = document.getElementById('total-questions-per-game-select');
 
-        // Function to populate and manage the multi-select dropdown
+        // Function to populate and manage the multi-select dropdown for quiz categories
         function setupQuizCategorySelection() {
             if (!quizCategoryDropdown) {
                 console.error("Error: quizCategoryDropdown element not found.");
                 return;
             }
-            quizCategoryDropdown.innerHTML = ''; // Clear previous options
+            quizCategoryDropdown.innerHTML = '';
             quizzes.forEach((quiz, index) => {
                 const label = document.createElement('label');
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
-                checkbox.value = index; // The value is the index of the category
-                checkbox.className = 'ml-2'; // Tailwind spacing
+                checkbox.value = index;
+                checkbox.className = 'ml-2';
 
-                // Check if this category is already selected
                 checkbox.checked = selectedQuizIndices.includes(index);
 
                 label.appendChild(checkbox);
@@ -669,7 +682,7 @@
                     updateSelectedCategoriesTags();
                 });
             });
-            updateSelectedCategoriesTags(); // Initial render of tags
+            updateSelectedCategoriesTags();
         }
 
         // Function to update the displayed tags for selected categories
@@ -680,18 +693,18 @@
             }
             selectedCategoriesTags.innerHTML = '';
             selectedQuizIndices.forEach(index => {
-                const quiz = quizzes[index]; // This is a category object
+                const quiz = quizzes[index];
                 if (quiz) {
                     const tag = document.createElement('span');
                     tag.className = 'tag';
-                    tag.textContent = quiz.category; // Display just the category name in the tag
+                    tag.textContent = quiz.category;
                     
                     const removeBtn = document.createElement('span');
                     removeBtn.className = 'tag-remove';
                     removeBtn.textContent = 'x';
                     removeBtn.onclick = () => {
                         selectedQuizIndices = selectedQuizIndices.filter(i => i !== index);
-                        setupQuizCategorySelection(); // Re-render dropdown and tags
+                        setupQuizCategorySelection();
                     };
                     tag.appendChild(removeBtn);
                     selectedCategoriesTags.appendChild(tag);
@@ -707,9 +720,8 @@
             }
         }
         
-        // Add event listeners only if elements exist
+        // Add event listeners for multi-select dropdown
         if (quizCategoryInput) {
-            // Toggle dropdown visibility
             quizCategoryInput.addEventListener('click', () => {
                 if (quizCategoryDropdown) {
                     quizCategoryDropdown.classList.toggle('hidden');
@@ -719,10 +731,9 @@
 
         // Hide dropdown when clicking outside
         document.addEventListener('click', (event) => {
-            // Ensure elements exist before checking contains
             const clickedInsideInput = quizCategoryInput && quizCategoryInput.contains(event.target);
             const clickedInsideDropdown = quizCategoryDropdown && quizCategoryDropdown.contains(event.target);
-            const clickedInsideTags = selectedCategoriesTags && selectedCategoriesTags.contains(event.target); // Also check tags
+            const clickedInsideTags = selectedCategoriesTags && selectedCategoriesTags.contains(event.target);
 
             if (quizCategoryDropdown && !clickedInsideInput && !clickedInsideDropdown && !clickedInsideTags) {
                 quizCategoryDropdown.classList.add('hidden');
@@ -730,7 +741,7 @@
         });
 
 
-        // --- DOM Elements (Get references to HTML elements) ---
+        // --- DOM Elements ---
         const loadingOverlay = document.getElementById('loading-overlay');
         const roleSelectionScreen = document.getElementById('role-selection-screen');
         const hostSetupScreen = document.getElementById('host-setup-screen');
@@ -780,11 +791,15 @@
         const hostSubmissionStatusList = document.getElementById('host-submission-status-list');  
         const hostGameplayControls = document.getElementById('host-gameplay-controls');  
 
-
         const endTitle = document.getElementById('end-title');
         const endMessage = document.getElementById('end-message');
         const finalScoresList = document.getElementById('final-scores-list');
         const playAgainButton = document.getElementById('play-again-button');
+        const startNewRoundSameRoomButton = document.getElementById('start-new-round-same-room-button'); // New button for host
+        const playerExitButtonGameplay = document.getElementById('player-exit-button-gameplay'); // New exit button for players during game
+        const playerExitButtonResults = document.getElementById('player-exit-button-results'); // New exit button for players during results
+
+
         const customMessageBox = document.getElementById('custom-message-box');
         const customMessageTitle = document.getElementById('custom-message-title');
         const customMessageContent = document.getElementById('custom-message-content');
@@ -805,100 +820,77 @@
         
         // Function to play a simple sound effect for the timer
         function playTimerSound() {
-            // Only play if Tone.js is ready (user interaction has occurred)
             if (Tone.context.state !== 'running') {
-                Tone.start(); // Start audio context on first play attempt
+                Tone.start();
             }
-            // Play a slightly higher note repeatedly for urgency
-            synth.triggerAttackRelease("C4", "16n"); // A quick beep
+            synth.triggerAttackRelease("C4", "16n");
         }
 
         // Initial check for all important DOM elements
         document.addEventListener('DOMContentLoaded', () => {
             const requiredElements = {
-                'loadingOverlay': loadingOverlay,
-                'roleSelectionScreen': roleSelectionScreen,
-                'createHostButton': createHostButton,
-                'joinPlayerButton': joinPlayerButton,
-                'gameLinkDisplay': gameLinkDisplay,
-                'qrcodeDiv': qrcodeDiv,
-                'copyLinkButton': copyLinkButton,
-                'customMessageBox': customMessageBox,
-                'quizCategoryInput': quizCategoryInput,
-                'quizCategoryDropdown': quizCategoryDropdown,
-                'selectedCategoriesTags': selectedCategoriesTags,
-                'hostNicknameInput': hostNicknameInput,
-                'pointsButtonGroup': pointsButtonGroup, // Check the new group
-                'gameGuessInput': gameGuessInput,
-                'submitAnswerButton': submitAnswerButton,
-                'endQuestionEarlyButton': endQuestionEarlyButton,
-                'questionResultsScreen': questionResultsScreen,
-                'questionPlayerScoresList': questionPlayerScoresList,
-                'nextQuestionButton': nextQuestionButton,
-                'endGameFinalButton': endGameFinalButton,
-                'gameCountdownScreen': gameCountdownScreen,  
-                'countdownTimerDisplay': countdownTimerDisplay,
-                'totalQuestionsPerGameSelect': totalQuestionsPerGameSelect,
-                'questionCounterDisplay': questionCounterDisplay,
-                'hostSubmissionStatusList': hostSubmissionStatusList,  
-                'hostGameplayControls': hostGameplayControls  
+                'loadingOverlay': loadingOverlay, 'roleSelectionScreen': roleSelectionScreen,
+                'createHostButton': createHostButton, 'joinPlayerButton': joinPlayerButton,
+                'gameLinkDisplay': gameLinkDisplay, 'qrcodeDiv': qrcodeDiv,
+                'copyLinkButton': copyLinkButton, 'customMessageBox': customMessageBox,
+                'quizCategoryInput': quizCategoryInput, 'quizCategoryDropdown': quizCategoryDropdown,
+                'selectedCategoriesTags': selectedCategoriesTags, 'hostNicknameInput': hostNicknameInput,
+                'pointsButtonGroup': pointsButtonGroup, 'gameGuessInput': gameGuessInput,
+                'submitAnswerButton': submitAnswerButton, 'endQuestionEarlyButton': endQuestionEarlyButton,
+                'questionResultsScreen': questionResultsScreen, 'questionPlayerScoresList': questionPlayerScoresList,
+                'nextQuestionButton': nextQuestionButton, 'endGameFinalButton': endGameFinalButton,
+                'gameCountdownScreen': gameCountdownScreen, 'countdownTimerDisplay': countdownTimerDisplay,
+                'totalQuestionsPerGameSelect': totalQuestionsPerGameSelect, 'questionCounterDisplay': questionCounterDisplay,
+                'hostSubmissionStatusList': hostSubmissionStatusList, 'hostGameplayControls': hostGameplayControls,
+                'startNewRoundSameRoomButton': startNewRoundSameRoomButton, // Add new buttons to required checks
+                'playerExitButtonGameplay': playerExitButtonGameplay,
+                'playerExitButtonResults': playerExitButtonResults
             };
 
             for (const id in requiredElements) {
                 if (!requiredElements[id]) {
                     console.error(`CRITICAL ERROR: Element with ID '${id}' not found in the DOM. Please check your HTML.`);
-                    // Display a persistent error message to the user if a critical element is missing
                     document.body.innerHTML = `
                         <div style="text-align: center; color: red; font-size: 1.5em; margin-top: 50px;">
                             خطأ فادح: لم يتم العثور على مكونات أساسية في الصفحة. يرجاء إبلاغ مطور اللعبة.
                             <br>المكون المفقود: ${id}
                         </div>
                     `;
-                    // Prevent further script execution if a critical element is missing
                     throw new Error(`Element ${id} not found.`);
                 }
             }
-            // Populate points buttons (1-20)
             populatePointsButtons();
-            // If all critical elements are found, proceed with Firebase init
             initializeFirebase();
         });
 
         // Function to populate and manage the points buttons (1-20)
         function populatePointsButtons() {
-            if (!pointsButtonGroup) {
-                console.error("Error: pointsButtonGroup element not found for population.");
-                return;
-            }
-            pointsButtonGroup.innerHTML = ''; // Clear existing buttons
+            if (!pointsButtonGroup) return;
+            pointsButtonGroup.innerHTML = '';
             for (let i = 1; i <= 20; i++) {
                 const button = document.createElement('button');
-                button.type = 'button'; // Prevent form submission
+                button.type = 'button';
                 button.className = 'points-button';
                 button.textContent = i;
-                button.setAttribute('data-points', i); // Store points value in data attribute
+                button.setAttribute('data-points', i);
 
-                // Check if this point value has been used by the current user
                 const isDisabled = userUsedPointsBets.includes(i);
                 if (isDisabled) {
                     button.disabled = true;
-                    button.classList.add('used'); // Add a specific class for used buttons
+                    button.classList.add('used');
                 }
 
                 if (i === selectedPointsBet) {
-                    button.classList.add('selected'); // Select default 1
+                    button.classList.add('selected');
                 }
 
                 button.addEventListener('click', (event) => {
-                    // Prevent selection of disabled buttons
                     if (event.target.disabled) return;  
 
-                    // Unselect previous button
                     const currentSelected = pointsButtonGroup.querySelector('.points-button.selected');
                     if (currentSelected) {
                         currentSelected.classList.remove('selected');
                     }
-                    // Select new button
                     event.target.classList.add('selected');
                     selectedPointsBet = parseInt(event.target.getAttribute('data-points'));
                     console.log("Selected points bet:", selectedPointsBet);
@@ -908,12 +900,10 @@
         }
 
         // --- Firebase Initialization ---
-        // This function initializes Firebase and handles user authentication.
         async function initializeFirebase() {
-            showLoading(); // Show loading overlay
+            showLoading();
             try {
-                // *** FIREBASE CONFIGURATION (YOUR PROJECT'S SETTINGS) ***
-                // This is the configuration you provided for your Firebase project 'ka3boura-dbcf5'.
+                // Firebase config
                 const firebaseConfig = {
                     apiKey: "AIzaSyCwdZjTwrnjKZU_AilP5_GZJeEuUZjVcUY",
                     authDomain: "ka3boura-dbcf5.firebaseapp.com",
@@ -923,95 +913,73 @@
                     appId: "1:1051115240747:web:694751eef3173327f5596e",
                     measurementId: "G-9413DFK5DF"
                 };
-                // ***********************************************************************************
-
-                // Log the Firebase config to console to help debugging if there's an issue
+                
                 console.log("Using Firebase Config:", firebaseConfig);
-
-                // IMPORTANT: Assign to the GLOBAL appId variable declared at the top.
                 appId = firebaseConfig.projectId;
                 console.log("Derived App ID for Firestore path (Global):", appId);
 
+                app = firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore(app);
+                auth = firebase.auth(app);
 
-                app = firebase.initializeApp(firebaseConfig); // Initialize Firebase app
-                db = firebase.firestore(app); // Get Firestore instance
-                auth = firebase.auth(app); // Get Auth instance
-
-                // Sign in anonymously for game functionality.
                 await auth.signInAnonymously();
 
-                // Listen for authentication state changes
                 auth.onAuthStateChanged((user) => {
                     if (user) {
-                        userId = user.uid; // Store the authenticated user ID
+                        userId = user.uid;
                         console.log("Authenticated with userId:", userId);
-                        hideLoading(); // Hide loading overlay
+                        hideLoading();
 
-                        // Check URL for existing gameId to auto-join if provided (e.g., from QR code link)
                         const urlParams = new URLSearchParams(window.location.search);
                         const idFromUrl = urlParams.get('gameId');
                         if (idFromUrl) {
                             gameId = idFromUrl;
-                            // If gameId is in URL, pre-fill the input field
                             if (gameCodeInput) gameCodeInput.value = gameId;
 
-                            playerNicknameInput.value = localStorage.getItem('playerNickname') || ''; // Load saved nickname from local storage
+                            playerNicknameInput.value = localStorage.getItem('playerNickname') || '';
 
-                            // If nickname is available, prompt user to join directly. Otherwise, show join screen for manual input.
                             if (!playerNicknameInput.value) {
-                                showScreen(joinGameScreen); // Show join screen for nickname input
+                                showScreen(joinGameScreen);
                                 showCustomMessageBox("الانضمام إلى لعبة", `أدخل اسمك المستعار للانضمام إلى اللعبة برمز ${gameId}.`);
                                 customMessageCloseButton.onclick = () => {
                                     hideCustomMessageBox();
-                                    // User needs to fill nickname and click join manually
                                 };
                             } else {
                                 showCustomMessageBox("الانضمام إلى لعبة", `هل تريد الانضمام إلى اللعبة برمز ${gameId} باسم ${playerNicknameInput.value}؟`);
                                 customMessageCloseButton.onclick = () => {
                                     hideCustomMessageBox();
-                                    joinGame(gameId, playerNicknameInput.value); // Auto-join with saved nickname
+                                    joinGame(gameId, playerNicknameInput.value);
                                 };
                             }
                         } else {
-                            showScreen(roleSelectionScreen); // Show role selection if no gameId in URL
+                            showScreen(roleSelectionScreen);
                         }
                     } else {
                         console.log("No user signed in.");
-                        hideLoading(); // Hide loading even if no user
-                        showScreen(roleSelectionScreen); // Always show role selection if not authenticated
+                        hideLoading();
+                        showScreen(roleSelectionScreen);
                     }
                 });
 
             } catch (error) {
-                console.error("Firebase Initialization Error Details:", error); // Log the full error object for detailed debugging
+                console.error("Firebase Initialization Error Details:", error);
                 showCustomMessageBox("خطأ", `فشل تهيئة اللعبة. تأكد من إعداد Firebase بشكل صحيح وقواعد الأمان. التفاصيل: ${error.message}`);
                 hideLoading();
             }
         }
 
         // --- UI Management Functions ---
-        // Shows the loading spinner overlay
-        function showLoading() {
-            if (loadingOverlay) loadingOverlay.classList.remove('hidden');
-        }
+        function showLoading() { if (loadingOverlay) loadingOverlay.classList.remove('hidden'); }
+        function hideLoading() { if (loadingOverlay) loadingOverlay.classList.add('hidden'); }
 
-        // Hides the loading spinner overlay
-        function hideLoading() {
-            if (loadingOverlay) loadingOverlay.classList.add('hidden');
-        }
-
-        // Hides all game screens and shows the specified one
         function showScreen(screenElement) {
             console.log("Attempting to show screen:", screenElement ? screenElement.id : "undefined/null screenElement");
-
-            // Ensure screenElement is a valid DOM element
             if (!screenElement || !(screenElement instanceof HTMLElement)) {
                 console.error("Invalid screenElement provided to showScreen:", screenElement);
                 showCustomMessageBox("خطأ في العرض", "حدث خطأ غير متوقع في واجهة المستخدم (عنصر الشاشة غير صالح).");
-                return; // Prevent further execution that might blank the screen
+                return;
             }
 
-            // Hide all potential screens
             const allScreens = [
                 roleSelectionScreen, hostSetupScreen, waitingRoomScreen,
                 joinGameScreen, gamePlayScreen, questionResultsScreen, gameEndScreen, gameCountdownScreen
@@ -1022,54 +990,68 @@
                 }
             });
             
-            // Hide the custom message box if it's currently showing
             if (customMessageBox) {
                 customMessageBox.classList.add('hidden', 'opacity-0');
             }
 
-            // Then show the target screen
             screenElement.classList.remove('hidden');
-            // If the screen is supposed to be visible, ensure it's not also hidden by the message box logic
             if (screenElement !== customMessageBox) {
                 screenElement.classList.remove('flex', 'opacity-100');
             }
         }
 
-        // Displays a custom message box (replacement for alert/confirm)
         function showCustomMessageBox(title, content) {
-            // Defensive checks for message box elements
             if (!customMessageBox || !customMessageTitle || !customMessageContent) {
                 console.error("Error: Custom message box elements not found. Cannot display message.");
-                // Fallback to native alert if custom message box is critical and missing
                 alert(`خطأ: ${title}\n${content}`);
                 return;
             }
             customMessageTitle.textContent = title;
             customMessageContent.textContent = content;
             customMessageBox.classList.remove('hidden', 'opacity-0');
-            customMessageBox.classList.add('flex', 'opacity-100'); // Add flex and opacity for fade-in
+            customMessageBox.classList.add('flex', 'opacity-100');
         }
 
-        // Hides the custom message box
         function hideCustomMessageBox() {
             if (customMessageBox) {
                 customMessageBox.classList.remove('flex', 'opacity-100');
-                customMessageBox.classList.add('hidden', 'opacity-0'); // Remove flex and opacity for fade-out
+                customMessageBox.classList.add('hidden', 'opacity-0');
             }
         }
 
+        // Handles leaving the current game and returning to role selection
+        function exitGame() {
+            showLoading();
+            gameId = null; // Clear current game ID
+            isHost = false; // Reset host status
+            clearInterval(timerInterval);
+            clearInterval(currentQuestionSoundInterval);
+            soundStarted = false;
+            if (gameSnapshotUnsubscribe) {
+                gameSnapshotUnsubscribe();
+                gameSnapshotUnsubscribe = null;
+            }
+            if (playersSnapshotUnsubscribe) {
+                playersSnapshotUnsubscribe();
+                playersSnapshotUnsubscribe = null;
+            }
+            selectedQuizIndices = []; // Reset selected quizzes for new game
+            userUsedPointsBets = []; // Reset locally used points
+            populatePointsButtons(); // Re-render points buttons
+            window.history.pushState({}, '', window.location.pathname); // Clear gameId from URL
+            hideLoading();
+            showScreen(roleSelectionScreen);
+        }
+
         // --- Game Helper Functions ---
-        // Generates a random 3-digit numeric game code and ensures its uniqueness
         async function generateUniqueGameCode() {
             let newGameId;
             let isUnique = false;
             let attempts = 0;
-            const MAX_ATTEMPTS = 10; // Limit attempts to find a unique ID
+            const MAX_ATTEMPTS = 10;
 
             while (!isUnique && attempts < MAX_ATTEMPTS) {
-                // Generate a random 3-digit number (100-999)
                 newGameId = String(Math.floor(100 + Math.random() * 900));
-                
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(newGameId);
                 const docSnap = await gameRef.get();
                 if (!docSnap.exists) {
@@ -1079,7 +1061,6 @@
                     attempts++;
                 }
             }
-
             if (!isUnique) {
                 throw new Error("فشل توليد رمز غرفة فريد بعد عدة محاولات. الرجاء المحاولة مرة أخرى.");
             }
@@ -1087,9 +1068,8 @@
         }
 
         // --- Host Specific Functions ---
-        // Creates a new game instance in Firestore
         async function createGame() {
-            showLoading(); // Show loading spinner
+            showLoading();
             try {
                 const hostNickname = hostNicknameInput.value.trim();
                 if (!hostNickname) {
@@ -1103,15 +1083,14 @@
                     return;
                 }
 
-                gameId = await generateUniqueGameCode(); // Await the unique ID generation
+                gameId = await generateUniqueGameCode();
 
-                isHost = true; // Set current user as host
-                userNickname = hostNickname; // Set host's nickname
-                localStorage.setItem('hostNickname', hostNickname); // Save host nickname locally
-                const timeLimit = parseInt(timeLimitSelect.value); // Get selected time limit
-                const totalQuestions = parseInt(totalQuestionsPerGameSelect.value); // Get total questions for game
+                isHost = true;
+                userNickname = hostNickname;
+                localStorage.setItem('hostNickname', hostNickname);
+                const timeLimit = parseInt(timeLimitSelect.value);
+                const totalQuestions = parseInt(totalQuestionsPerGameSelect.value);
 
-                // Prepare the quiz order for the game
                 let allPossibleQuestions = [];
                 selectedQuizIndices.forEach(catIndex => {
                     const category = quizzes[catIndex];
@@ -1120,20 +1099,18 @@
                             allPossibleQuestions.push({
                                 category: category.category,
                                 question: q.questionText,
-                                displayAnswer: q.displayAnswer, // Include displayAnswer
-                                correctAnswers: q.correctAnswers.map(normalize) // Using the NEW normalize function here
+                                displayAnswer: q.displayAnswer,
+                                correctAnswers: q.correctAnswers.map(normalize)
                             });
                         });
                     }
                 });
 
-                // Shuffle the *flattened* array of all possible questions
                 for (let i = allPossibleQuestions.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [allPossibleQuestions[i], allPossibleQuestions[j]] = [allPossibleQuestions[j], allPossibleQuestions[i]];
                 }
                 
-                // Select only the required number of questions for this game
                 const quizSetForGame = allPossibleQuestions.slice(0, totalQuestions);
 
                 if (quizSetForGame.length === 0) {
@@ -1142,112 +1119,84 @@
                     return;
                 }
 
-                // Reference to the new game document in Firestore
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
-                console.log("Attempting to create game at path:", gameRef.path); // Log path
-                await gameRef.set({ // Create the game document
-                    hostId: userId, // Store host's userId
-                    gamePhase: 'lobby', // Initial phase
-                    quizSet: quizSetForGame, // Array of ALL questions for this game
-                    currentQuestionIndexInGame: 0, // Index of the current question in the quizSet (0-indexed)
-                    currentCategory: '', // Will be set when question starts
-                    currentQuestionText: '', // Will be set when question starts
-                    currentCorrectAnswers: [], // Will be set when question starts (for fuzzy matching)
-                    currentDisplayAnswer: '', // The primary correct answer for display
-                    currentQuestionGuessedAnswers: [], // Guesses for the current question (from all players) - This will be populated by host later
-                    questionStartTime: null, // Timestamp when current question started
-                    timeLimitPerQuestion: timeLimit, // Renamed for clarity
-                    countdownStartTime: null, // For countdown before question
-                    countdownDuration: 5, // Duration of countdown
-                    scoresReconciledForCurrentQuestion: false // Flag to ensure reconciliation happens once
+                await gameRef.set({
+                    hostId: userId,
+                    gamePhase: 'lobby',
+                    quizSet: quizSetForGame,
+                    selectedCategoryIndices: selectedQuizIndices, // Store selected category indices for re-use
+                    currentQuestionIndexInGame: 0,
+                    currentCategory: '',
+                    currentQuestionText: '',
+                    currentCorrectAnswers: [],
+                    currentDisplayAnswer: '',
+                    currentQuestionGuessedAnswers: [],
+                    questionStartTime: null,
+                    timeLimitPerQuestion: timeLimit,
+                    countdownStartTime: null,
+                    countdownDuration: 5,
+                    scoresReconciledForCurrentQuestion: false
                 });
 
-                // Add host as a player in the game's subcollection (Host can also play)
                 const playerRef = gameRef.collection('players').doc(userId);
-                console.log("Attempting to add host player at path:", playerRef.path); // Log path
                 await playerRef.set({
-                    nickname: hostNickname, // Use host's provided nickname
-                    score: 0, // Overall score
+                    nickname: hostNickname,
+                    score: 0,
                     joinedAt: Date.now(),
-                    playerSubmittedAnswer: '', // Answer submitted for current question
-                    playerSelectedPoints: 0, // Points selected for current question
-                    playerScoreChange: 0, // Points change for current question (for current question)
-                    hasSubmittedAnswer: false, // Flag if player submitted for current question
-                    usedPointsBets: [] // Initialize used points for this player
+                    playerSubmittedAnswer: '',
+                    playerSelectedPoints: 0,
+                    playerScoreChange: 0,
+                    hasSubmittedAnswer: false,
+                    usedPointsBets: []
                 });
-                // Ensure userUsedPointsBets for host is also initialized locally
                 userUsedPointsBets = [];
 
                 console.log("Game created with ID:", gameId);
-                // Display the direct link to the game room
                 const gameRoomLink = `${window.location.origin}${window.location.pathname}?gameId=${gameId}`;
                 if (gameLinkDisplay) {
-                    gameLinkDisplay.textContent = gameRoomLink; // Display the full link
-                    gameLinkDisplay.href = gameRoomLink; // Make it clickable (if needed, though copy is main)
+                    gameLinkDisplay.textContent = gameRoomLink;
+                    gameLinkDisplay.href = gameRoomLink;
                 }
                 
-                // Try to generate QR code, with fallback if QRCode library is not defined
-                if (qrcodeDiv) qrcodeDiv.innerHTML = ''; // Clear previous content
-                if (qrcodeFallbackMessage) qrcodeFallbackMessage.textContent = ''; // Clear fallback message
+                if (qrcodeDiv) qrcodeDiv.innerHTML = '';
+                if (qrcodeFallbackMessage) qrcodeFallbackMessage.textContent = '';
                 try {
-                    // Only attempt to use QRCode if it's confirmed to be loaded
                     if (typeof QRCode !== 'undefined' && QRCode && qrcodeDiv) {  
-                        new QRCode(qrcodeDiv, {
-                            text: gameRoomLink,
-                            width: 128,
-                            height: 128,
-                            colorDark: "#000000",
-                            colorLight: "#ffffff",
-                            correctLevel: QRCode.CorrectLevel.H
-                        });
+                        new QRCode(qrcodeDiv, { text: gameRoomLink, width: 128, height: 128, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H });
                         console.log("QR Code generated successfully.");
                     } else {
                         throw new Error("QRCode library not available or qrcodeDiv missing (fallback).");
                     }
                 } catch (qrError) {
                     console.warn("Failed to generate QR Code:", qrError);
-                    if (qrcodeFallbackMessage) {
-                        qrcodeFallbackMessage.textContent = "فشل توليد رمز QR. يرجى استخدام الرابط أعلاه للانضمام.";
-                    }
-                    if (qrcodeDiv) { // Optionally style qrcodeDiv to show the message better
-                        qrcodeDiv.style.minHeight = 'auto';
-                        qrcodeDiv.style.border = '1px dashed #ddd';
-                        qrcodeDiv.style.padding = '10px';
-                    }
+                    if (qrcodeFallbackMessage) { qrcodeFallbackMessage.textContent = "فشل توليد رمز QR. يرجى استخدام الرابط أعلاه للانضمام."; }
+                    if (qrcodeDiv) { qrcodeDiv.style.minHeight = 'auto'; qrcodeDiv.style.border = '1px dashed #ddd'; qrcodeDiv.style.padding = '10px'; }
                 }
 
-                // Add an event listener to copy the link to clipboard
                 if (copyLinkButton) {
                     copyLinkButton.onclick = () => {
-                        // Use document.execCommand('copy') for better compatibility in iframes
                         const textArea = document.createElement("textarea");
                         textArea.value = gameRoomLink;
                         document.body.appendChild(textArea);
                         textArea.select();
-                        try {
-                            document.execCommand('copy');
-                            showCustomMessageBox("تم النسخ!", "تم نسخ رابط الغرفة إلى الحافظة.");
-                        } catch (err) {
-                            console.error('Failed to copy text: ', err);
-                            showCustomMessageBox("خطأ في النسخ", "فشل نسخ الرابط، يرجى نسخه يدوياً.");
-                        }
+                        try { document.execCommand('copy'); showCustomMessageBox("تم النسخ!", "تم نسخ رابط الغرفة إلى الحافظة."); }
+                        catch (err) { console.error('Failed to copy text: ', err); showCustomMessageBox("خطأ في النسخ", "فشل نسخ الرابط، يرجى نسخه يدوياً."); }
                         document.body.removeChild(textArea);
                     };
                 }
 
-                showScreen(waitingRoomScreen); // Show waiting room screen
-                listenToGameChanges(); // Start listening to the game document for real-time updates
-                listenToPlayers(); // Start listening to players joining the room
-                if (startGameButton) startGameButton.classList.remove('hidden'); // Show start game button for host
+                showScreen(waitingRoomScreen);
+                listenToGameChanges();
+                listenToPlayers();
+                if (startGameButton) startGameButton.classList.remove('hidden');
             } catch (error) {
                 console.error("Error creating game:", error);
                 showCustomMessageBox("خطأ في إنشاء اللعبة", error.message || "حدث خطأ أثناء إنشاء الغرفة.");
             } finally {
-                hideLoading(); // Hide loading spinner
+                hideLoading();
             }
         }
 
-        // Initiates the game start countdown (only once at the very beginning)
         async function initiateGameStartCountdown() {  
             showLoading();
             try {
@@ -1259,18 +1208,16 @@
                 if (!gameDoc.exists) throw new Error("اللعبة غير موجودة.");
 
                 const gameData = gameDoc.data();
-                // Check if it's already past lobby (game has started or is in countdown)
                 if (gameData.gamePhase !== 'lobby') {
                     console.log("Game already started or in countdown phase.");
                     hideLoading();
                     return;
                 }
 
-                // Update game phase to game_countdown and set countdown start time
                 await gameRef.update({
-                    gamePhase: 'game_countdown', // Phase for initial game countdown
+                    gamePhase: 'game_countdown',
                     countdownStartTime: Date.now(),
-                    countdownDuration: 5 // 5 seconds countdown for game start
+                    countdownDuration: 5
                 });
                 console.log("Initiated game start countdown.");
 
@@ -1283,43 +1230,44 @@
         }
 
 
-        // Actually starts the next question (after initial countdown or from results screen)
+        // Function to start the next question or a new round (for host)
         async function startNextQuestion() {
             showLoading();
             try {
                 if (!gameId) throw new Error("لا يوجد معرف لعبة.");
-                if (!isHost) throw new Error("فقط المضيف يمكنه بدء السؤال التالي."); // Clarified host role
+                if (!isHost) throw new Error("فقط المضيف يمكنه بدء السؤال التالي.");
 
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
                 const gameDoc = await gameRef.get();
                 if (!gameDoc.exists) throw new Error("اللعبة غير موجودة.");
 
                 const gameData = gameDoc.data();
-                const currentQuestionIndex = gameData.currentQuestionIndexInGame; // This is the index for the question we are starting NOW
+                const currentQuestionIndex = gameData.currentQuestionIndexInGame;
                 const quizSet = gameData.quizSet;
 
+                // Check if all questions are played (for game restart or end)
                 if (currentQuestionIndex >= quizSet.length) {
-                    // All questions played, end the game
                     await gameRef.update({ gamePhase: 'final_results' });
                     return;
                 }
 
-                const currentQuestion = quizSet[currentQuestionIndex]; // Get the question for THIS round
+                const currentQuestion = quizSet[currentQuestionIndex];
 
+                // Update game document for the new question
                 await gameRef.update({
                     gamePhase: 'question_active',
-                    currentQuestionIndexInGame: currentQuestionIndex + 1, // Advance for *next* potential question (for display X/Y)
+                    currentQuestionIndexInGame: currentQuestionIndex + 1,
                     currentCategory: currentQuestion.category,
                     currentQuestionText: currentQuestion.question,
-                    currentCorrectAnswers: currentQuestion.correctAnswers, // Already normalized
-                    currentDisplayAnswer: currentQuestion.displayAnswer, // Set display answer
-                    currentQuestionGuessedAnswers: [], // Reset guessed answers for new question (will be populated by host later)
-                    questionStartTime: Date.now(), // New timestamp for question start
-                    timeLimitPerQuestion: gameData.timeLimitPerQuestion, // Use stored time limit
-                    scoresReconciledForCurrentQuestion: false // Reset reconciliation flag for the new question
+                    currentCorrectAnswers: currentQuestion.correctAnswers,
+                    currentDisplayAnswer: currentQuestion.displayAnswer,
+                    currentQuestionGuessedAnswers: [],
+                    questionStartTime: Date.now(),
+                    timeLimitPerQuestion: gameData.timeLimitPerQuestion,
+                    scoresReconciledForCurrentQuestion: false
                 });
 
-                // Crucially, reset players' per-question flags/data in their sub-documents for the new round
+                // Reset player-specific data for the NEW question via batch write
                 const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
                 const playersDocs = await playersCollectionRef.get();
                 const batch = db.batch();
@@ -1328,31 +1276,23 @@
                     batch.update(playerRef, {  
                         playerSubmittedAnswer: '',
                         playerSelectedPoints: 0,
-                        playerScoreChange: 0,
-                        hasSubmittedAnswer: false // Reset submitted flag for new question
+                        playerScoreChange: 0, // Reset score change for this new round
+                        hasSubmittedAnswer: false
                     });
                 });
                 await batch.commit();
                 console.log("Reset player-specific question data for new question.");
 
-                // Reset player's local UI for the new question
+                // Reset player's local UI
                 if (gameGuessInput) {
                     gameGuessInput.value = ''; // Clear input field for ALL players
                 }
-                // Reset points button selection to default (1) and re-enable them
-                selectedPointsBet = 1;
+                selectedPointsBet = 1; // Reset selected points to 1
                 populatePointsButtons(); // Re-render buttons to reset selection visually and enable
 
-                // Clear shared guesses list at the start of a new question
-                if (sharedRoundGuessesList) {
-                    sharedRoundGuessesList.innerHTML = '';
-                }
-                // Clear player's correct guesses list at the start of a new question
-                if (playerCorrectGuessesList) {
-                    playerCorrectGuessesList.innerHTML = '';
-                }
+                if (sharedRoundGuessesList) { sharedRoundGuessesList.innerHTML = ''; }
+                if (playerCorrectGuessesList) { playerCorrectGuessesList.innerHTML = ''; }
 
-                // Reset sound related flags/intervals
                 clearInterval(currentQuestionSoundInterval);
                 soundStarted = false;
 
@@ -1366,20 +1306,16 @@
             }
         }
 
-        // --- Host Specific Functions ---
-        // Allows host to end the current question early
         async function endQuestionEarly() {  
             if (!isHost || !gameId) return;  
 
             showLoading();
             try {
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
-                // When host ends question early, also trigger score reconciliation
                 await gameRef.update({
-                    gamePhase: 'question_results', // Move to showing question results
-                    scoresReconciledForCurrentQuestion: false // Mark for reconciliation
+                    gamePhase: 'question_results',
+                    scoresReconciledForCurrentQuestion: false
                 });
-                // Host also triggers score reconciliation here, after updating phase.
                 reconcileQuestionScores();
                 console.log("Host ended question early.");
             } catch (error) {
@@ -1390,14 +1326,13 @@
             }
         }
 
-        // Ends the entire game
         async function endGame() {
             if (!isHost || !gameId) return;
             showLoading();
             try {
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
                 await gameRef.update({
-                    gamePhase: 'final_results' // Move to final results
+                    gamePhase: 'final_results'
                 });
                 console.log("Host ended the entire game.");
             } catch (error) {
@@ -1408,16 +1343,111 @@
             }
         }
 
-        // Function to reconcile scores for all players after a question ends (called by host)
+        // NEW: Host function to start a new round in the same room
+        async function startNewRoundInSameRoom() {
+            if (!isHost || !gameId) return;
+            showLoading();
+            try {
+                const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
+                const gameDoc = await gameRef.get();
+                if (!gameDoc.exists) throw new Error("اللعبة غير موجودة.");
+                const gameData = gameDoc.data();
+
+                const selectedCategories = gameData.selectedCategoryIndices || [];
+                const totalQuestions = gameData.quizSet ? gameData.quizSet.length : 10; // Use previous total questions
+
+                if (selectedCategories.length === 0) {
+                    showCustomMessageBox("خطأ", "لا توجد فئات أسئلة مختارة سابقة لبدء جولة جديدة.");
+                    hideLoading();
+                    return;
+                }
+
+                // Regenerate quiz set from stored categories
+                let allPossibleQuestions = [];
+                selectedCategories.forEach(catIndex => {
+                    const category = quizzes[catIndex];
+                    if (category && category.questions) {
+                        category.questions.forEach(q => {
+                            allPossibleQuestions.push({
+                                category: category.category,
+                                question: q.questionText,
+                                displayAnswer: q.displayAnswer,
+                                correctAnswers: q.correctAnswers.map(normalize)
+                            });
+                        });
+                    }
+                });
+                // Shuffle and pick new questions
+                for (let i = allPossibleQuestions.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [allPossibleQuestions[i], allPossibleQuestions[j]] = [allPossibleQuestions[j], allPossibleQuestions[i]];
+                }
+                const newQuizSetForGame = allPossibleQuestions.slice(0, totalQuestions);
+
+                if (newQuizSetForGame.length === 0) {
+                    showCustomMessageBox("خطأ", "الفئات المختارة لا تحتوي على أي أسئلة كافية لإنشاء جولة جديدة.");
+                    hideLoading();
+                    return;
+                }
+
+                // Use a batch to update game and reset all players' scores/statuses
+                const batch = db.batch();
+
+                // Update game document to start new round
+                batch.update(gameRef, {
+                    gamePhase: 'lobby', // Move to lobby for new round countdown
+                    quizSet: newQuizSetForGame, // New set of questions
+                    currentQuestionIndexInGame: 0,
+                    currentCategory: '',
+                    currentQuestionText: '',
+                    currentCorrectAnswers: [],
+                    currentDisplayAnswer: '',
+                    currentQuestionGuessedAnswers: [],
+                    questionStartTime: null,
+                    countdownStartTime: null,
+                    scoresReconciledForCurrentQuestion: false
+                });
+
+                // Reset all players' scores and states for the new round
+                const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
+                const playersDocs = await playersCollectionRef.get();
+                playersDocs.docs.forEach(playerDoc => {
+                    const playerRef = playerDoc.ref;
+                    batch.update(playerRef, {
+                        score: 0, // Reset overall score for new round
+                        playerSubmittedAnswer: '',
+                        playerSelectedPoints: 0,
+                        playerScoreChange: 0,
+                        hasSubmittedAnswer: false,
+                        usedPointsBets: [] // Clear used points for the new round
+                    });
+                });
+                await batch.commit();
+
+                // Reset host's local used points for the new round
+                userUsedPointsBets = [];
+                populatePointsButtons(); // Update UI for points buttons
+
+                console.log("New round started in same room with new questions.");
+                // The gamePhase listener will handle showing the waiting room and initiating countdown
+            } catch (error) {
+                console.error("Error starting new round in same room:", error);
+                showCustomMessageBox("خطأ", error.message || "فشل بدء جولة جديدة في نفس الغرفة.");
+            } finally {
+                hideLoading();
+            }
+        }
+
+
         async function reconcileQuestionScores() {
-            if (!isHost || !gameId) return; // Only host performs this
+            if (!isHost || !gameId) return;
             console.log("Reconciling scores for the ended question...");
-            // Ensure this runs only once per question results phase
+            
             const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
             const gameDoc = await gameRef.get();
             if (!gameDoc.exists || gameDoc.data().scoresReconciledForCurrentQuestion) {
                 console.log("Scores already reconciled for this question, or game data missing.");
-                return; // Prevent double reconciliation if listener triggers again
+                return;
             }
 
             showLoading();
@@ -1426,9 +1456,8 @@
                 const playersDocs = await playersCollectionRef.get();
                 
                 const batch = db.batch();
-                let roundCorrectGuesses = []; // To store correct guesses for this specific round
+                let roundCorrectGuesses = [];
 
-                // Get the current correct answers for the question from game data (already normalized)
                 const gameData = gameDoc.data();
                 const currentCorrectAnswers = gameData.currentCorrectAnswers || [];
 
@@ -1440,36 +1469,33 @@
                     let scoreChange = 0;
                     let submittedAnswer = playerData.playerSubmittedAnswer;
 
-                    // If player has submitted an answer, consider their last submitted answer
                     if (playerData.hasSubmittedAnswer) {
                         const normalizedSubmittedAnswer = normalize(submittedAnswer);
                         
                         if (isCorrectAnswer(normalizedSubmittedAnswer, currentCorrectAnswers)) {
-                            scoreChange = playerData.playerSelectedPoints; // Award points
-                            // Only add unique, correct, submitted answers to the shared list
+                            scoreChange = playerData.playerSelectedPoints;
                             if (!roundCorrectGuesses.some(g => normalize(g) === normalizedSubmittedAnswer)) { 
                                 roundCorrectGuesses.push(submittedAnswer);
                             }
                         } else {
-                            scoreChange = -playerData.playerSelectedPoints; // Deduct points
+                            scoreChange = -playerData.playerSelectedPoints;
                         }
                     } else {
-                        scoreChange = 0; // If player didn't submit, no score change
+                        scoreChange = 0;
                     }
                     
                     const newScore = (playerData.score || 0) + scoreChange;
                     batch.update(playerRef, {
                         score: newScore,
-                        playerScoreChange: scoreChange // Store the calculated change for results display
-                        // IMPORTANT: DO NOT reset playerSubmittedAnswer, playerSelectedPoints, hasSubmittedAnswer here.
-                        // These will be reset only when the NEXT question starts in startNextQuestion().
+                        playerScoreChange: scoreChange
+                        // playerSubmittedAnswer, playerSelectedPoints, hasSubmittedAnswer are NOT reset here
+                        // They are reset in startNextQuestion to allow results display
                     });
                 }
 
-                // Update the game document with the collected correct guesses for this round
                 batch.update(gameRef, { 
-                    currentQuestionGuessedAnswers: roundCorrectGuesses, // Update shared guesses ONLY here (host controlled)
-                    scoresReconciledForCurrentQuestion: true // Mark as reconciled
+                    currentQuestionGuessedAnswers: roundCorrectGuesses,
+                    scoresReconciledForCurrentQuestion: true
                 });
                 await batch.commit();
                 console.log("Scores reconciled and player flags updated for the question. Shared guesses updated by host.");
@@ -1483,23 +1509,20 @@
 
 
         // --- Player Specific Functions ---
-        // Allows a player to join an existing game
         async function joinGame(code, nickname) {
-            showLoading(); // Show loading spinner
+            showLoading();
             try {
                 if (!code || !nickname) {
-                    throw new Error("يرجى إدخال رمز اللعبة واسمك المستعار."); // Input validation
+                    throw new Error("يرجى إدخال رمز اللعبة واسمك المستعار.");
                 }
 
-                // Reference to the game document
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(code);
-                console.log("Attempting to join game at path:", gameRef.path); // Log path
-                const gameDoc = await gameRef.get(); // Get game document
+                const gameDoc = await gameRef.get();
 
                 if (!gameDoc.exists) {
                     showCustomMessageBox("اللعبة غير موجودة", "رمز اللعبة غير صحيح أو الغرفة غير موجودة.");
                     hideLoading();
-                    showScreen(roleSelectionScreen); // Redirect to role selection
+                    exitGame(); // Use the new exitGame function to clear URL
                     return;
                 }
 
@@ -1507,104 +1530,75 @@
                 if (gameData.gamePhase === 'final_results') {
                     showCustomMessageBox("اللعبة انتهت", "عذراً، هذه اللعبة قد انتهت بالفعل.");
                     hideLoading();
-                    showScreen(roleSelectionScreen); // Redirect to role selection
+                    exitGame(); // Use the new exitGame function to clear URL
                     return;
                 }
 
-                gameId = code; // Set current game ID
-                isHost = (gameData.hostId === userId); // Determine if current user is the host
-                userNickname = nickname; // Set current user's nickname
-                localStorage.setItem('playerNickname', nickname); // Save nickname locally for future use
+                gameId = code;
+                isHost = (gameData.hostId === userId);
+                userNickname = nickname;
+                localStorage.setItem('playerNickname', nickname);
 
-                // Add player to the game's subcollection
                 const playerRef = gameRef.collection('players').doc(userId);
-                console.log("Attempting to add player at path:", playerRef.path); // Log path
-                await playerRef.set({ // Use set with merge to avoid overwriting if player rejoins
+                await playerRef.set({
                     nickname: nickname,
-                    score: 0, // Overall score
+                    score: 0,
                     joinedAt: Date.now(),
                     playerSubmittedAnswer: '',
                     playerSelectedPoints: 0,
                     playerScoreChange: 0,
                     hasSubmittedAnswer: false,
-                    usedPointsBets: [] // Initialize used points for this player
+                    usedPointsBets: []
                 }, { merge: true });
-                // If player is joining, reset their local used points
                 userUsedPointsBets = [];
 
-
                 console.log("Joined game:", gameId);
-                // Update URL to include gameId for easy sharing/rejoining
                 if (!window.location.search.includes(`gameId=${gameId}`)) {
                     const newUrl = `${window.location.origin}${window.location.pathname}?gameId=${gameId}`;
-                    window.history.pushState({ path: newUrl }, '', newUrl); // Change URL without reloading
+                    window.history.pushState({ path: newUrl }, '', newUrl);
                 }
 
-                showScreen(waitingRoomScreen); // Show waiting room screen
-                if (document.getElementById('waiting-room-title')) document.getElementById('waiting-room-title').textContent = `في انتظار بدء اللعبة...`; // Player-specific waiting message
+                showScreen(waitingRoomScreen);
+                if (document.getElementById('waiting-room-title')) document.getElementById('waiting-room-title').textContent = `في انتظار بدء اللعبة...`;
                 
-                // For players, the game link display will just show the game ID (no QR)
                 if (gameLinkDisplay) gameLinkDisplay.textContent = `رمز الغرفة: ${gameId}`;
                 
-                // Hide QR code and copy button for players
-                if (qrcodeDiv) qrcodeDiv.innerHTML = ''; // Clear QR code
-                if (qrcodeFallbackMessage) qrcodeFallbackMessage.textContent = ''; // Clear fallback message
-                if (copyLinkButton) copyLinkButton.classList.add('hidden'); // Hide copy button
+                if (qrcodeDiv) qrcodeDiv.innerHTML = '';
+                if (qrcodeFallbackMessage) qrcodeFallbackMessage.textContent = '';
+                if (copyLinkButton) copyLinkButton.classList.add('hidden');
                 
-                listenToGameChanges(); // Start listening to game document
-                listenToPlayers(); // Start listening to players in the room
+                listenToGameChanges();
+                listenToPlayers();
             } catch (error) {
                 console.error("Error joining game:", error);
                 showCustomMessageBox("خطأ في الانضمام", error.message || "فشل الانضمام إلى الغرفة.");
             } finally {
-                hideLoading(); // Hide loading spinner
+                hideLoading();
             }
         }
 
-        // Submits a player's guess to Firestore
         async function submitGuess() {
-            // Only allow submission if gameId is set and we are on the game play screen.
-            if (!gameId || (gamePlayScreen && gamePlayScreen.classList.contains('hidden'))) {
-                 return; // Do nothing if not in active game play
-            }
-            if (!gameGuessInput || !pointsButtonGroup || !submitAnswerButton) { // Check point buttons group
-                console.error("Error: Game input elements not found.");
-                return;
-            }
-            // If already submitted, prevent re-submission (client-side check for immediate feedback)
-            if (gameGuessInput.disabled) {  
-                showCustomMessageBox("تم الإجابة", "لقد أجبت بالفعل على هذا السؤال.");
-                return;
-            }
+            if (!gameId || (gamePlayScreen && gamePlayScreen.classList.contains('hidden'))) { return; }
+            if (!gameGuessInput || !pointsButtonGroup || !submitAnswerButton) { console.error("Error: Game input elements not found."); return; }
+            if (gameGuessInput.disabled) { showCustomMessageBox("تم الإجابة", "لقد أجبت بالفعل على هذا السؤال."); return; }
 
-            // Get player's guess as typed, it will be normalized by isCorrectAnswer
             const guess = gameGuessInput.value.trim();  
-            const pointsBet = selectedPointsBet; // Get selected points from global variable
+            const pointsBet = selectedPointsBet;
 
-            if (guess === '') {
-                showCustomMessageBox("خطأ في الإدخال", "الرجاء كتابة إجابتك قبل الإرسال.");
-                return;
-            }
-            if (isNaN(pointsBet) || pointsBet < 1 || pointsBet > 20) {
-                 showCustomMessageBox("خطأ في النقاط", "الرجاء اختيار عدد نقاط صحيح بين 1 و 20.");
-                 return;
-            }
+            if (guess === '') { showCustomMessageBox("خطأ في الإدخال", "الرجاء كتابة إجابتك قبل الإرسال."); return; }
+            if (isNaN(pointsBet) || pointsBet < 1 || pointsBet > 20) { showCustomMessageBox("خطأ في النقاط", "الرجاء اختيار عدد نقاط صحيح بين 1 و 20."); return; }
 
-            showLoading(); // Show loading spinner
+            showLoading();
             try {
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
                 const playerRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId);
 
-                // Use a Firestore transaction to ensure atomic updates
                 await db.runTransaction(async (transaction) => {
-                    const gameDoc = await transaction.get(gameRef); // Get current game data
-                    const playerDoc = await transaction.get(playerRef); // Get current player data
+                    const gameDoc = await transaction.get(gameRef);
+                    const playerDoc = await transaction.get(playerRef);
 
-                    if (!gameDoc.exists || !playerDoc.exists) {
-                        throw "Game or player data not found.";
-                    }
+                    if (!gameDoc.exists || !playerDoc.exists) { throw "Game or player data not found."; }
 
-                    const gameData = gameDoc.data();
                     const playerData = playerDoc.data();
 
                     const hasSubmittedAnswer = playerData.hasSubmittedAnswer || false;
@@ -1612,98 +1606,79 @@
 
                     if (hasSubmittedAnswer) {
                         console.log("Player already submitted answer for this question (transaction check).");
-                        throw new Error("لقد أجبت بالفعل على هذا السؤال."); // Throw specific error to be caught below
+                        throw new Error("لقد أجبت بالفعل على هذا السؤال.");
                     }
                     if (playerUsedPointsBets.includes(pointsBet)) {
                           console.log("Player already used this point value in this game (transaction check).");
-                          throw new Error(`لقد استخدمت قيمة ${pointsBet} نقطة بالفعل في هذه اللعبة. الرجاء اختيار قيمة أخرى.`); // Throw specific error
+                          throw new Error(`لقد استخدمت قيمة ${pointsBet} نقطة بالفعل في هذه اللعبة. الرجاء اختيار قيمة أخرى.`);
                     }
 
-                    // Player updates their own submitted answer details directly
                     transaction.update(playerRef, {
-                        playerSubmittedAnswer: guess, // Store the actual submitted guess
+                        playerSubmittedAnswer: guess,
                         playerSelectedPoints: pointsBet,
-                        hasSubmittedAnswer: true, // Mark as submitted
-                        usedPointsBets: firebase.firestore.FieldValue.arrayUnion(pointsBet) // Add used points to player's array
+                        hasSubmittedAnswer: true,
+                        usedPointsBets: firebase.firestore.FieldValue.arrayUnion(pointsBet)
                     });
                 });
 
-                // Disable input elements for the player after successful submission
                 if (gameGuessInput) gameGuessInput.disabled = true;
-                if (pointsButtonGroup) { // Disable all point buttons
-                    Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
-                }
+                if (pointsButtonGroup) { Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true); }
                 if (submitAnswerButton) submitAnswerButton.disabled = true;
 
             } catch (error) {
                 console.error("Error submitting guess:", error);
-                // Catch specific errors thrown from transaction
-                if (error.message.includes("لقد أجبت بالفعل")) {
-                       showCustomMessageBox("تم الإجابة", error.message);
-                } else if (error.message.includes("لقد استخدمت قيمة")) {  
-                       showCustomMessageBox("نقاط مستخدمة", error.message); // Show the specific message
-                }
-                else {
-                    showCustomMessageBox("خطأ في الإجابة", error.message || "حدث خطأ أثناء إرسال الإجابة.");
-                }
+                if (error.message.includes("لقد أجبت بالفعل")) { showCustomMessageBox("تم الإجابة", error.message); }
+                else if (error.message.includes("لقد استخدمت قيمة")) { showCustomMessageBox("نقاط مستخدمة", error.message); }
+                else { showCustomMessageBox("خطأ في الإجابة", error.message || "حدث خطأ أثناء إرسال الإجابة."); }
             } finally {
-                hideLoading(); // Hide loading spinner
+                hideLoading();
             }
         }
 
         // --- Real-time Listeners ---
-        // Listens for changes to the main game document in Firestore
         function listenToGameChanges() {
-            if (gameSnapshotUnsubscribe) gameSnapshotUnsubscribe(); // Unsubscribe from previous listener if exists
+            if (gameSnapshotUnsubscribe) gameSnapshotUnsubscribe();
 
             const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
-            console.log("Listening to game changes at path:", gameRef.path); // Log path
+            console.log("Listening to game changes at path:", gameRef.path);
 
             gameSnapshotUnsubscribe = gameRef.onSnapshot((docSnap) => {
                 if (docSnap.exists) {
                     const gameData = docSnap.data();
                     const gamePhase = gameData.gamePhase;
 
-                    // Update Question Counter (e.g., "السؤال 1 / 15")
                     if (questionCounterDisplay) {
-                        // currentQuestionIndexInGame is already incremented for the NEXT question to be displayed,
-                        // so to show current question, we use currentQuestionIndexInGame.
-                        const currentQNum = gameData.currentQuestionIndexInGame;  
+                        const currentQNum = gameData.currentQuestionIndexInGame;
                         const totalQs = gameData.quizSet ? gameData.quizSet.length : 0;
-                        // Display (current number - 1) if not in countdown/lobby, otherwise 0
                         const displayQNum = gamePhase === 'game_countdown' || gamePhase === 'lobby' ? 0 : currentQNum;
 
-                        if (totalQs > 0) {
-                               questionCounterDisplay.textContent = `${displayQNum} / ${totalQs}`;
-                        } else {
-                               questionCounterDisplay.textContent = `-- / --`;
-                        }
+                        if (totalQs > 0) { questionCounterDisplay.textContent = `${displayQNum} / ${totalQs}`; }
+                        else { questionCounterDisplay.textContent = `-- / --`; }
                     }
 
-                    // Phase: Lobby (Waiting room)
+                    // Phase: Lobby
                     if (gamePhase === 'lobby') {
                         showScreen(waitingRoomScreen);
-                        // Host sees 'Start Game' (which initiates countdown for first question)
                         if (isHost) {
                             if (startGameButton) {
                                 startGameButton.textContent = "بدء الجولة الأولى!";
-                                startGameButton.onclick = initiateGameStartCountdown; // Correctly starts initial countdown
-                                if (joinedPlayersList && joinedPlayersList.children.length >= 1) { // Host + 0 or more players (host counts as 1)
-                                    startGameButton.classList.remove('hidden');
-                                } else {
-                                    startGameButton.classList.add('hidden');
-                                }
+                                startGameButton.onclick = initiateGameStartCountdown;
+                                if (joinedPlayersList && joinedPlayersList.children.length >= 1) { startGameButton.classList.remove('hidden'); }
+                                else { startGameButton.classList.add('hidden'); }
                             }
                         } else {
-                            if (startGameButton) startGameButton.classList.add('hidden'); // Players don't see this button
+                            if (startGameButton) startGameButton.classList.add('hidden');
                         }
+                        // Ensure player exit button is hidden in lobby for all
+                        if (playerExitButtonGameplay) playerExitButtonGameplay.classList.add('hidden');
+                        if (playerExitButtonResults) playerExitButtonResults.classList.add('hidden');
                     }
-                    // Phase: Initial Game Countdown (only once at start of game)
+                    // Phase: Initial Game Countdown
                     else if (gamePhase === 'game_countdown') {  
-                        showScreen(gameCountdownScreen); // Show the dedicated countdown screen
-                        clearInterval(timerInterval); // Clear any existing timer
-                        clearInterval(currentQuestionSoundInterval); // Clear sound interval
-                        soundStarted = false; // Reset sound flag
+                        showScreen(gameCountdownScreen);
+                        clearInterval(timerInterval);
+                        clearInterval(currentQuestionSoundInterval);
+                        soundStarted = false;
                         const countdownDuration = gameData.countdownDuration || 5;
                         const countdownStartTime = gameData.countdownStartTime;
 
@@ -1716,54 +1691,64 @@
 
                             if (currentCountdown <= 0) {
                                 clearInterval(timerInterval);
-                                if (isHost) {
-                                    // Host initiates the actual first question after countdown
-                                    startNextQuestion();  
-                                }
+                                if (isHost) { startNextQuestion(); }
                             }
                         }, 1000);
+                        // Ensure player exit button is hidden during countdown
+                        if (playerExitButtonGameplay) playerExitButtonGameplay.classList.add('hidden');
+                        if (playerExitButtonResults) playerExitButtonResults.classList.add('hidden');
                     }
                     // Phase: Question is active (Game Play)
                     else if (gamePhase === 'question_active') {
                         showScreen(gamePlayScreen);
                         if (gameCategoryDisplay) gameCategoryDisplay.textContent = gameData.currentCategory;
-                        if (gameQuestionDisplay) gameQuestionDisplay.textContent = gameData.currentQuestionText; // Display current question text
+                        if (gameQuestionDisplay) gameQuestionDisplay.textContent = gameData.currentQuestionText;
                         
-                        // Handle input state for current player (including host) based on their submission status
+                        // Clear input field on new question for all players
+                        if (gameGuessInput) {
+                            gameGuessInput.value = ''; 
+                        }
+                        // Clear local correct guesses list for new question
+                        if (playerCorrectGuessesList) {
+                            playerCorrectGuessesList.innerHTML = '';
+                        }
+                        // Clear shared guesses list for new question
+                        if (sharedRoundGuessesList) {
+                            sharedRoundGuessesList.innerHTML = '';
+                        }
+
                         db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId).get().then(playerDoc => {
-                            if (playerDoc.exists) { // Ensure player doc exists
+                            if (playerDoc.exists) {
                                 const currentPlayerData = playerDoc.data();
                                 if (!currentPlayerData.hasSubmittedAnswer) {
-                                    // Player has not submitted, enable inputs
                                     if (gameGuessInput) gameGuessInput.disabled = false;
-                                    populatePointsButtons(); // Re-populate buttons to enable/disable based on usedPointsBets
+                                    populatePointsButtons();
                                     if (submitAnswerButton) submitAnswerButton.disabled = false;
                                 } else {  
-                                    // Player has submitted, disable inputs
                                     if (gameGuessInput) gameGuessInput.disabled = true;
                                     if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
                                     if (submitAnswerButton) submitAnswerButton.disabled = true;
                                 }
-                            } else { // If player doc somehow doesn't exist, disable all to prevent errors
+                            } else {
                                 if (gameGuessInput) gameGuessInput.disabled = true;
                                 if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
                                 if (submitAnswerButton) submitAnswerButton.disabled = true;
                             }
                         }).catch(e => console.error("Error checking player submission status on game changes:", e));
                         
-                        if (gameGuessInput) gameGuessInput.focus(); // Keep focus
+                        if (gameGuessInput) gameGuessInput.focus();
 
-                        // Show/hide "End Question Early" button and host status for host only during game play
                         if (isHost) {
-                            if (hostGameplayControls) hostGameplayControls.classList.remove('hidden'); // Show host controls
+                            if (hostGameplayControls) hostGameplayControls.classList.remove('hidden');
+                            if (playerExitButtonGameplay) playerExitButtonGameplay.classList.add('hidden'); // Host doesn't need this
                         } else {
-                            if (hostGameplayControls) hostGameplayControls.classList.add('hidden'); // Hide host controls
+                            if (hostGameplayControls) hostGameplayControls.classList.add('hidden');
+                            if (playerExitButtonGameplay) playerExitButtonGameplay.classList.remove('hidden'); // Player sees exit button
                         }
 
-                        // Local timer logic for all clients
-                        clearInterval(timerInterval); // Clear any old timer
-                        clearInterval(currentQuestionSoundInterval); // Clear any old sound interval
-                        soundStarted = false; // Reset sound flag
+                        clearInterval(timerInterval);
+                        clearInterval(currentQuestionSoundInterval);
+                        soundStarted = false;
 
                         timerInterval = setInterval(() => {
                             const now = Date.now();
@@ -1780,61 +1765,40 @@
                                 clearInterval(timerInterval);
                                 clearInterval(currentQuestionSoundInterval);
                                 soundStarted = false;
-                                if (isHost) { // Only host advances phase
+                                if (isHost) {
                                     db.collection(`artifacts/${appId}/public/data/games`).doc(gameId).update({ gamePhase: 'question_results', scoresReconciledForCurrentQuestion: false });
-                                    reconcileQuestionScores(); // Host also triggers score reconciliation here
+                                    reconcileQuestionScores();
                                 }
                             }
                         }, 1000);
-
-                        // Shared guesses list should remain empty during active question phase
-                        if (sharedRoundGuessesList) {
-                            sharedRoundGuessesList.innerHTML = '';  
-                        }
-                        // This part of UI is now handled by reconcileQuestionScores in question_results phase
-                        if (playerCorrectGuessesList) {
-                            // It will show only locally entered correct answers, not synchronized from Firebase until results
-                            // So its content will only reflect what this particular player typed and was locally recognized as correct.
-                        }
                     }  
                     // Phase: Showing Question Results
                     else if (gamePhase === 'question_results') {
-                        // If host, ensure scores were reconciled before displaying results
-                        if (isHost && !gameData.scoresReconciledForCurrentQuestion) { // Only reconcile if not already done
+                        if (isHost && !gameData.scoresReconciledForCurrentQuestion) {
                             reconcileQuestionScores();  
                         }
-                        showScreen(questionResultsScreen); // Reusing questionResultsScreen
-                        clearInterval(timerInterval); // Stop any timer
-                        clearInterval(currentQuestionSoundInterval); // Stop sound interval
-                        soundStarted = false; // Reset sound flag
+                        showScreen(questionResultsScreen);
+                        clearInterval(timerInterval);
+                        clearInterval(currentQuestionSoundInterval);
+                        soundStarted = false;
 
                         if (resultsCategory) resultsCategory.textContent = gameData.currentCategory;
-                        if (resultsQuestion) resultsQuestion.textContent = gameData.currentQuestionText; // Display current question in results
+                        if (resultsQuestion) resultsQuestion.textContent = gameData.currentQuestionText;
                         
-                        // Display all correct answers for this specific question
                         if (roundCorrectAnswersList) {
                             roundCorrectAnswersList.innerHTML = '';
-                            // Display ONLY the displayAnswer (the primary correct one)
                             const primaryCorrectAnswer = gameData.currentDisplayAnswer;
                             const listItem = document.createElement('li');
                             if (primaryCorrectAnswer) {
-                                // Check if the primary correct answer was guessed by anyone using the new isCorrectAnswer
-                                // Note: gameData.currentQuestionGuessedAnswers now contains ONLY the correct unique answers
                                 const wasPrimaryGuessed = (gameData.currentQuestionGuessedAnswers || []).some(guessed => isCorrectAnswer(primaryCorrectAnswer, [guessed]));
-                                if (wasPrimaryGuessed) {
-                                    listItem.innerHTML = `<i class="fas fa-check-circle text-green-500 mr-2"></i> ${primaryCorrectAnswer}`;
-                                } else {
-                                    listItem.innerHTML = `<i class="fas fa-times-circle text-red-500 mr-2"></i> ${primaryCorrectAnswer}`;
-                                }
-                            } else {
-                                listItem.textContent = "لا توجد إجابة صحيحة أساسية محددة لهذا السؤال.";
-                            }
+                                if (wasPrimaryGuessed) { listItem.innerHTML = `<i class="fas fa-check-circle text-green-500 mr-2"></i> ${primaryCorrectAnswer}`; }
+                                else { listItem.innerHTML = `<i class="fas fa-times-circle text-red-500 mr-2"></i> ${primaryCorrectAnswer}`; }
+                            } else { listItem.textContent = "لا توجد إجابة صحيحة أساسية محددة لهذا السؤال."; }
                             roundCorrectAnswersList.appendChild(listItem);
                         }
 
-                        // Populate shared guesses list from gameData.currentQuestionGuessedAnswers
                         if (sharedRoundGuessesList) {
-                            sharedRoundGuessesList.innerHTML = ''; // Clear existing list
+                            sharedRoundGuessesList.innerHTML = '';
                             (gameData.currentQuestionGuessedAnswers || []).forEach(answer => {
                                 const listItem = document.createElement('li');
                                 listItem.textContent = answer;
@@ -1843,70 +1807,66 @@
                             });
                         }
 
+                        showQuestionPlayerScoresDetailed();
 
-                        // Display player scores for this question (fetching live data from players subcollection)
-                        showQuestionPlayerScoresDetailed(); // Detailed scores for this question
-
-                        // Host controls for next question or end game
-                        if (isHost && questionResultsHostControls) {
-                            questionResultsHostControls.classList.remove('hidden');
-                            // Check if there are more questions in the quizSet
-                            // gameData.currentQuestionIndexInGame holds the index of the *next* question to be played
-                            if (gameData.currentQuestionIndexInGame < gameData.quizSet.length) {  
+                        if (isHost) {
+                            if (questionResultsHostControls) questionResultsHostControls.classList.remove('hidden');
+                            if (gameData.currentQuestionIndexInGame < gameData.quizSet.length) {
                                 if (nextQuestionButton) nextQuestionButton.classList.remove('hidden');
-                                if (endGameFinalButton) endGameFinalButton.classList.add('hidden'); // Hide end game button if more questions
-                            } else { // No more questions, show end game button
-                                if (nextQuestionButton) nextQuestionButton.classList.add('hidden'); // Hide next question button
-                                if (endGameFinalButton) endGameFinalButton.classList.remove('hidden'); // Show end game button
+                                if (endGameFinalButton) endGameFinalButton.classList.add('hidden');
+                            } else {
+                                if (nextQuestionButton) nextQuestionButton.classList.add('hidden');
+                                if (endGameFinalButton) endGameFinalButton.classList.remove('hidden');
                             }
+                            if (playerExitButtonResults) playerExitButtonResults.classList.add('hidden'); // Host doesn't need this
                         } else {
-                            if (questionResultsHostControls) questionResultsHostControls.classList.add('hidden'); // Hide host controls for players
+                            if (questionResultsHostControls) questionResultsHostControls.classList.add('hidden');
+                            if (playerExitButtonResults) playerExitButtonResults.classList.remove('hidden'); // Player sees exit button
                         }
                     }
                     // Phase: Final Game Results
                     else if (gamePhase === 'final_results') {
-                        clearInterval(timerInterval); // Stop any active timers
-                        clearInterval(currentQuestionSoundInterval); // Stop sound interval
-                        soundStarted = false; // Reset sound flag
-                        showFinalScores(); // Display final overall scores
+                        clearInterval(timerInterval);
+                        clearInterval(currentQuestionSoundInterval);
+                        soundStarted = false;
+                        showFinalScores();
                     }
                 } else {
-                    console.log("Game document deleted or does not exist.");
+                    console.log("Game document deleted or does not exist. Redirecting.");
                     showCustomMessageBox("اللعبة غير موجودة", "غرفة اللعب هذه لم تعد موجودة. قد يكون المضيف قد أغلقها.");
-                    showScreen(roleSelectionScreen); // Go back to role selection
+                    exitGame(); // Use the new exitGame function to clear URL and redirect cleanly
                 }
             }, (error) => {
                 console.error("Error listening to game changes:", error);
                 showCustomMessageBox("خطأ في الاتصال", `فقد الاتصال باللعبة. يرجى التحقق من اتصالك بالإنترنت. التفاصيل: ${error.message}`);
+                // In case of a persistent error, also offer to exit
+                exitGame();
             });
         }
 
-        // Listens for changes to the players subcollection in Firestore
         function listenToPlayers() {
-            if (playersSnapshotUnsubscribe) playersSnapshotUnsubscribe(); // Unsubscribe from previous listener
+            if (playersSnapshotUnsubscribe) playersSnapshotUnsubscribe();
 
             const playersRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
-            console.log("Listening to players at path:", playersRef.path); // Log path
+            console.log("Listening to players at path:", playersRef.path);
             const q = playersRef;
 
             playersSnapshotUnsubscribe = q.onSnapshot((snapshot) => {
-                if (joinedPlayersList) joinedPlayersList.innerHTML = ''; // Clear current list of joined players
+                if (joinedPlayersList) joinedPlayersList.innerHTML = '';
                 
                 let currentPlayerOverallScore = 0;
                 
-                // Get gameData to determine who the host is
                 db.collection(`artifacts/${appId}/public/data/games`).doc(gameId).get().then(gameDoc => {
                     let hostIdFromGame = null;
-                    let gamePhase = 'lobby'; // Default for safety
+                    let gamePhase = 'lobby';
                     if (gameDoc.exists) {
                         const gameData = gameDoc.data();
                         hostIdFromGame = gameData.hostId;
                         gamePhase = gameData.gamePhase;
                     }
 
-                    // Update host submission status list (if current user is host)
                     if (hostSubmissionStatusList && isHost) {  
-                        hostSubmissionStatusList.innerHTML = ''; // Clear for fresh update
+                        hostSubmissionStatusList.innerHTML = '';
                     }
 
 
@@ -1914,27 +1874,23 @@
                         const playerData = doc.data();
                         const playerId = doc.id;
 
-                        // Update the list of joined players in the waiting room
                         if (joinedPlayersList) {
                             const listItem = document.createElement('li');
                             let playerDisplayName = playerData.nickname || 'لاعب مجهول';
-                            // Add Host tag if this player is the host
                             if (hostIdFromGame && hostIdFromGame === playerId) {
                                 playerDisplayName += ' <i class="fas fa-crown text-yellow-500"></i> (المضيف)';
                             }
-                            // Display full user ID for uniqueness and debugging in multiplayer, as per guidelines.
                             listItem.innerHTML = `${playerDisplayName} (ID: ${playerId} - النقاط: ${playerData.score || 0})`;
                             joinedPlayersList.appendChild(listItem);
                         }
 
-                        // Update host's view of player submission status - IMPROVED DETAIL HERE
                         if (hostSubmissionStatusList && isHost) {
                             const statusItem = document.createElement('li');
                             let statusIcon = '';
                             let submittedAnswerText = '';
-                            let scoreChangeText = '';
+                            let scoreInfo = ''; // Combine score change and bet into one string
 
-                            const scoreChangeValue = playerData.playerScoreChange || 0; // Use scoreChange from player data
+                            const scoreChangeValue = playerData.playerScoreChange || 0;
                             const submittedAnswerActual = playerData.playerSubmittedAnswer;
                             const selectedPointsActual = playerData.playerSelectedPoints || 0;
 
@@ -1942,42 +1898,31 @@
                             if (playerData.hasSubmittedAnswer) {
                                 statusIcon = '<i class="fas fa-check-circle text-green-500 ml-2"></i>';
                                 submittedAnswerText = `إجابة: ${submittedAnswerActual || 'لا توجد'}`;
-                                // Only show score change if reconciliation has happened and there was a bet
                                 if (scoreChangeValue !== 0 || selectedPointsActual > 0) {
-                                     scoreChangeText = `(راهن بـ ${selectedPointsActual} نقطة، تغيير: ${scoreChangeValue >= 0 ? '+' : ''}${scoreChangeValue} نقطة)`;
+                                     scoreInfo = `(راهن بـ ${selectedPointsActual} نقطة، تغيير: ${scoreChangeValue >= 0 ? '+' : ''}${scoreChangeValue} نقطة)`;
                                 }
                             } else {  
                                 statusIcon = '<i class="fas fa-hourglass-half text-gray-500 ml-2"></i>';
                                 submittedAnswerText = 'لم يجب';
-                                scoreChangeText = ''; // No score change info if not submitted
                             }
                             statusItem.innerHTML = `
-                                ${playerData.nickname || 'لاعب مجهول'}: ${statusIcon} ${submittedAnswerText} ${scoreChangeText}
+                                ${playerData.nickname || 'لاعب مجهول'}: ${statusIcon} ${submittedAnswerText} ${scoreInfo}
                             `;
                             hostSubmissionStatusList.appendChild(statusItem);
                         }
 
 
-                        // Update current player's overall score (only for self)
                         if (playerId === userId) {
                             currentPlayerOverallScore = playerData.score || 0;
-                            // Update local userUsedPointsBets from player data
                             userUsedPointsBets = playerData.usedPointsBets || [];  
-                            populatePointsButtons(); // Re-render buttons with updated used points status
-
+                            populatePointsButtons();
                         }
                     });
-                    if (playerScoreDisplay) playerScoreDisplay.innerHTML = currentPlayerOverallScore; // Update UI with overall score
+                    if (playerScoreDisplay) playerScoreDisplay.innerHTML = currentPlayerOverallScore;
 
-                    // Host-specific logic: Show/hide start button based on number of players
-                    // Only apply if host is in waiting room phase
                     if (gamePhase === 'lobby' && isHost) {
-                        // For starting the game, require at least the host and one other player.
-                        if (snapshot.size >= 2) {  
-                            if (startGameButton) startGameButton.classList.remove('hidden'); // Show start button
-                        } else {
-                            if (startGameButton) startGameButton.classList.add('hidden'); // Hide if only host or no other players
-                        }
+                        if (snapshot.size >= 2) { if (startGameButton) startGameButton.classList.remove('hidden'); }
+                        else { if (startGameButton) startGameButton.classList.add('hidden'); }
                     }
 
                 }).catch(error => console.error("Error checking game phase/hostId for players listener:", error));
@@ -1987,120 +1932,105 @@
             });
         }
 
-        // Displays detailed scores of players for the CURRENT QUESTION on the results screen
-        async function showQuestionPlayerScoresDetailed() {
-            if (questionPlayerScoresList) questionPlayerScoresList.innerHTML = ''; // Clear previous scores
-            showLoading(); // Show loading while fetching
+        function showQuestionPlayerScoresDetailed() {
+            if (questionPlayerScoresList) questionPlayerScoresList.innerHTML = '';
+            showLoading();
             try {
                 const playersRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
-                const playersSnapshot = await playersRef.get();
-                // Get main game data to retrieve the correct answers for the current question
-                const gameData = (await db.collection(`artifacts/${appId}/public/data/games`).doc(gameId).get()).data();
-                const currentCorrectAnswers = gameData.currentCorrectAnswers || [];
+                playersRef.get().then(playersSnapshot => { // Using .then() to ensure inner logic has snapshot
+                    db.collection(`artifacts/${appId}/public/data/games`).doc(gameId).get().then(gameDoc => {
+                        const gameData = gameDoc.data();
+                        const currentCorrectAnswers = gameData.currentCorrectAnswers || [];
 
+                        let questionScores = [];
+                        playersSnapshot.forEach(doc => {
+                            const playerData = doc.data();
+                            questionScores.push({
+                                nickname: playerData.nickname,
+                                submittedAnswer: playerData.playerSubmittedAnswer || 'لم يجب',
+                                selectedPoints: playerData.playerSelectedPoints || 0,
+                                scoreChange: playerData.playerScoreChange || 0,
+                                overallScore: playerData.score || 0
+                            });
+                        });
 
-                let questionScores = [];
-                playersSnapshot.forEach(doc => {
-                    const playerData = doc.data();
-                    questionScores.push({
-                        nickname: playerData.nickname,
-                        submittedAnswer: playerData.playerSubmittedAnswer || 'لم يجب',
-                        selectedPoints: playerData.playerSelectedPoints || 0,
-                        scoreChange: playerData.playerScoreChange || 0, // This is the actual change for THIS question
-                        overallScore: playerData.score || 0 // This is the total accumulated score
-                    });
-                });
+                        questionScores.sort((a, b) => b.overallScore - a.overallScore);
 
-                // Sort by overall score for this question (as requested) to determine rank
-                questionScores.sort((a, b) => b.overallScore - a.overallScore);
+                        if (questionPlayerScoresList) {
+                            questionScores.forEach((player, index) => {
+                                const listItem = document.createElement('li');
+                                listItem.classList.add('py-2', 'px-4', 'rounded-lg', 'mb-2', 'bg-gray-50');
+                                
+                                let answerStatusIcon = '';
+                                let answerColorClass = 'text-gray-700';
 
-                if (questionPlayerScoresList) {
-                    questionScores.forEach((player, index) => { // Added index for rank
-                        const listItem = document.createElement('li');
-                        listItem.classList.add('py-2', 'px-4', 'rounded-lg', 'mb-2', 'bg-gray-50');
-                        
-                        let answerStatusIcon = '';
-                        let answerColorClass = 'text-gray-700';
+                                let isPlayerAnswerCorrect = false;
+                                if (player.submittedAnswer !== 'لم يجب') {
+                                    isPlayerAnswerCorrect = isCorrectAnswer(player.submittedAnswer, currentCorrectAnswers);
+                                }
 
-                        // Check if player's submitted answer is one of the correct answers (using fuzzy logic)
-                        let isPlayerAnswerCorrect = false;
-                        if (player.submittedAnswer !== 'لم يجب') {
-                            isPlayerAnswerCorrect = isCorrectAnswer(player.submittedAnswer, currentCorrectAnswers);
+                                if (player.submittedAnswer !== 'لم يجب') {
+                                    if (isPlayerAnswerCorrect) {
+                                        answerStatusIcon = `<i class="fas fa-check-circle text-green-500 mr-2"></i>`;
+                                        answerColorClass = 'text-green-700';
+                                    } else {
+                                        answerStatusIcon = `<i class="fas fa-times-circle text-red-500 mr-2"></i>`;
+                                        answerColorClass = 'text-red-700';
+                                    }
+                                } else {
+                                    answerStatusIcon = `<i class="fas fa-question-circle text-gray-500 mr-2"></i>`;
+                                    answerColorClass = 'text-gray-500';
+                                }
+
+                                listItem.innerHTML = `
+                                    <span class="font-bold">المركز ${index + 1}: ${player.nickname}:</span>  
+                                    <span class="${answerColorClass}">${answerStatusIcon} ${player.submittedAnswer}</span>  
+                                    (راهن بـ ${player.selectedPoints} نقطة،  
+                                    ${player.scoreChange >= 0 ? '+' : ''}${player.scoreChange} نقطة،  
+                                    إجمالي: ${player.overallScore})
+                                `;
+                                questionPlayerScoresList.appendChild(listItem);
+                            });
                         }
-
-                        if (player.submittedAnswer !== 'لم يجب') {
-                            if (isPlayerAnswerCorrect) {
-                                answerStatusIcon = `<i class="fas fa-check-circle text-green-500 mr-2"></i>`;
-                                answerColorClass = 'text-green-700';
-                            } else {
-                                answerStatusIcon = `<i class="fas fa-times-circle text-red-500 mr-2"></i>`;
-                                answerColorClass = 'text-red-700';
-                            }
-                        } else {
-                            answerStatusIcon = `<i class="fas fa-question-circle text-gray-500 mr-2"></i>`; // Icon for no answer
-                            answerColorClass = 'text-gray-500';
-                        }
-
-
-                        listItem.innerHTML = `
-                            <span class="font-bold">المركز ${index + 1}: ${player.nickname}:</span>  
-                            <span class="${answerColorClass}">${answerStatusIcon} ${player.submittedAnswer}</span>  
-                            (راهن بـ ${player.selectedPoints} نقطة،  
-                            ${player.scoreChange >= 0 ? '+' : ''}${player.scoreChange} نقطة،  
-                            إجمالي: ${player.overallScore})
-                        `;
-                        questionPlayerScoresList.appendChild(listItem);
-                    });
-                }
+                    }).catch(error => { console.error("Error fetching gameData for scores:", error); showCustomMessageBox("خطأ", "فشل جلب بيانات اللعبة لنتائج السؤال."); });
+                }).catch(error => { console.error("Error fetching players for scores:", error); showCustomMessageBox("خطأ", "فشل جلب بيانات اللاعبين لنتائج السؤال."); });
 
             } catch (error) {
                 console.error("Error showing question player scores detailed:", error);
                 showCustomMessageBox("خطأ", "فشل عرض نتائج السؤال بالتفصيل.");
             } finally {
-                hideLoading(); // Hide loading spinner
+                hideLoading();
             }
         }
 
 
-        // Displays the final overall scores screen and results
         async function showFinalScores() {
-            showLoading(); // Show loading spinner
+            showLoading();
             try {
-                // Unsubscribe from real-time listeners to prevent further updates
-                if (gameSnapshotUnsubscribe) {
-                    gameSnapshotUnsubscribe();
-                    gameSnapshotUnsubscribe = null;
-                }
-                if (playersSnapshotUnsubscribe) {
-                    playersSnapshotUnsubscribe();
-                    playersSnapshotUnsubscribe = null;
-                }
-                clearInterval(currentQuestionSoundInterval); // Stop sound interval
-                soundStarted = false; // Reset sound flag
-                clearInterval(timerInterval); // Stop any timer
+                if (gameSnapshotUnsubscribe) { gameSnapshotUnsubscribe(); gameSnapshotUnsubscribe = null; }
+                if (playersSnapshotUnsubscribe) { playersSnapshotUnsubscribe(); playersSnapshotUnsubscribe = null; }
+                clearInterval(currentQuestionSoundInterval);
+                soundStarted = false;
+                clearInterval(timerInterval);
 
-                // Fetch all player data one last time to get final scores
                 const playersRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
                 const playersSnapshot = await playersRef.get();
 
                 let finalScores = [];
-                playersSnapshot.forEach(doc => {
-                    finalScores.push(doc.data());
-                });
+                playersSnapshot.forEach(doc => { finalScores.push(doc.data()); });
 
-                // Sort players by overall score in descending order to determine winner
                 finalScores.sort((a, b) => (b.score || 0) - (a.score || 0));
 
                 if (finalScoresList) {
-                    finalScoresList.innerHTML = ''; // Clear previous final scores list
+                    finalScoresList.innerHTML = '';
                     if (finalScores.length > 0) {
                         finalScores.forEach((player, index) => {
                             const listItem = document.createElement('li');
                             listItem.classList.add('py-2', 'px-4', 'rounded-lg', 'mb-2');
-                            if (index === 0) { // Highlight the winner
+                            if (index === 0) {
                                 listItem.classList.add('bg-yellow-200', 'font-bold', 'text-yellow-800');
                                 listItem.innerHTML = `<i class="fas fa-trophy text-yellow-600 mr-2"></i> المركز الأول: ${player.nickname} - ${player.score} نقطة`;
-                            } else { // Other players
+                            } else {
                                 listItem.classList.add('bg-gray-50');
                                 listItem.textContent = `المركز ${index + 1}: ${player.nickname} - ${player.score} نقطة`;
                             }
@@ -2110,142 +2040,64 @@
                         if (endMessage) endTitle.textContent = `فاز ${finalScores[0].nickname} بـ ${finalScores[0].score} نقطة!`;
                     } else {
                         if (endTitle) endTitle.textContent = "انتهت اللعبة!";
-                        if (endMessage) endTitle.textContent = "لم يكن هناك لاعبون في هذه الجولة.";
+                        if (endMessage) endMessage.textContent = "لم يكن هناك لاعبون في هذه الجولة."; // Corrected id
                     }
                 }
 
-                showScreen(gameEndScreen); // Show the game end screen
+                showScreen(gameEndScreen);
+
+                // Host-only: show start new round button
+                if (isHost && startNewRoundSameRoomButton) {
+                    startNewRoundSameRoomButton.classList.remove('hidden');
+                } else if (startNewRoundSameRoomButton) {
+                    startNewRoundSameRoomButton.classList.add('hidden');
+                }
 
             } catch (error) {
                 console.error("Error showing final scores:", error);
                 showCustomMessageBox("خطأ في النتائج", "فشل عرض النتائج النهائية.");
             } finally {
-                hideLoading(); // Hide loading spinner
+                hideLoading();
             }
         }
 
-        // --- Event Listeners (Handle user interactions) ---
-        // When host wants to create a game
-        if (createHostButton) {
-            createHostButton.addEventListener('click', () => {
-                setupQuizCategorySelection(); // Initialize multi-select dropdown
-                if (hostNicknameInput) hostNicknameInput.value = localStorage.getItem('hostNickname') || ''; // Load host nickname
-                showScreen(hostSetupScreen); // Show host setup screen
-            });
-        }
-
-        // When a player wants to join a game
-        if (joinPlayerButton) {
-            joinPlayerButton.addEventListener('click', () => {
-                if (playerNicknameInput) playerNicknameInput.value = localStorage.getItem('playerNickname') || ''; // Pre-fill nickname if saved
-                showScreen(joinGameScreen); // Show join game screen
-            });
-        }
-
-        // Host clicks to create the game instance in Firebase
+        // --- Event Listeners ---
+        if (createHostButton) { createHostButton.addEventListener('click', () => { setupQuizCategorySelection(); if (hostNicknameInput) hostNicknameInput.value = localStorage.getItem('hostNickname') || ''; showScreen(hostSetupScreen); }); }
+        if (joinPlayerButton) { joinPlayerButton.addEventListener('click', () => { if (playerNicknameInput) playerNicknameInput.value = localStorage.getItem('playerNickname') || ''; showScreen(joinGameScreen); }); }
         if (createGameButton) createGameButton.addEventListener('click', createGame);
-
-        // Player clicks to submit their answer and chosen points
         if (submitAnswerButton) submitAnswerButton.addEventListener('click', submitGuess);
-
-        // Host clicks to start the game (initiates countdown for first question) from waiting room
         if (startGameButton) startGameButton.addEventListener('click', initiateGameStartCountdown);  
-
-        // Host clicks to end the current question early
         if (endQuestionEarlyButton) endQuestionEarlyButton.addEventListener('click', endQuestionEarly);  
-
-        // Host clicks to proceed to the next question from question results screen
         if (nextQuestionButton) nextQuestionButton.addEventListener('click', startNextQuestion);  
-
-        // Host clicks to end the entire game from question results screen
         if (endGameFinalButton) endGameFinalButton.addEventListener('click', endGame);
+        if (startNewRoundSameRoomButton) startNewRoundSameRoomButton.addEventListener('click', startNewRoundInSameRoom); // New listener for host button
 
+        // New exit button listeners for players
+        if (playerExitButtonGameplay) playerExitButtonGameplay.addEventListener('click', exitGame);
+        if (playerExitButtonResults) playerExitButtonResults.addEventListener('click', exitGame);
 
-        // Player clicks to join a specific room
         if (joinRoomButton) {
             joinRoomButton.addEventListener('click', () => {
                 const code = gameCodeInput ? gameCodeInput.value.trim().toUpperCase() : '';
                 const nickname = playerNicknameInput ? playerNicknameInput.value.trim() : '';
-                if (code && nickname) { // Validate inputs
-                    joinGame(code, nickname);
-                } else {
-                    showCustomMessageBox("خطأ في الإدخال", "يرجى إدخال رمز الغرفة واسمك المستعار.");
-                }
+                if (code && nickname) { joinGame(code, nickname); }
+                else { showCustomMessageBox("خطأ في الإدخال", "يرجى إدخال رمز الغرفة واسمك المستعار."); }
             });
         }
 
-        // Handle player's guess submission on Enter key press
         if (gameGuessInput) {
             gameGuessInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
-                    e.preventDefault(); // Prevent default form submission behavior
-                    submitGuess(); // Submit the guess
+                    e.preventDefault();
+                    submitGuess();
                 }
             });
         }
 
-        // Button to play again after a game ends
-        if (playAgainButton) {
-            playAgainButton.addEventListener('click', () => {
-                // Reset all game-related global variables and listeners
-                gameId = null;
-                isHost = false;
-                clearInterval(timerInterval); // Clear any active timer
-                clearInterval(currentQuestionSoundInterval); // Clear sound interval
-                soundStarted = false; // Reset sound flag
-                if (gameSnapshotUnsubscribe) { // Unsubscribe from Firestore listeners
-                    gameSnapshotUnsubscribe();
-                    gameSnapshotUnsubscribe = null;
-                }
-                if (playersSnapshotUnsubscribe) { // Unsubscribe from Firestore listeners
-                    playersSnapshotUnsubscribe();
-                    playersSnapshotUnsubscribe = null;
-                }
-                selectedQuizIndices = []; // Reset selected quizzes for host setup
-                userUsedPointsBets = []; // Reset locally used points
-                populatePointsButtons(); // Re-render points buttons
-                showScreen(roleSelectionScreen); // Return to role selection screen
-                window.history.pushState({}, '', window.location.pathname); // Clear gameId from URL
-            });
-        }
+        // Play again button (always returns to role selection)
+        if (playAgainButton) { playAgainButton.addEventListener('click', exitGame); }
 
-        // Close button for the custom message box
         if (customMessageCloseButton) customMessageCloseButton.addEventListener('click', hideCustomMessageBox);
-
-        // --- Initial Load ---
-        // DOMContentLoaded listener is already used at the bottom of the script for initial checks and Firebase init.
     </script>
-
-
-
-
-    
-<!-- مكتبة QR Code -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-<script>
-  function generateQRCode(link) {
-    const qrcodeContainer = document.getElementById("qrcode");
-    qrcodeContainer.innerHTML = ""; // ننظف القديم
-
-    new QRCode(qrcodeContainer, {
-      text: link,
-      width: 150,
-      height: 150,
-    });
-  }
-
-  // عند عرض رابط الغرفة
-  window.addEventListener('DOMContentLoaded', () => {
-    const link = window.location.href; // أو أي رابط الغرفة
-    const linkDisplay = document.getElementById("game-link-display");
-    if (linkDisplay) {
-      linkDisplay.textContent = link;
-    }
-    generateQRCode(link);
-  });
-</script>
-
-
 </body>
 </html>
