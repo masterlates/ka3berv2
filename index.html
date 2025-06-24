@@ -412,9 +412,9 @@
             <div class="bg-white rounded-xl p-8 text-center shadow-xl transform scale-90 transition-transform duration-300 ease-out">
                 <h2 id="custom-message-title" class="text-3xl font-bold text-gray-900 mb-4"></h2> <!-- Message title -->
                 <p id="custom-message-content" class="text-xl text-gray-700 mb-6"></p> <!-- Message content -->
-                <button id="custom-message-close-button" class="bg-blue-600 hover:bg-blue-700 text-white text-xl font-semibold py-3 px-8 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out">
-                    حسناً <!-- Close button -->
-                </button>
+                <div id="custom-message-buttons" class="flex justify-center gap-4">
+                    <!-- Buttons will be dynamically added here by JS -->
+                </div>
             </div>
         </div>
     </div>
@@ -795,11 +795,12 @@
         const playerExitButtonGameplay = document.getElementById('player-exit-button-gameplay');
         const playerExitButtonResults = document.getElementById('player-exit-button-results');
 
-
+        // Reference to the new button container for custom message box
+        const customMessageButtonsContainer = document.getElementById('custom-message-buttons'); 
         const customMessageBox = document.getElementById('custom-message-box');
         const customMessageTitle = document.getElementById('custom-message-title');
         const customMessageContent = document.getElementById('custom-message-content');
-        const customMessageCloseButton = document.getElementById('custom-message-close-button');
+        // customMessageCloseButton is no longer fixed, it's dynamically created.
 
         // Initialize Tone.js synth for sound effects
         const synth = new Tone.Synth({ type: "sine" , envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.5 }}).toDestination();
@@ -828,7 +829,8 @@
                 'hostSubmissionStatusList': hostSubmissionStatusList, 'hostGameplayControls': hostGameplayControls,
                 'startNewRoundSameRoomButton': startNewRoundSameRoomButton,
                 'playerExitButtonGameplay': playerExitButtonGameplay,
-                'playerExitButtonResults': playerExitButtonResults
+                'playerExitButtonResults': playerExitButtonResults,
+                'customMessageButtonsContainer': customMessageButtonsContainer // Make sure this new container is checked
             };
 
             for (const id in requiredElements) {
@@ -922,17 +924,21 @@
                             playerNicknameInput.value = localStorage.getItem('playerNickname') || '';
 
                             if (!playerNicknameInput.value) {
+                                // If no nickname, show message asking for nickname
                                 showScreen(joinGameScreen);
-                                showCustomMessageBox("الانضمام إلى لعبة", `أدخل اسمك المستعار للانضمام إلى اللعبة برمز ${gameId}.`);
-                                customMessageCloseButton.onclick = () => {
-                                    hideCustomMessageBox();
-                                };
+                                showCustomMessageBox("الانضمام إلى لعبة", `أدخل اسمك المستعار للانضمام إلى اللعبة برمز ${gameId}.`, {
+                                    buttons: [
+                                        { text: 'حسناً', callback: hideCustomMessageBox } // Only one button to acknowledge and manually type nickname
+                                    ]
+                                });
                             } else {
-                                showCustomMessageBox("الانضمام إلى لعبة", `هل تريد الانضمام إلى اللعبة برمز ${gameId} باسم ${playerNicknameInput.value}؟`);
-                                customMessageCloseButton.onclick = () => {
-                                    hideCustomMessageBox();
-                                    joinGame(gameId, playerNicknameInput.value);
-                                };
+                                // If nickname exists, offer to auto-join or cancel
+                                showCustomMessageBox("الانضمام إلى لعبة", `هل تريد الانضمام إلى اللعبة برمز ${gameId} باسم ${playerNicknameInput.value}؟`, {
+                                    buttons: [
+                                        { text: 'حسناً', callback: () => joinGame(gameId, playerNicknameInput.value) },
+                                        { text: 'لا', callback: exitGame, className: 'bg-red-600 hover:bg-red-700 text-white text-xl font-semibold py-3 px-8 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out' }
+                                    ]
+                                });
                             }
                         } else {
                             showScreen(roleSelectionScreen);
@@ -954,6 +960,43 @@
         // --- UI Management Functions ---
         function showLoading() { if (loadingOverlay) loadingOverlay.classList.remove('hidden'); }
         function hideLoading() { if (loadingOverlay) loadingOverlay.classList.add('hidden'); }
+
+        // showCustomMessageBox function now accepts an optional 'options' object for buttons
+        function showCustomMessageBox(title, content, options = {}) {
+            if (!customMessageBox || !customMessageTitle || !customMessageContent || !customMessageButtonsContainer) {
+                console.error("Error: Custom message box elements not found. Cannot display message.");
+                alert(`خطأ: ${title}\n${content}`); // Fallback to native alert
+                return;
+            }
+            customMessageTitle.textContent = title;
+            customMessageContent.textContent = content;
+            
+            // Clear previous buttons
+            customMessageButtonsContainer.innerHTML = '';
+
+            const buttonsToRender = options.buttons || [{ text: 'حسناً', callback: hideCustomMessageBox, className: 'bg-blue-600 hover:bg-blue-700 text-white text-xl font-semibold py-3 px-8 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out' }];
+
+            buttonsToRender.forEach(btnConfig => {
+                const button = document.createElement('button');
+                button.textContent = btnConfig.text;
+                button.className = btnConfig.className || 'bg-blue-600 hover:bg-blue-700 text-white text-xl font-semibold py-3 px-8 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out';
+                button.onclick = () => {
+                    btnConfig.callback(); // Execute the specific button's callback
+                    hideCustomMessageBox(); // Always hide the message box after a button is clicked
+                };
+                customMessageButtonsContainer.appendChild(button);
+            });
+
+            customMessageBox.classList.remove('hidden', 'opacity-0');
+            customMessageBox.classList.add('flex', 'opacity-100');
+        }
+
+        function hideCustomMessageBox() {
+            if (customMessageBox) {
+                customMessageBox.classList.remove('flex', 'opacity-100');
+                customMessageBox.classList.add('hidden', 'opacity-0');
+            }
+        }
 
         function showScreen(screenElement) {
             console.log("Attempting to show screen:", screenElement ? screenElement.id : "undefined/null screenElement");
@@ -980,25 +1023,6 @@
             screenElement.classList.remove('hidden');
             if (screenElement !== customMessageBox) {
                 screenElement.classList.remove('flex', 'opacity-100');
-            }
-        }
-
-        function showCustomMessageBox(title, content) {
-            if (!customMessageBox || !customMessageTitle || !customMessageContent) {
-                console.error("Error: Custom message box elements not found. Cannot display message.");
-                alert(`خطأ: ${title}\n${content}`);
-                return;
-            }
-            customMessageTitle.textContent = title;
-            customMessageContent.textContent = content;
-            customMessageBox.classList.remove('hidden', 'opacity-0');
-            customMessageBox.classList.add('flex', 'opacity-100');
-        }
-
-        function hideCustomMessageBox() {
-            if (customMessageBox) {
-                customMessageBox.classList.remove('flex', 'opacity-100');
-                customMessageBox.classList.add('hidden', 'opacity-0');
             }
         }
 
@@ -1119,7 +1143,6 @@
                     countdownStartTime: null,
                     countdownDuration: 5,
                     scoresReconciledForCurrentQuestion: false,
-                    // NEW: Add lastHostTimeUpdate and initial currentTime for synchronization
                     lastHostTimeUpdate: null, 
                     currentTime: timeLimit // Initialize current time on host side
                 });
@@ -1337,7 +1360,6 @@
                 const gameData = gameDoc.data();
 
                 const selectedCategories = gameData.selectedCategoryIndices || [];
-                // Use the number of questions from the previous game round, or default to 10
                 const totalQuestions = gameData.quizSet ? gameData.quizSet.length : 10; 
 
                 if (selectedCategories.length === 0) {
@@ -1359,7 +1381,6 @@
                         });
                     }
                 });
-                // Shuffle and pick new questions
                 for (let i = allPossibleQuestions.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [allPossibleQuestions[i], allPossibleQuestions[j]] = [allPossibleQuestions[j], allPossibleQuestions[i]];
@@ -1735,6 +1756,7 @@
                                     console.log(`Player ${userId} has NOT submitted for this question. Input enabled.`);
                                 }
                             } else {
+                                // Fallback if player doc is missing (shouldn't happen, but defensive)
                                 console.warn("Player document not found while updating input state.");
                                 if (gameGuessInput) gameGuessInput.disabled = true;
                                 if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
@@ -2107,7 +2129,9 @@
         // Play again button (always returns to role selection)
         if (playAgainButton) { playAgainButton.addEventListener('click', exitGame); }
 
-        if (customMessageCloseButton) customMessageCloseButton.addEventListener('click', hideCustomMessageBox);
+        // customMessageCloseButton is no longer directly used as it's now dynamically generated within showCustomMessageBox.
+        // It was the old way to dismiss a single-button message box. The new customMessageBox handles button clicks via callbacks.
+        // if (customMessageCloseButton) customMessageCloseButton.addEventListener('click', hideCustomMessageBox);
     </script>
 </body>
 </html>
