@@ -788,8 +788,7 @@
         const hostGameplayControls = document.getElementById('host-gameplay-controls');  
 
         const endTitle = document.getElementById('end-title');
-        // FIX: Corrected the declaration of endMessage. It was syntactically incorrect.
-        const endMessage = document.getElementById('end-message'); 
+        const endMessage = document.getElementById('end-message'); // Corrected declaration
         const finalScoresList = document.getElementById('final-scores-list');
         const playAgainButton = document.getElementById('play-again-button');
         const startNewRoundSameRoomButton = document.getElementById('start-new-round-same-room-button');
@@ -1264,11 +1263,7 @@
                 await batch.commit();
                 console.log("Reset player-specific question data for new question.");
 
-                // IMPORTANT: These UI elements are now reset and re-enabled directly in listenToGameChanges for question_active phase.
-                // We leave them here commented out to indicate the intention, but the actual re-enabling is now centralized.
-                // if (gameGuessInput) { gameGuessInput.value = ''; }
-                // if (playerCorrectGuessesList) { playerCorrectGuessesList.innerHTML = ''; }
-                // if (sharedRoundGuessesList) { sharedRoundGuessesList.innerHTML = ''; }
+                // UI elements are now reset and re-enabled directly in listenToGameChanges for question_active phase.
 
                 clearInterval(currentQuestionSoundInterval);
                 soundStarted = false;
@@ -1329,12 +1324,13 @@
                 const gameDoc = await gameRef.get();
                 if (!gameDoc.exists) {
                     showCustomMessageBox("خطأ", "اللعبة غير موجودة لبدء جولة جديدة.");
-                    return; // Exit function early, hideLoading in finally
+                    return;
                 }
                 const gameData = gameDoc.data();
 
                 const selectedCategories = gameData.selectedCategoryIndices || [];
-                const totalQuestions = gameData.quizSet ? gameData.quizSet.length : 10;
+                // Use the number of questions from the previous game round, or default to 10
+                const totalQuestions = gameData.quizSet ? gameData.quizSet.length : 10; 
 
                 if (selectedCategories.length === 0) {
                     showCustomMessageBox("خطأ", "لا توجد فئات أسئلة مختارة سابقة لبدء جولة جديدة.");
@@ -1355,6 +1351,7 @@
                         });
                     }
                 });
+                // Shuffle and pick new questions
                 for (let i = allPossibleQuestions.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [allPossibleQuestions[i], allPossibleQuestions[j]] = [allPossibleQuestions[j], allPossibleQuestions[i]];
@@ -1368,9 +1365,10 @@
 
                 const batch = db.batch();
 
+                // Update game document to start new round
                 batch.update(gameRef, {
                     gamePhase: 'lobby', // Set to lobby to transition all players to waiting screen
-                    quizSet: newQuizSetForGame,
+                    quizSet: newQuizSetForGame, // New set of questions
                     currentQuestionIndexInGame: 0,
                     currentCategory: '',
                     currentQuestionText: '',
@@ -1382,17 +1380,18 @@
                     scoresReconciledForCurrentQuestion: false
                 });
 
+                // Reset all players' scores and states for the new round
                 const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
                 const playersDocs = await playersCollectionRef.get();
-                playersDocs.docs.forEach(playerDoc => {
+                playersDocs.forEach(playerDoc => {
                     const playerRef = playerDoc.ref;
                     batch.update(playerRef, {
-                        score: 0,
+                        score: 0, // Reset overall score for new round
                         playerSubmittedAnswer: '',
                         playerSelectedPoints: 0,
                         playerScoreChange: 0,
                         hasSubmittedAnswer: false,
-                        usedPointsBets: []
+                        usedPointsBets: [] // Clear used points for the new round
                     });
                 });
                 await batch.commit();
@@ -1402,7 +1401,8 @@
                 populatePointsButtons(); // Update UI for points buttons (for host)
 
                 console.log("New round setup complete. Transitioning to waiting screen.");
-                showScreen(waitingRoomScreen); // Explicitly show waiting room for the host
+                // Explicitly show waiting room screen for the host (and players will follow via listener)
+                showScreen(waitingRoomScreen); 
             } catch (error) {
                 console.error("Error starting new round in same room:", error);
                 showCustomMessageBox("خطأ", error.message || "فشل بدء جولة جديدة في نفس الغرفة.");
@@ -1630,18 +1630,32 @@
 
                     // Phase: Lobby (Waiting room)
                     if (gamePhase === 'lobby') {
-                        console.log("[listenToGameChanges] Showing waiting room screen.");
+                        console.log("[listenToGameChanges] Game phase is 'lobby'. Showing waiting room screen.");
                         showScreen(waitingRoomScreen);
+                        
+                        // FIX: Explicitly reset UI for players when returning to lobby
+                        if (gameGuessInput) {
+                            gameGuessInput.value = ''; // Clear previous answer
+                            gameGuessInput.disabled = false; // Re-enable input field
+                        }
+                        if (submitAnswerButton) {
+                            submitAnswerButton.disabled = false; // Re-enable submit button
+                        }
+                        selectedPointsBet = 1; // Reset selected points to default
+                        userUsedPointsBets = []; // Clear used points for the new round
+                        populatePointsButtons(); // Re-render points buttons to reflect reset state
+
+                        if (playerCorrectGuessesList) playerCorrectGuessesList.innerHTML = '';
+                        if (sharedRoundGuessesList) sharedRoundGuessesList.innerHTML = '';
+                        
                         if (isHost) {
                             if (startGameButton) {
                                 startGameButton.textContent = "بدء الجولة الأولى!";
                                 startGameButton.onclick = initiateGameStartCountdown;
-                                // The visibility is handled by listenToPlayers based on player count
                             }
                         } else {
                             if (startGameButton) startGameButton.classList.add('hidden');
                         }
-                        // Ensure player exit button is hidden in lobby for all
                         if (playerExitButtonGameplay) playerExitButtonGameplay.classList.add('hidden');
                         if (playerExitButtonResults) playerExitButtonResults.classList.add('hidden');
                     }
@@ -1935,7 +1949,7 @@
                             });
                         });
 
-                        questionScores.sort((a, b) => (b.overallScore || 0) - (a.overallScore || 0)); // Ensure sorting by numerical score
+                        questionScores.sort((a, b) => (b.overallScore || 0) - (a.overallScore || 0));
 
                         if (questionPlayerScoresList) {
                             questionScores.forEach((player, index) => {
