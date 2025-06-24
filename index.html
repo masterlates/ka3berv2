@@ -420,7 +420,6 @@
     </div>
 
     <!-- Firebase CDN Scripts - MUST be included BEFORE main game script for global `firebase` object -->
-    <!-- These load the Firebase library globally, making `firebase.initializeApp`, etc., available -->
     <script type="text/javascript" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -444,9 +443,6 @@
         let localTimerRemaining = 0; // Local state for the timer, updated by clients
     
         // Quiz data - IMPORTANT: Each object in quizzes now represents a CATEGORY with multiple questions.
-        // Each question has a questionText and correctAnswers.
-        // `displayAnswer` is the primary correct answer shown in results.
-        // `correctAnswers` is a list of normalized answers for fuzzy matching.
         const quizzes = [
             {
                 category: "عواصم الدول العربية",
@@ -842,7 +838,7 @@
                 'gameCountdownScreen': gameCountdownScreen, 'countdownTimerDisplay': countdownTimerDisplay,
                 'totalQuestionsPerGameSelect': totalQuestionsPerGameSelect, 'questionCounterDisplay': questionCounterDisplay,
                 'hostSubmissionStatusList': hostSubmissionStatusList, 'hostGameplayControls': hostGameplayControls,
-                'startNewRoundSameRoomButton': startNewRoundSameRoomButton, // Add new buttons to required checks
+                'startNewRoundSameRoomButton': startNewRoundSameRoomButton,
                 'playerExitButtonGameplay': playerExitButtonGameplay,
                 'playerExitButtonResults': playerExitButtonResults
             };
@@ -1354,11 +1350,11 @@
                 const gameData = gameDoc.data();
 
                 const selectedCategories = gameData.selectedCategoryIndices || [];
-                const totalQuestions = gameData.quizSet ? gameData.quizSet.length : 10; // Use previous total questions
+                const totalQuestions = gameData.quizSet ? gameData.quizSet.length : 10; // Use previous total questions for same number of questions
 
                 if (selectedCategories.length === 0) {
                     showCustomMessageBox("خطأ", "لا توجد فئات أسئلة مختارة سابقة لبدء جولة جديدة.");
-                    hideLoading();
+                    hideLoading(); // Ensure loading is hidden on error
                     return;
                 }
 
@@ -1386,7 +1382,7 @@
 
                 if (newQuizSetForGame.length === 0) {
                     showCustomMessageBox("خطأ", "الفئات المختارة لا تحتوي على أي أسئلة كافية لإنشاء جولة جديدة.");
-                    hideLoading();
+                    hideLoading(); // Ensure loading is hidden on error
                     return;
                 }
 
@@ -1434,7 +1430,7 @@
                 console.error("Error starting new round in same room:", error);
                 showCustomMessageBox("خطأ", error.message || "فشل بدء جولة جديدة في نفس الغرفة.");
             } finally {
-                hideLoading();
+                hideLoading(); // Ensure loading is hidden after all operations or errors
             }
         }
 
@@ -1488,8 +1484,6 @@
                     batch.update(playerRef, {
                         score: newScore,
                         playerScoreChange: scoreChange
-                        // playerSubmittedAnswer, playerSelectedPoints, hasSubmittedAnswer are NOT reset here
-                        // They are reset in startNextQuestion to allow results display
                     });
                 }
 
@@ -1669,7 +1663,6 @@
                         } else {
                             if (startGameButton) startGameButton.classList.add('hidden');
                         }
-                        // Ensure player exit button is hidden in lobby for all
                         if (playerExitButtonGameplay) playerExitButtonGameplay.classList.add('hidden');
                         if (playerExitButtonResults) playerExitButtonResults.classList.add('hidden');
                     }
@@ -1694,7 +1687,6 @@
                                 if (isHost) { startNextQuestion(); }
                             }
                         }, 1000);
-                        // Ensure player exit button is hidden during countdown
                         if (playerExitButtonGameplay) playerExitButtonGameplay.classList.add('hidden');
                         if (playerExitButtonResults) playerExitButtonResults.classList.add('hidden');
                     }
@@ -1704,9 +1696,9 @@
                         if (gameCategoryDisplay) gameCategoryDisplay.textContent = gameData.currentCategory;
                         if (gameQuestionDisplay) gameQuestionDisplay.textContent = gameData.currentQuestionText;
                         
-                        // Clear input field on new question for all players
+                        // IMPORTANT: Reset input field and re-enable for new question
                         if (gameGuessInput) {
-                            gameGuessInput.value = ''; 
+                            gameGuessInput.value = ''; // Clear previous answer
                         }
                         // Clear local correct guesses list for new question
                         if (playerCorrectGuessesList) {
@@ -1717,19 +1709,23 @@
                             sharedRoundGuessesList.innerHTML = '';
                         }
 
+                        // Re-enable input and buttons based on player's current submission status for this new question
                         db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId).get().then(playerDoc => {
                             if (playerDoc.exists) {
                                 const currentPlayerData = playerDoc.data();
+                                // If player hasn't submitted an answer for *this* question, enable inputs
                                 if (!currentPlayerData.hasSubmittedAnswer) {
                                     if (gameGuessInput) gameGuessInput.disabled = false;
-                                    populatePointsButtons();
+                                    populatePointsButtons(); // Re-populate buttons to enable/disable based on usedPointsBets
                                     if (submitAnswerButton) submitAnswerButton.disabled = false;
                                 } else {  
+                                    // Player has already submitted for this question, keep disabled
                                     if (gameGuessInput) gameGuessInput.disabled = true;
                                     if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
                                     if (submitAnswerButton) submitAnswerButton.disabled = true;
                                 }
                             } else {
+                                // Fallback if player doc is missing (shouldn't happen)
                                 if (gameGuessInput) gameGuessInput.disabled = true;
                                 if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
                                 if (submitAnswerButton) submitAnswerButton.disabled = true;
@@ -1740,10 +1736,10 @@
 
                         if (isHost) {
                             if (hostGameplayControls) hostGameplayControls.classList.remove('hidden');
-                            if (playerExitButtonGameplay) playerExitButtonGameplay.classList.add('hidden'); // Host doesn't need this
+                            if (playerExitButtonGameplay) playerExitButtonGameplay.classList.add('hidden');
                         } else {
                             if (hostGameplayControls) hostGameplayControls.classList.add('hidden');
-                            if (playerExitButtonGameplay) playerExitButtonGameplay.classList.remove('hidden'); // Player sees exit button
+                            if (playerExitButtonGameplay) playerExitButtonGameplay.classList.remove('hidden');
                         }
 
                         clearInterval(timerInterval);
@@ -1818,10 +1814,10 @@
                                 if (nextQuestionButton) nextQuestionButton.classList.add('hidden');
                                 if (endGameFinalButton) endGameFinalButton.classList.remove('hidden');
                             }
-                            if (playerExitButtonResults) playerExitButtonResults.classList.add('hidden'); // Host doesn't need this
+                            if (playerExitButtonResults) playerExitButtonResults.classList.add('hidden');
                         } else {
                             if (questionResultsHostControls) questionResultsHostControls.classList.add('hidden');
-                            if (playerExitButtonResults) playerExitButtonResults.classList.remove('hidden'); // Player sees exit button
+                            if (playerExitButtonResults) playerExitButtonResults.classList.remove('hidden');
                         }
                     }
                     // Phase: Final Game Results
@@ -1834,13 +1830,12 @@
                 } else {
                     console.log("Game document deleted or does not exist. Redirecting.");
                     showCustomMessageBox("اللعبة غير موجودة", "غرفة اللعب هذه لم تعد موجودة. قد يكون المضيف قد أغلقها.");
-                    exitGame(); // Use the new exitGame function to clear URL and redirect cleanly
+                    exitGame(); // Clear URL and redirect cleanly
                 }
             }, (error) => {
                 console.error("Error listening to game changes:", error);
                 showCustomMessageBox("خطأ في الاتصال", `فقد الاتصال باللعبة. يرجى التحقق من اتصالك بالإنترنت. التفاصيل: ${error.message}`);
-                // In case of a persistent error, also offer to exit
-                exitGame();
+                exitGame(); // In case of a persistent error, also offer to exit
             });
         }
 
@@ -1888,7 +1883,7 @@
                             const statusItem = document.createElement('li');
                             let statusIcon = '';
                             let submittedAnswerText = '';
-                            let scoreInfo = ''; // Combine score change and bet into one string
+                            let scoreInfo = '';
 
                             const scoreChangeValue = playerData.playerScoreChange || 0;
                             const submittedAnswerActual = playerData.playerSubmittedAnswer;
@@ -1937,7 +1932,7 @@
             showLoading();
             try {
                 const playersRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
-                playersRef.get().then(playersSnapshot => { // Using .then() to ensure inner logic has snapshot
+                playersRef.get().then(playersSnapshot => {
                     db.collection(`artifacts/${appId}/public/data/games`).doc(gameId).get().then(gameDoc => {
                         const gameData = gameDoc.data();
                         const currentCorrectAnswers = gameData.currentCorrectAnswers || [];
@@ -2040,7 +2035,7 @@
                         if (endMessage) endTitle.textContent = `فاز ${finalScores[0].nickname} بـ ${finalScores[0].score} نقطة!`;
                     } else {
                         if (endTitle) endTitle.textContent = "انتهت اللعبة!";
-                        if (endMessage) endMessage.textContent = "لم يكن هناك لاعبون في هذه الجولة."; // Corrected id
+                        if (endMessage) endMessage.textContent = "لم يكن هناك لاعبون في هذه الجولة.";
                     }
                 }
 
@@ -2070,7 +2065,7 @@
         if (endQuestionEarlyButton) endQuestionEarlyButton.addEventListener('click', endQuestionEarly);  
         if (nextQuestionButton) nextQuestionButton.addEventListener('click', startNextQuestion);  
         if (endGameFinalButton) endGameFinalButton.addEventListener('click', endGame);
-        if (startNewRoundSameRoomButton) startNewRoundSameRoomButton.addEventListener('click', startNewRoundInSameRoom); // New listener for host button
+        if (startNewRoundSameRoomButton) startNewRoundSameRoomButton.addEventListener('click', startNewRoundInSameRoom);
 
         // New exit button listeners for players
         if (playerExitButtonGameplay) playerExitButtonGameplay.addEventListener('click', exitGame);
