@@ -41,7 +41,7 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        /* Styles for the copy button */
+        /* Styles for the copy button (Converted to Tailwind, kept for reference) */
         .copy-button {
             background-color: #4CAF50; /* Green */
             color: white;
@@ -94,6 +94,7 @@
             flex-wrap: wrap;
             gap: 0.5rem;
             margin-top: 0.5rem;
+            justify-content: center; /* Center the tags */
         }
         .tag {
             background-color: #a78bfa; /* Purple-300 */
@@ -155,6 +156,12 @@
             opacity: 0.6;
             cursor: not-allowed;
         }
+        /* Center text in lists */
+        #joined-players-list li,
+        #final-scores-list li,
+        #question-player-scores-list li {
+            text-align: center;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 min-h-screen flex flex-col items-center justify-center p-4 text-gray-800">
@@ -173,7 +180,7 @@
     </div>
 
     <!-- Main Game Container -->
-    <div class="bg-white rounded-xl shadow-2xl p-8 max-w-3xl w-full flex flex-col items-center relative overflow-hidden transform transition-all duration-500 ease-in-out">
+    <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 max-w-3xl w-full flex flex-col items-center relative overflow-hidden transform transition-all duration-500 ease-in-out">
         <h1 class="text-4xl font-extrabold text-gray-800 mb-6 text-center leading-tight">لعبة حرقاسة HARGASA GAME <i class="fas fa-users text-blue-500"></i></h1>
         <p class="text-lg text-gray-600 mb-8 text-center" id="game-description">
             اختر دورك: إما مضيف لإنشاء غرفة، أو لاعب للانضمام إلى غرفة موجودة. <!-- Game description in Arabic -->
@@ -181,10 +188,10 @@
 
         <!-- Role Selection Screen -->
         <div id="role-selection-screen" class="w-full flex flex-col items-center space-y-6">
-            <button id="create-host-button" class="w-full md:w-2/3 bg-blue-600 hover:bg-blue-700 text-white text-2xl font-bold py-5 rounded-lg shadow-xl transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
+            <button id="create-host-button" class="w-full md:w-2/3 bg-blue-600 hover:bg-blue-700 text-white text-2xl font-bold py-5 rounded-lg shadow-xl transform hover:scale-105 hover:shadow-2xl transition-all duration-300 ease-out flex items-center justify-center gap-3">
                 <i class="fas fa-crown"></i> إنشاء غرفة (مضيف) <!-- Create host room button -->
             </button>
-            <button id="join-player-button" class="w-full md:w-2/3 bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-5 rounded-lg shadow-xl transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
+            <button id="join-player-button" class="w-full md:w-2/3 bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-5 rounded-lg shadow-xl transform hover:scale-105 hover:shadow-2xl transition-all duration-300 ease-out flex items-center justify-center gap-3">
                 <i class="fas fa-gamepad"></i> الانضمام إلى غرفة (لاعب) <!-- Join player room button -->
             </button>
         </div>
@@ -193,17 +200,17 @@
         <div id="host-setup-screen" class="w-full flex flex-col items-center hidden">
             <h2 class="text-3xl font-bold text-indigo-700 mb-6">إعداد غرفة اللعب</h2> <!-- Host setup title -->
 
-            <div class="w-full mb-6">
-                <label for="host-nickname-input" class="block text-xl font-semibold text-gray-700 mb-2">اسمك المستعار (المضيف):</label>
+            <div class="w-full md:w-5/6 mb-6">
+                <label for="host-nickname-input" class="block text-xl font-semibold text-gray-700 mb-2 text-center">اسمك المستعار (المضيف):</label>
                 <input type="text" id="host-nickname-input" placeholder="اسم المضيف"
-                        class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50">
+                       class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-400 bg-gray-50 text-center">
             </div>
 
-            <div class="w-full mb-6">
-                <label for="quiz-category-input" class="block text-xl font-semibold text-gray-700 mb-2">اختر فئات الأسئلة (يمكن اختيار أكثر من واحدة):</label>
+            <div class="w-full md:w-5/6 mb-6">
+                <label for="quiz-category-input" class="block text-xl font-semibold text-gray-700 mb-2 text-center">اختر فئات الأسئلة (يمكن اختيار أكثر من واحدة):</label>
                 <div class="multiselect-container">
                     <input type="text" id="quiz-category-input" readonly placeholder="انقر هنا لاختيار الفئات..."
-                        class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50 cursor-pointer">
+                           class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50 cursor-pointer text-center">
                     <div id="quiz-category-dropdown" class="multiselect-dropdown hidden">
                         <!-- Checkboxes will be populated by JS -->
                     </div>
@@ -213,9 +220,9 @@
                 </div>
             </div>
 
-            <div class="w-full mb-6">
-                <label for="total-questions-per-game-select" class="block text-xl font-semibold text-gray-700 mb-2">عدد الأسئلة الكلي في اللعبة:</label>
-                <select id="total-questions-per-game-select" class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50">
+            <div class="w-full md:w-5/6 mb-6">
+                <label for="total-questions-per-game-select" class="block text-xl font-semibold text-gray-700 mb-2 text-center">عدد الأسئلة الكلي في اللعبة:</label>
+                <select id="total-questions-per-game-select" class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50 text-center">
                     <option value="5">5 أسئلة</option>
                     <option value="10">10 أسئلة</option>
                     <option value="15">15 سؤال</option>
@@ -224,9 +231,9 @@
                 </select>
             </div>
 
-            <div class="w-full mb-6">
-                <label for="time-limit-select" class="block text-xl font-semibold text-gray-700 mb-2">الوقت المخصص لكل سؤال (بالثواني):</label> <!-- Time limit label -->
-                <select id="time-limit-select" class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50">
+            <div class="w-full md:w-5/6 mb-6">
+                <label for="time-limit-select" class="block text-xl font-semibold text-gray-700 mb-2 text-center">الوقت المخصص لكل سؤال (بالثواني):</label> <!-- Time limit label -->
+                <select id="time-limit-select" class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50 text-center">
                     <option value="15">15 ثانية</option>
                     <option value="20">20 ثانية</option>
                     <option value="30">30 ثانية</option>
@@ -235,7 +242,7 @@
                 </select>
             </div>
 
-            <button id="create-game-button" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
+            <button id="create-game-button" class="w-full md:w-2/3 bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300 ease-out flex items-center justify-center gap-3">
                 <i class="fas fa-plus-circle"></i> إنشاء اللعبة <!-- Create game button -->
             </button>
         </div>
@@ -244,15 +251,17 @@
         <div id="waiting-room-screen" class="w-full flex flex-col items-center hidden">
             <h2 class="text-3xl font-bold text-indigo-700 mb-4" id="waiting-room-title">انتظر انضمام اللاعبين...</h2> <!-- Waiting room title -->
             <p class="text-xl text-gray-700 mb-6">شارك هذا الرابط مع أصدقائك للانضمام:</p> <!-- Share link instruction -->
-            <div class="bg-gray-100 p-4 rounded-lg shadow-inner mb-6 flex flex-col items-center">
+            <div class="bg-gray-100 p-4 rounded-lg shadow-inner mb-6 flex flex-col items-center w-full max-w-lg">
                 <span id="game-link-display" class="text-md md:text-xl font-medium text-blue-600 break-all text-center"></span>
-                <div id="qrcode" class="mb-2 p-2 bg-white rounded-lg shadow-md flex justify-center items-center">
+                <div id="qrcode" class="my-4 p-2 bg-white rounded-lg shadow-md flex justify-center items-center">
                     <!-- QR code will be rendered here by JavaScript -->
                     <div id="qrcode-fallback-message" class="text-gray-500 text-sm text-center">
                         <!-- Fallback message for QR code -->
                     </div>
                 </div>
-                <button id="copy-link-button" class="copy-button mt-4">انسخ الرابط</button>
+                <button id="copy-link-button" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300">
+                    <i class="fas fa-copy mr-2"></i> انسخ الرابط
+                </button>
             </div>
             
             <h3 class="text-2xl font-semibold text-gray-800 mb-4">اللاعبون المنضمون:</h3> <!-- Joined players list title -->
@@ -260,7 +269,7 @@
                 <!-- Players will be listed here by JavaScript -->
             </ul>
 
-            <button id="start-game-button" class="w-full bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out hidden">
+            <button id="start-game-button" class="w-full md:w-2/3 bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300 ease-out hidden">
                 <i class="fas fa-play"></i> بدء اللعب! <!-- Start game button (for host) -->
             </button>
         </div>
@@ -268,23 +277,23 @@
         <!-- Join Game Screen (Player) -->
         <div id="join-game-screen" class="w-full flex flex-col items-center hidden">
             <h2 class="text-3xl font-bold text-indigo-700 mb-6">الانضمام إلى غرفة اللعب</h2> <!-- Join game title -->
-            <div class="w-full mb-6">
-                <label for="game-code-input" class="block text-xl font-semibold text-gray-700 mb-2">أدخل رمز الغرفة:</label> <!-- Game code input label -->
+            <div class="w-full md:w-5/6 mb-6">
+                <label for="game-code-input" class="block text-xl font-semibold text-gray-700 mb-2 text-center">أدخل رمز الغرفة:</label> <!-- Game code input label -->
                 <input type="text" id="game-code-input" placeholder="مثال: ABCDE"
-                        class="w-full p-4 mb-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50 uppercase text-center tracking-widest">
+                       class="w-full p-4 mb-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-400 transition-colors duration-300 bg-gray-50 uppercase text-center tracking-widest">
             </div>
-             <div class="w-full mb-6">
-                <label for="player-nickname-input" class="block text-xl font-semibold text-gray-700 mb-2">أدخل اسمك المستعار:</label> <!-- Player nickname input label -->
+             <div class="w-full md:w-5/6 mb-6">
+                <label for="player-nickname-input" class="block text-xl font-semibold text-gray-700 mb-2 text-center">أدخل اسمك المستعار:</label> <!-- Player nickname input label -->
                 <input type="text" id="player-nickname-input" placeholder="اسمك"
-                        class="w-full p-4 mb-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50 text-center">
+                       class="w-full p-4 mb-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-400 transition-colors duration-300 bg-gray-50 text-center">
             </div>
-            <button id="join-room-button" class="w-full bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
+            <button id="join-room-button" class="w-full md:w-2/3 bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300 ease-out flex items-center justify-center gap-3">
                 <i class="fas fa-door-open"></i> الانضمام <!-- Join button -->
             </button>
         </div>
 
         <!-- Game Play Screen (Host & Player) -->
-        <div id="game-play-screen" class="w-full hidden">
+        <div id="game-play-screen" class="w-full flex flex-col items-center hidden">
             <p class="text-2xl font-bold text-gray-800 mb-4 text-center">الفئة: <span id="game-category" class="text-indigo-600"></span></p> <!-- Current category display -->
             
             <div class="bg-blue-100 p-4 rounded-lg shadow-md mb-6 w-full text-center">
@@ -310,8 +319,8 @@
             <div class="flex items-center flex-wrap gap-2 w-full mb-4">
                 <label for="game-guess-input" class="sr-only">اكتب إجابتك هنا</label>
                 <input type="text" id="game-guess-input" placeholder="اكتب إجابتك هنا..."
-                    class="flex-grow p-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors duration-300 bg-gray-50">
-                <button id="submit-answer-button" class="bg-blue-500 hover:bg-blue-600 text-white text-xl font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out flex-shrink-0">
+                   class="flex-grow p-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-400 transition-colors duration-300 bg-gray-50 text-center">
+                <button id="submit-answer-button" class="bg-blue-500 hover:bg-blue-600 text-white text-xl font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 hover:shadow-lg transition-all duration-300 ease-out flex-shrink-0">
                     <i class="fas fa-paper-plane"></i> إرسال
                 </button>
             </div>
@@ -325,13 +334,13 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 h-64 overflow-y-auto shadow-inner">
-                    <h3 class="text-xl font-semibold text-blue-800 mb-3">إجاباتك الصحيحة (لهذا السؤال):</h3> <!-- Player's correct guesses title -->
+                    <h3 class="text-xl font-semibold text-blue-800 mb-3 text-center">إجاباتك الصحيحة (لهذا السؤال):</h3> <!-- Player's correct guesses title -->
                     <ul id="player-correct-guesses-list" class="list-disc pr-6 text-gray-700 text-lg space-y-2">
                         <!-- Player's correct guesses will be listed here -->
                     </ul>
                 </div>
                 <div class="bg-purple-50 border border-purple-200 rounded-lg p-6 h-64 overflow-y-auto shadow-inner">
-                    <h3 class="text-xl font-semibold text-purple-800 mb-3">الإجابات المشتركة (لهذا السؤال):</h3> <!-- Shared correct guesses title -->
+                    <h3 class="text-xl font-semibold text-purple-800 mb-3 text-center">الإجابات المشتركة (لهذا السؤال):</h3> <!-- Shared correct guesses title -->
                     <ul id="shared-round-guesses-list" class="list-disc pr-6 text-gray-700 text-lg space-y-2">
                         <!-- All correct guesses across players for THIS QUESTION will be listed here -->
                     </ul>
@@ -339,24 +348,24 @@
             </div>
             
             <!-- Host-only controls during game play -->
-            <div id="host-gameplay-controls" class="w-full flex flex-col items-center gap-4 hidden">
+            <div id="host-gameplay-controls" class="w-full flex flex-col items-center gap-4 hidden mt-6">
                 <h3 class="text-xl font-semibold text-gray-800 mb-2">حالة إجابة اللاعبين (المضيف فقط):</h3>
                 <ul id="host-submission-status-list" class="w-full bg-gray-100 border border-gray-200 rounded-lg p-3 mb-4 shadow-inner text-base max-h-32 overflow-y-auto">
                     <!-- Player submission status will be listed here -->
                 </ul>
-                <button id="end-question-early-button" class="w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out">
+                <button id="end-question-early-button" class="w-full md:w-2/3 bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300 ease-out">
                     <i class="fas fa-flag-checkered"></i> إنهاء السؤال الآن <!-- End question early button -->
                 </button>
             </div>
 
             <!-- Player-only Exit Button (visible during gameplay) -->
-            <button id="player-exit-button-gameplay" class="w-full bg-gray-500 hover:bg-gray-600 text-white text-xl font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out mt-6 hidden">
+            <button id="player-exit-button-gameplay" class="w-full md:w-2/3 bg-gray-500 hover:bg-gray-600 text-white text-xl font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out mt-6 hidden">
                 <i class="fas fa-sign-out-alt"></i> الخروج من اللعبة
             </button>
         </div>
 
         <!-- Question Results Screen (New) -->
-        <div id="question-results-screen" class="w-full hidden">
+        <div id="question-results-screen" class="w-full flex flex-col items-center hidden">
             <h2 class="text-3xl font-bold text-green-700 mb-6 text-center">نتائج السؤال!</h2>
             <p class="text-xl text-gray-700 mb-6 text-center">الفئة: <span id="results-category" class="font-bold text-indigo-600"></span></p>
             <p class="text-2xl font-semibold text-gray-800 mb-4 text-center">السؤال: <span id="results-question" class="font-bold text-gray-900"></span></p>
@@ -373,21 +382,21 @@
 
             <!-- Host controls for next question or end game -->
             <div id="question-results-host-controls" class="w-full flex flex-col items-center gap-4 hidden">
-                <button id="next-question-button" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
+                <button id="next-question-button" class="w-full md:w-2/3 bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300 ease-out flex items-center justify-center gap-3">
                     <i class="fas fa-forward"></i> السؤال التالي
                 </button>
-                <button id="end-game-final-button" class="w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
+                <button id="end-game-final-button" class="w-full md:w-2/3 bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300 ease-out flex items-center justify-center gap-3">
                     <i class="fas fa-times-circle"></i> إنهاء اللعبة
                 </button>
             </div>
             <!-- Player-only Exit Button (visible during question results) -->
-            <button id="player-exit-button-results" class="w-full bg-gray-500 hover:bg-gray-600 text-white text-xl font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out mt-6 hidden">
+            <button id="player-exit-button-results" class="w-full md:w-2/3 bg-gray-500 hover:bg-gray-600 text-white text-xl font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out mt-6 hidden">
                 <i class="fas fa-sign-out-alt"></i> الخروج من اللعبة
             </button>
         </div>
 
         <!-- Game End Screen (Final Results) -->
-        <div id="game-end-screen" class="w-full hidden">
+        <div id="game-end-screen" class="w-full flex flex-col items-center gap-4 hidden">
             <h2 class="text-3xl font-bold text-indigo-700 mb-6 text-center" id="end-title">النتائج النهائية للعبة!</h2> <!-- Game end title -->
             <p class="text-xl text-gray-600 mb-6 text-center" id="end-message"></p> <!-- End message -->
 
@@ -397,12 +406,12 @@
             </ul>
 
             <!-- Host only: Start new round in same room -->
-            <button id="start-new-round-same-room-button" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3 mb-4 hidden">
+            <button id="start-new-round-same-room-button" class="w-full md:w-2/3 bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300 ease-out flex items-center justify-center gap-3 mb-4 hidden">
                 <i class="fas fa-sync-alt"></i> بدء جولة جديدة في نفس الغرفة
             </button>
 
             <!-- All players: Play again (go to role selection) -->
-            <button id="play-again-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-out flex items-center justify-center gap-3">
+            <button id="play-again-button" class="w-full md:w-2/3 bg-blue-600 hover:bg-blue-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300 ease-out flex items-center justify-center gap-3">
                 <i class="fas fa-redo"></i> العب مرة أخرى (غرفة جديدة)
             </button>
         </div>
@@ -562,85 +571,85 @@
                     { questionText: "كمل المثل: الصحبة الزينة...", displayAnswer: "كنز ما يفنى", correctAnswers: ["كنز ما يفنى"] }
                 ]
             },
-          
-          
+            
+            
           {
-  category: "الثقافة العامة",
-  questions: [
-    { questionText: "ما اسم عاصمة فلسطين؟", displayAnswer: "القدس", correctAnswers: ["القدس", "القدس الشريف"] },
-    { questionText: "ما هو الحيوان الذي يُصدر أعلى صوت؟", displayAnswer: "الحوت الأزرق", correctAnswers: ["الحوت الأزرق"] },
-    { questionText: "في أي سنة قامت الثورة الفرنسية؟", displayAnswer: "1789", correctAnswers: ["1789"] },
-    { questionText: "من هو أول من رسم خريطة للعالم؟", displayAnswer: "الإدريسي", correctAnswers: ["الإدريسي"] },
-    { questionText: "ما هو الشيء الذي لا يمشي إلا بالضرب؟", displayAnswer: "المسمار", correctAnswers: ["المسمار"] },
-    { questionText: "ما اسم أقصر سورة في القرآن؟", displayAnswer: "سورة الكوثر", correctAnswers: ["سورة الكوثر", "الكوثر"] },
-    { questionText: "كم عدد أسنان الطفل اللبنية؟", displayAnswer: "20", correctAnswers: ["20", "عشرون"] },
-    { questionText: "ما هو الحيوان الذي يُعتبر أطول الحيوانات رقبة؟", displayAnswer: "الزرافة", correctAnswers: ["الزرافة"] },
-    { questionText: "ما اسم أول دولة عربية نالت استقلالها؟", displayAnswer: "مصر", correctAnswers: ["مصر"] },
-    { questionText: "من هو الصحابي الملقب بترجمان القرآن؟", displayAnswer: "عبد الله بن عباس", correctAnswers: ["عبد الله بن عباس", "ابن عباس"] },
-    { questionText: "ما اسم العملة في بريطانيا؟", displayAnswer: "الجنيه الإسترليني", correctAnswers: ["الجنيه الإسترليني", "إسترليني"] },
-    { questionText: "في أي دولة يوجد برج بيزا المائل؟", displayAnswer: "إيطاليا", correctAnswers: ["إيطاليا"] },
-    { questionText: "من هو أول سفير في الإسلام؟", displayAnswer: "مصعب بن عمير", correctAnswers: ["مصعب بن عمير", "مصعب"] },
-    { questionText: "من هو مؤسس الدولة العباسية؟", displayAnswer: "أبو العباس السفاح", correctAnswers: ["أبو العباس السفاح", "السفاح"] },
-    { questionText: "ما هو أسرع المخلوقات البحرية؟", displayAnswer: "سمكة الزعنفة الشراعية", correctAnswers: ["سمكة الزعنفة الشراعية", "الزعنفة الشراعية"] },
-    { questionText: "من أول من آمن من الصبيان؟", displayAnswer: "علي بن أبي طالب", correctAnswers: ["علي بن أبي طالب", "علي"] },
-    { questionText: "ما اسم الدولة التي يُطلق عليها 'أرض الشمس المشرقة'؟", displayAnswer: "اليابان", correctAnswers: ["اليابان"] },
-    { questionText: "كم عدد النجوم على علم الولايات المتحدة؟", displayAnswer: "50", correctAnswers: ["50", "خمسون"] },
-    { questionText: "ما هو المضيق الذي يفصل بين إفريقيا وأوروبا؟", displayAnswer: "مضيق جبل طارق", correctAnswers: ["مضيق جبل طارق", "جبل طارق"] },
-    { questionText: "من هو الفيلسوف الذي قال: 'أنا أفكر إذن أنا موجود'؟", displayAnswer: "ديكارت", correctAnswers: ["ديكارت", "رينيه ديكارت"] },
-    { questionText: "ما اسم الكتاب السماوي الذي أُنزل على عيسى عليه السلام؟", displayAnswer: "الإنجيل", correctAnswers: ["الإنجيل"] },
-    { questionText: "ما اسم المدينة التي تُعرف بمدينة الضباب؟", displayAnswer: "لندن", correctAnswers: ["لندن"] },
-    { questionText: "كم عدد لاعبي فريق كرة القدم الأساسي؟", displayAnswer: "11", correctAnswers: ["11", "أحد عشر"] },
-    { questionText: "من هو العالم المسلم الذي اشتهر بالطب والجراحة؟", displayAnswer: "الزهراوي", correctAnswers: ["الزهراوي"] },
-    { questionText: "ما هو أقدم علم في التاريخ؟", displayAnswer: "الفلك", correctAnswers: ["الفلك", "علم الفلك"] },
-    { questionText: "من أول من استخدم الشوكة في الأكل؟", displayAnswer: "العرب", correctAnswers: ["العرب"] },
-    { questionText: "من هو أول من كتب بسم الله الرحمن الرحيم؟", displayAnswer: "سليمان عليه السلام", correctAnswers: ["سليمان", "سليمان عليه السلام"] },
-    { questionText: "ما اسم الطائر الذي كلمه النبي سليمان؟", displayAnswer: "الهدهد", correctAnswers: ["الهدهد"] },
-    { questionText: "ما اسم أكبر جزر العالم؟", displayAnswer: "جرينلاند", correctAnswers: ["جرينلاند", "غرينلاند"] },
-    { questionText: "ما هو الحيوان الذي يمتلك حاسة شم أقوى من الكلب؟", displayAnswer: "الدب", correctAnswers: ["الدب"] },
-    { questionText: "ما اسم عاصمة ليبيا؟", displayAnswer: "طرابلس", correctAnswers: ["طرابلس"] },
-    { questionText: "ما اسم أكبر بحيرة عذبة في العالم؟", displayAnswer: "بحيرة سوبيريور", correctAnswers: ["بحيرة سوبيريور"] },
-    { questionText: "ما هو العلم الذي يدرس الأحياء المجهرية؟", displayAnswer: "علم الميكروبيولوجيا", correctAnswers: ["علم الميكروبيولوجيا", "الميكروبيولوجيا"] },
-    { questionText: "من هو القائد الذي فتح الأندلس؟", displayAnswer: "طارق بن زياد", correctAnswers: ["طارق بن زياد", "طارق"] },
-    { questionText: "ما اسم العضو الذي يضخ الدم في الجسم؟", displayAnswer: "القلب", correctAnswers: ["القلب"] },
-    { questionText: "ما اسم أول دولة فازت بكأس العالم؟", displayAnswer: "الأوروغواي", correctAnswers: ["الأوروغواي", "أوروغواي"] },
-    { questionText: "من هو الصحابي الذي اهتز له عرش الرحمن؟", displayAnswer: "سعد بن معاذ", correctAnswers: ["سعد بن معاذ", "سعد"] },
-    { questionText: "ما اسم أكبر مدينة في العالم من حيث عدد السكان؟", displayAnswer: "طوكيو", correctAnswers: ["طوكيو"] },
-    { questionText: "ما اسم الحيوان الذي يعيش في الماء واليابسة؟", displayAnswer: "الضفدع", correctAnswers: ["الضفدع"] },
-    { questionText: "كم عدد أجنحة الملَك؟", displayAnswer: "600", correctAnswers: ["600", "ستمئة"] },
-    { questionText: "من هو الخليفة الذي أنشأ نظام البريد؟", displayAnswer: "عمر بن الخطاب", correctAnswers: ["عمر بن الخطاب", "عمر"] },
-    { questionText: "من هو العالم الذي اخترع المصعد؟", displayAnswer: "إليشا أوتيس", correctAnswers: ["إليشا أوتيس", "أوتيس"] },
-    { questionText: "ما هو أصل كلمة 'بنطلون'؟", displayAnswer: "فرنسية", correctAnswers: ["فرنسية"] },
-    { questionText: "في أي قارة تقع دولة كينيا؟", displayAnswer: "أفريقيا", correctAnswers: ["أفريقيا"] },
-    { questionText: "ما اسم الجهاز الذي يقيس سرعة الرياح؟", displayAnswer: "الأنيمومتر", correctAnswers: ["الأنيمومتر"] },
-    { questionText: "من هو الشاعر الجاهلي الذي لقب بالملك الضليل؟", displayAnswer: "امرؤ القيس", correctAnswers: ["امرؤ القيس"] },
-    { questionText: "كم عدد عيون النحلة؟", displayAnswer: "5", correctAnswers: ["5", "خمسة"] },
-    { questionText: "ما اسم الجبل الذي كلم الله عليه موسى؟", displayAnswer: "جبل الطور", correctAnswers: ["جبل الطور", "الطور"] },
-    { questionText: "ما اسم الكتاب الذي كتبه ابن خلدون؟", displayAnswer: "المقدمة", correctAnswers: ["المقدمة"] },
-    { questionText: "ما اسم أكبر نهر في أوروبا؟", displayAnswer: "نهر الفولغا", correctAnswers: ["نهر الفولغا", "الفولغا"] },
-    { questionText: "من هو أول من خطّ بالقلم؟", displayAnswer: "إدريس عليه السلام", correctAnswers: ["إدريس", "إدريس عليه السلام"] },
-    { questionText: "ما هو أول شيء خلقه الله؟", displayAnswer: "القلم", correctAnswers: ["القلم"] },
-    { questionText: "ما اسم الغاز الذي تنفثه السيارات؟", displayAnswer: "ثاني أكسيد الكربون", correctAnswers: ["ثاني أكسيد الكربون", "CO2"] },
-    { questionText: "ما اسم أبطأ الكائنات في العالم؟", displayAnswer: "الكسلان", correctAnswers: ["الكسلان"] },
-    { questionText: "من هو صاحب كتاب 'الأغاني'؟", displayAnswer: "أبو الفرج الأصفهاني", correctAnswers: ["أبو الفرج الأصفهاني"] },
-    { questionText: "ما اسم أول دولة عربية استضافت كأس العالم؟", displayAnswer: "قطر", correctAnswers: ["قطر"] },
-    { questionText: "ما اسم الدولة التي تتكون من 7000 جزيرة؟", displayAnswer: "الفلبين", correctAnswers: ["الفلبين"] },
-    { questionText: "من هو الصحابي الذي جمع القرآن الكريم في عهد عثمان؟", displayAnswer: "زيد بن ثابت", correctAnswers: ["زيد بن ثابت", "زيد"] },
-    { questionText: "كم عدد أرجل الحشرة؟", displayAnswer: "6", correctAnswers: ["6", "ستة"] },
-    { questionText: "من أول من سكن مكة؟", displayAnswer: "قبيلة جرهم", correctAnswers: ["قبيلة جرهم", "جرهم"] },
-    { questionText: "ما اسم أول كائن خلقه الله من الملائكة؟", displayAnswer: "جبريل", correctAnswers: ["جبريل"] },
-    { questionText: "ما اسم المرض الذي يُصيب كريات الدم الحمراء؟", displayAnswer: "فقر الدم", correctAnswers: ["فقر الدم", "أنيميا"] },
-    { questionText: "ما اسم وحدة قياس الضغط الجوي؟", displayAnswer: "بار", correctAnswers: ["بار"] },
-    { questionText: "ما اسم أصغر قارة في العالم؟", displayAnswer: "أوقيانوسيا", correctAnswers: ["أوقيانوسيا"] }
-  ]
+        category: "الثقافة العامة",
+        questions: [
+        { questionText: "ما اسم عاصمة فلسطين؟", displayAnswer: "القدس", correctAnswers: ["القدس", "القدس الشريف"] },
+        { questionText: "ما هو الحيوان الذي يُصدر أعلى صوت؟", displayAnswer: "الحوت الأزرق", correctAnswers: ["الحوت الأزرق"] },
+        { questionText: "في أي سنة قامت الثورة الفرنسية؟", displayAnswer: "1789", correctAnswers: ["1789"] },
+        { questionText: "من هو أول من رسم خريطة للعالم؟", displayAnswer: "الإدريسي", correctAnswers: ["الإدريسي"] },
+        { questionText: "ما هو الشيء الذي لا يمشي إلا بالضرب؟", displayAnswer: "المسمار", correctAnswers: ["المسمار"] },
+        { questionText: "ما اسم أقصر سورة في القرآن؟", displayAnswer: "سورة الكوثر", correctAnswers: ["سورة الكوثر", "الكوثر"] },
+        { questionText: "كم عدد أسنان الطفل اللبنية؟", displayAnswer: "20", correctAnswers: ["20", "عشرون"] },
+        { questionText: "ما هو الحيوان الذي يُعتبر أطول الحيوانات رقبة؟", displayAnswer: "الزرافة", correctAnswers: ["الزرافة"] },
+        { questionText: "ما اسم أول دولة عربية نالت استقلالها؟", displayAnswer: "مصر", correctAnswers: ["مصر"] },
+        { questionText: "من هو الصحابي الملقب بترجمان القرآن؟", displayAnswer: "عبد الله بن عباس", correctAnswers: ["عبد الله بن عباس", "ابن عباس"] },
+        { questionText: "ما اسم العملة في بريطانيا؟", displayAnswer: "الجنيه الإسترليني", correctAnswers: ["الجنيه الإسترليني", "إسترليني"] },
+        { questionText: "في أي دولة يوجد برج بيزا المائل؟", displayAnswer: "إيطاليا", correctAnswers: ["إيطاليا"] },
+        { questionText: "من هو أول سفير في الإسلام؟", displayAnswer: "مصعب بن عمير", correctAnswers: ["مصعب بن عمير", "مصعب"] },
+        { questionText: "من هو مؤسس الدولة العباسية؟", displayAnswer: "أبو العباس السفاح", correctAnswers: ["أبو العباس السفاح", "السفاح"] },
+        { questionText: "ما هو أسرع المخلوقات البحرية؟", displayAnswer: "سمكة الزعنفة الشراعية", correctAnswers: ["سمكة الزعنفة الشراعية", "الزعنفة الشراعية"] },
+        { questionText: "من أول من آمن من الصبيان؟", displayAnswer: "علي بن أبي طالب", correctAnswers: ["علي بن أبي طالب", "علي"] },
+        { questionText: "ما اسم الدولة التي يُطلق عليها 'أرض الشمس المشرقة'؟", displayAnswer: "اليابان", correctAnswers: ["اليابان"] },
+        { questionText: "كم عدد النجوم على علم الولايات المتحدة؟", displayAnswer: "50", correctAnswers: ["50", "خمسون"] },
+        { questionText: "ما هو المضيق الذي يفصل بين إفريقيا وأوروبا؟", displayAnswer: "مضيق جبل طارق", correctAnswers: ["مضيق جبل طارق", "جبل طارق"] },
+        { questionText: "من هو الفيلسوف الذي قال: 'أنا أفكر إذن أنا موجود'؟", displayAnswer: "ديكارت", correctAnswers: ["ديكارت", "رينيه ديكارت"] },
+        { questionText: "ما اسم الكتاب السماوي الذي أُنزل على عيسى عليه السلام؟", displayAnswer: "الإنجيل", correctAnswers: ["الإنجيل"] },
+        { questionText: "ما اسم المدينة التي تُعرف بمدينة الضباب؟", displayAnswer: "لندن", correctAnswers: ["لندن"] },
+        { questionText: "كم عدد لاعبي فريق كرة القدم الأساسي؟", displayAnswer: "11", correctAnswers: ["11", "أحد عشر"] },
+        { questionText: "من هو العالم المسلم الذي اشتهر بالطب والجراحة؟", displayAnswer: "الزهراوي", correctAnswers: ["الزهراوي"] },
+        { questionText: "ما هو أقدم علم في التاريخ؟", displayAnswer: "الفلك", correctAnswers: ["الفلك", "علم الفلك"] },
+        { questionText: "من أول من استخدم الشوكة في الأكل؟", displayAnswer: "العرب", correctAnswers: ["العرب"] },
+        { questionText: "من هو أول من كتب بسم الله الرحمن الرحيم؟", displayAnswer: "سليمان عليه السلام", correctAnswers: ["سليمان", "سليمان عليه السلام"] },
+        { questionText: "ما اسم الطائر الذي كلمه النبي سليمان؟", displayAnswer: "الهدهد", correctAnswers: ["الهدهد"] },
+        { questionText: "ما اسم أكبر جزر العالم؟", displayAnswer: "جرينلاند", correctAnswers: ["جرينلاند", "غرينلاند"] },
+        { questionText: "ما هو الحيوان الذي يمتلك حاسة شم أقوى من الكلب؟", displayAnswer: "الدب", correctAnswers: ["الدب"] },
+        { questionText: "ما اسم عاصمة ليبيا؟", displayAnswer: "طرابلس", correctAnswers: ["طرابلس"] },
+        { questionText: "ما اسم أكبر بحيرة عذبة في العالم؟", displayAnswer: "بحيرة سوبيريور", correctAnswers: ["بحيرة سوبيريور"] },
+        { questionText: "ما هو العلم الذي يدرس الأحياء المجهرية؟", displayAnswer: "علم الميكروبيولوجيا", correctAnswers: ["علم الميكروبيولوجيا", "الميكروبيولوجيا"] },
+        { questionText: "من هو القائد الذي فتح الأندلس؟", displayAnswer: "طارق بن زياد", correctAnswers: ["طارق بن زياد", "طارق"] },
+        { questionText: "ما اسم العضو الذي يضخ الدم في الجسم؟", displayAnswer: "القلب", correctAnswers: ["القلب"] },
+        { questionText: "ما اسم أول دولة فازت بكأس العالم؟", displayAnswer: "الأوروغواي", correctAnswers: ["الأوروغواي", "أوروغواي"] },
+        { questionText: "من هو الصحابي الذي اهتز له عرش الرحمن؟", displayAnswer: "سعد بن معاذ", correctAnswers: ["سعد بن معاذ", "سعد"] },
+        { questionText: "ما اسم أكبر مدينة في العالم من حيث عدد السكان؟", displayAnswer: "طوكيو", correctAnswers: ["طوكيو"] },
+        { questionText: "ما اسم الحيوان الذي يعيش في الماء واليابسة؟", displayAnswer: "الضفدع", correctAnswers: ["الضفدع"] },
+        { questionText: "كم عدد أجنحة الملَك؟", displayAnswer: "600", correctAnswers: ["600", "ستمئة"] },
+        { questionText: "من هو الخليفة الذي أنشأ نظام البريد؟", displayAnswer: "عمر بن الخطاب", correctAnswers: ["عمر بن الخطاب", "عمر"] },
+        { questionText: "من هو العالم الذي اخترع المصعد؟", displayAnswer: "إليشا أوتيس", correctAnswers: ["إليشا أوتيس", "أوتيس"] },
+        { questionText: "ما هو أصل كلمة 'بنطلون'؟", displayAnswer: "فرنسية", correctAnswers: ["فرنسية"] },
+        { questionText: "في أي قارة تقع دولة كينيا؟", displayAnswer: "أفريقيا", correctAnswers: ["أفريقيا"] },
+        { questionText: "ما اسم الجهاز الذي يقيس سرعة الرياح؟", displayAnswer: "الأنيمومتر", correctAnswers: ["الأنيمومتر"] },
+        { questionText: "من هو الشاعر الجاهلي الذي لقب بالملك الضليل؟", displayAnswer: "امرؤ القيس", correctAnswers: ["امرؤ القيس"] },
+        { questionText: "كم عدد عيون النحلة؟", displayAnswer: "5", correctAnswers: ["5", "خمسة"] },
+        { questionText: "ما اسم الجبل الذي كلم الله عليه موسى؟", displayAnswer: "جبل الطور", correctAnswers: ["جبل الطور", "الطور"] },
+        { questionText: "ما اسم الكتاب الذي كتبه ابن خلدون؟", displayAnswer: "المقدمة", correctAnswers: ["المقدمة"] },
+        { questionText: "ما اسم أكبر نهر في أوروبا؟", displayAnswer: "نهر الفولغا", correctAnswers: ["نهر الفولغا", "الفولغا"] },
+        { questionText: "من هو أول من خطّ بالقلم؟", displayAnswer: "إدريس عليه السلام", correctAnswers: ["إدريس", "إدريس عليه السلام"] },
+        { questionText: "ما هو أول شيء خلقه الله؟", displayAnswer: "القلم", correctAnswers: ["القلم"] },
+        { questionText: "ما اسم الغاز الذي تنفثه السيارات؟", displayAnswer: "ثاني أكسيد الكربون", correctAnswers: ["ثاني أكسيد الكربون", "CO2"] },
+        { questionText: "ما اسم أبطأ الكائنات في العالم؟", displayAnswer: "الكسلان", correctAnswers: ["الكسلان"] },
+        { questionText: "من هو صاحب كتاب 'الأغاني'؟", displayAnswer: "أبو الفرج الأصفهاني", correctAnswers: ["أبو الفرج الأصفهاني"] },
+        { questionText: "ما اسم أول دولة عربية استضافت كأس العالم؟", displayAnswer: "قطر", correctAnswers: ["قطر"] },
+        { questionText: "ما اسم الدولة التي تتكون من 7000 جزيرة؟", displayAnswer: "الفلبين", correctAnswers: ["الفلبين"] },
+        { questionText: "من هو الصحابي الذي جمع القرآن الكريم في عهد عثمان؟", displayAnswer: "زيد بن ثابت", correctAnswers: ["زيد بن ثابت", "زيد"] },
+        { questionText: "كم عدد أرجل الحشرة؟", displayAnswer: "6", correctAnswers: ["6", "ستة"] },
+        { questionText: "من أول من سكن مكة؟", displayAnswer: "قبيلة جرهم", correctAnswers: ["قبيلة جرهم", "جرهم"] },
+        { questionText: "ما اسم أول كائن خلقه الله من الملائكة؟", displayAnswer: "جبريل", correctAnswers: ["جبريل"] },
+        { questionText: "ما اسم المرض الذي يُصيب كريات الدم الحمراء؟", displayAnswer: "فقر الدم", correctAnswers: ["فقر الدم", "أنيميا"] },
+        { questionText: "ما اسم وحدة قياس الضغط الجوي؟", displayAnswer: "بار", correctAnswers: ["بار"] },
+        { questionText: "ما اسم أصغر قارة في العالم؟", displayAnswer: "أوقيانوسيا", correctAnswers: ["أوقيانوسيا"] }
+        ]
             },
 
-          
-          
+            
+            
             {
                 category: " اسئلة الشلة ",
                 questions: [
                     { questionText: " كي نقولو كنترول شنوة يجي للبالك ؟  ", displayAnswer: "كعبورة", correctAnswers: ["لمكعبر", "كعبر" , " ka3boura " , " كعبورة "   ] },
-                    { questionText: "   شكون الي يفلم برشا في الشلة و يحب يجيبها يعرف كل شي ؟   ", displayAnswer: " ولد الورغي   ", correctAnswers: [" lou ", "لؤي" , " louay " , " ولد الورغي " ] },
+                    { questionText: "     شكون الي يفلم برشا في الشلة و يحب يجيبها يعرف كل شي ؟    ", displayAnswer: " ولد الورغي   ", correctAnswers: [" lou ", "لؤي" , " louay " , " ولد الورغي " ] },
                     { questionText: " قلك عمرك ما ترمي القزاز في طريق الرجالة ... ", displayAnswer: "يجي نهار و تقصدهم حفيان ، و اضرب نعنبو الي بكاهم واطا واطططططط ", correctAnswers: ["يجي نهار و تقصدهم حفيان", "واطططططط"] },
                     { questionText: "قلك على شلة تجي كل يوم للقهوة علالة و لا نهار قعدو مع طفلة ", displayAnswer: "شلتنا", correctAnswers: ["النياكة", "المكاحيط" , " المنيكين " ] },
                     { questionText: "شكون انيك واحد في الشلة ؟  ", displayAnswer: "كلكم كي زبي ", correctAnswers: ["الكل", "hama" , " الزعيم "  , " za3im " , " louay " , "ka3boura" , " lahdir " , " hayder "] },
@@ -650,12 +659,11 @@
                     { questionText: "شكون اكثر واحد يكره صاحبة الحرقاسة ؟ ", displayAnswer: "ولد الورغي اكيد ", correctAnswers: ["ولد الورغي", "louay" , "لؤي" ] }
                 ]
             },
-          
-          
-          
-          
-          
-          
+            
+            
+            
+            
+            
             {
                 category: "حيوانات الغابة",
                 questions: [
@@ -1708,8 +1716,8 @@
                         throw new Error("لقد أجبت بالفعل على هذا السؤال.");
                     }
                     if (playerUsedPointsBets.includes(pointsBet)) {
-                          console.log("Player already used this point value in this game (transaction check).");
-                          throw new Error(`لقد استخدمت قيمة ${pointsBet} نقطة بالفعل في هذه اللعبة. الرجاء اختيار قيمة أخرى.`);
+                         console.log("Player already used this point value in this game (transaction check).");
+                         throw new Error(`لقد استخدمت قيمة ${pointsBet} نقطة بالفعل في هذه اللعبة. الرجاء اختيار قيمة أخرى.`);
                     }
 
                     transaction.update(playerRef, {
@@ -2007,7 +2015,7 @@
                             if (hostIdFromGame && hostIdFromGame === playerId) {
                                 playerDisplayName += ' <i class="fas fa-crown text-yellow-500"></i> (المضيف)';
                             }
-                            listItem.innerHTML = `${playerDisplayName} (ID: ${playerId} - النقاط: ${playerData.score || 0})`;
+                            listItem.innerHTML = `${playerDisplayName} <span class="font-bold">(النقاط: ${playerData.score || 0})</span>`;
                             joinedPlayersList.appendChild(listItem);
                         }
 
@@ -2026,7 +2034,7 @@
                                 statusIcon = '<i class="fas fa-check-circle text-green-500 ml-2"></i>';
                                 submittedAnswerText = `إجابة: ${submittedAnswerActual || 'لا توجد'}`;
                                 if (scoreChangeValue !== 0 || selectedPointsActual > 0) {
-                                     scoreInfo = `(راهن بـ ${selectedPointsActual} نقطة، تغيير: ${scoreChangeValue >= 0 ? '+' : ''}${scoreChangeValue} نقطة)`;
+                                        scoreInfo = `(راهن بـ ${selectedPointsActual} نقطة، تغيير: ${scoreChangeValue >= 0 ? '+' : ''}${scoreChangeValue} نقطة)`;
                                 }
                             } else {  
                                 statusIcon = '<i class="fas fa-hourglass-half text-gray-500 ml-2"></i>';
@@ -2086,7 +2094,7 @@
                         if (questionPlayerScoresList) {
                             questionScores.forEach((player, index) => {
                                 const listItem = document.createElement('li');
-                                listItem.classList.add('py-2', 'px-4', 'rounded-lg', 'mb-2', 'bg-gray-50');
+                                listItem.classList.add('py-2', 'px-4', 'rounded-lg', 'mb-2', 'bg-gray-50', 'flex', 'flex-wrap', 'justify-center', 'items-center', 'gap-x-4');
                                 
                                 let answerStatusIcon = '';
                                 let answerColorClass = 'text-gray-700';
@@ -2110,11 +2118,9 @@
                                 }
 
                                 listItem.innerHTML = `
-                                    <span class="font-bold">المركز ${index + 1}: ${player.nickname}:</span>  
+                                    <span class="font-bold">المركز ${index + 1}: ${player.nickname}</span>  
                                     <span class="${answerColorClass}">${answerStatusIcon} ${player.submittedAnswer}</span>  
-                                    (راهن بـ ${player.selectedPoints} نقطة،  
-                                    ${player.scoreChange >= 0 ? '+' : ''}${player.scoreChange} نقطة،  
-                                    إجمالي: ${player.overallScore})
+                                    <span class="text-xs text-gray-600">(راهن بـ ${player.selectedPoints} | تغيير: ${player.scoreChange >= 0 ? '+' : ''}${player.scoreChange} | إجمالي: ${player.overallScore})</span>
                                 `;
                                 questionPlayerScoresList.appendChild(listItem);
                             });
@@ -2155,7 +2161,7 @@
                             const listItem = document.createElement('li');
                             listItem.classList.add('py-2', 'px-4', 'rounded-lg', 'mb-2');
                             if (index === 0) {
-                                listItem.classList.add('bg-yellow-200', 'font-bold', 'text-yellow-800');
+                                listItem.classList.add('bg-yellow-200', 'font-bold', 'text-yellow-800', 'scale-105', 'shadow-lg');
                                 listItem.innerHTML = `<i class="fas fa-trophy text-yellow-600 mr-2"></i> المركز الأول: ${player.nickname} - ${player.score} نقطة`;
                             } else {
                                 listItem.classList.add('bg-gray-50');
@@ -2164,7 +2170,7 @@
                             finalScoresList.appendChild(listItem);
                         });
                         if (endTitle) endTitle.textContent = "انتهت اللعبة!";
-                        if (endMessage) endTitle.textContent = `فاز ${finalScores[0].nickname} بـ ${finalScores[0].score} نقطة!`;
+                        if (endMessage) endMessage.textContent = `تهانينا! فاز ${finalScores[0].nickname} بـ ${finalScores[0].score} نقطة!`;
                     } else {
                         if (endTitle) endTitle.textContent = "انتهت اللعبة!";
                         if (endMessage) endMessage.textContent = "لم يكن هناك لاعبون في هذه الجولة.";
@@ -2222,43 +2228,6 @@
 
         // Play again button (always returns to role selection)
         if (playAgainButton) { playAgainButton.addEventListener('click', exitGame); }
-
-        // customMessageCloseButton is no longer directly used as it's now dynamically generated within showCustomMessageBox.
-        // It was the old way to dismiss a single-button message box. The new customMessageBox handles button clicks via callbacks.
-        // if (customMessageCloseButton) customMessageCloseButton.addEventListener('click', hideCustomMessageBox);
     </script>
-
-
-
-   
-<!-- مكتبة QR Code -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-<script>
-  function generateQRCode(link) {
-    const qrcodeContainer = document.getElementById("qrcode");
-    qrcodeContainer.innerHTML = ""; // ننظف القديم
-
-    new QRCode(qrcodeContainer, {
-      text: link,
-      width: 150,
-      height: 150,
-    });
-  }
-
-  // عند عرض رابط الغرفة
-  window.addEventListener('DOMContentLoaded', () => {
-    const link = window.location.href; // أو أي رابط الغرفة
-    const linkDisplay = document.getElementById("game-link-display");
-    if (linkDisplay) {
-      linkDisplay.textContent = link;
-    }
-    generateQRCode(link);
-  });
-</script>
-
-    
-
-    
 </body>
 </html>
