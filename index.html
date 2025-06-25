@@ -273,7 +273,7 @@
         let userUsedPointsBets = [];
         let currentQuestionSoundInterval = null;
         let soundStarted = false;
-        let selectedQuizIndices = [];
+        let selectedQuizIndices = []; // <-- FIX: Variable declared in the global scope
 
         // ALL QUIZ CATEGORIES RESTORED
         const quizzes = [
