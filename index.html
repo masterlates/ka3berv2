@@ -429,7 +429,7 @@
     <script type="text/javascript" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode.js/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script type="text/javascript">
       // JAVASCRIPT LOGIC
        let app, db, auth, userId, userNickname, appId;
@@ -592,9 +592,9 @@
 
         function showLoading() { if (loadingOverlay) loadingOverlay.classList.remove('hidden'); }
         function hideLoading() { if (loadingOverlay) loadingOverlay.classList.add('hidden'); }
-        function showCustomMessageBox(title, content, options = {}) { if (!customMessageBox) { alert(`${title}\n${content}`); return; } customMessageTitle.textContent = title; customMessageContent.innerHTML = content; customMessageButtonsContainer.innerHTML = ''; const buttonsToRender = options.buttons || [{ text: 'حسناً', callback: hideCustomMessageBox, className: 'bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded' }]; buttonsToRender.forEach(btnConfig => { const button = document.createElement('button'); button.textContent = btnConfig.text; button.className = btnConfig.className || 'bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'; button.onclick = () => { if (btnConfig.callback) btnConfig.callback(); hideCustomMessageBox(); }; customMessageButtonsContainer.appendChild(button); }); customMessageBox.classList.remove('hidden'); }
-        function hideCustomMessageBox() { if (customMessageBox) { customMessageBox.classList.add('hidden'); } }
-        function showScreen(screenElement) { if (!screenElement) return; [roleSelectionScreen, hostSetupScreen, waitingRoomScreen, joinGameScreen, gamePlayScreen, questionResultsScreen, gameEndScreen, gameCountdownScreen].forEach(s => s.classList.add('hidden')); screenElement.classList.remove('hidden'); }
+        function showCustomMessageBox(title, content, options = {}) { if (!customMessageBox) { alert(`${title}\n${content}`); return; } customMessageTitle.textContent = title; customMessageContent.innerHTML = content; customMessageButtonsContainer.innerHTML = ''; const buttonsToRender = options.buttons || [{ text: 'حسناً', callback: hideCustomMessageBox, className: 'bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded' }]; buttonsToRender.forEach(btnConfig => { const button = document.createElement('button'); button.textContent = btnConfig.text; button.className = btnConfig.className || 'bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'; button.onclick = () => { if (btnConfig.callback) btnConfig.callback(); hideCustomMessageBox(); }; customMessageButtonsContainer.appendChild(button); }); customMessageBox.classList.remove('hidden', 'opacity-0'); customMessageBox.classList.add('flex', 'opacity-100'); }
+        function hideCustomMessageBox() { if (customMessageBox) { customMessageBox.classList.add('hidden', 'opacity-0'); } }
+        function showScreen(screenElement) { if (!screenElement) return; [roleSelectionScreen, hostSetupScreen, waitingRoomScreen, joinGameScreen, gamePlayScreen, questionResultsScreen, gameEndScreen, gameCountdownScreen].forEach(s => { if(s) s.classList.add('hidden'); }); screenElement.classList.remove('hidden'); }
 
         function exitGame() { showLoading(); if (lobbyMusicLoop && lobbyMusicLoop.state === "started") { Tone.Transport.stop(); lobbyMusicLoop.stop(0); } gameId = null; isHost = false; clearInterval(timerInterval); clearInterval(currentQuestionSoundInterval); soundStarted = false; if (gameSnapshotUnsubscribe) gameSnapshotUnsubscribe(); if (playersSnapshotUnsubscribe) playersSnapshotUnsubscribe(); selectedQuizIndices = []; userUsedPointsBets = []; populatePointsButtons(); window.history.pushState({}, '', window.location.pathname); hideLoading(); showScreen(roleSelectionScreen); }
         async function generateUniqueGameCode() { let newGameId; let isUnique = false; for (let i = 0; i < 10 && !isUnique; i++) { newGameId = String(Math.floor(100 + Math.random() * 900)); const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(newGameId); const docSnap = await gameRef.get(); if (!docSnap.exists) isUnique = true; } if (!isUnique) throw new Error("فشل توليد رمز غرفة فريد."); return newGameId; }
@@ -603,8 +603,16 @@
             showLoading();
             try {
                 const hostNickname = hostNicknameInput.value.trim();
-                if (!hostNickname) throw new Error("الرجاء إدخال اسمك المستعار.");
-                if (selectedQuizIndices.length === 0) throw new Error("الرجاء اختيار فئة واحدة على الأقل.");
+                if (!hostNickname) {
+                    showCustomMessageBox("خطأ", "الرجاء إدخال اسمك المستعار.");
+                    hideLoading();
+                    return; 
+                }
+                if (selectedQuizIndices.length === 0) {
+                    showCustomMessageBox("خطأ", "الرجاء اختيار فئة واحدة على الأقل.");
+                    hideLoading();
+                    return;
+                }
 
                 gameId = await generateUniqueGameCode();
                 isHost = true;
@@ -613,19 +621,36 @@
                 const timeLimit = parseInt(timeLimitSelect.value);
                 const totalQuestions = parseInt(totalQuestionsPerGameSelect.value);
                 let allPossibleQuestions = [];
-                selectedQuizIndices.forEach(catIndex => { const category = quizzes[catIndex]; if (category && category.questions) { category.questions.forEach(q => allPossibleQuestions.push({ ...q, category: category.category, correctAnswers: q.correctAnswers.map(normalize) })); } });
+                selectedQuizIndices.forEach(catIndex => { const category = quizzes[catIndex]; if (category && category.questions) { category.questions.forEach(q => allPossibleQuestions.push({ questionText: q.questionText, displayAnswer: q.displayAnswer, category: category.category, correctAnswers: q.correctAnswers.map(normalize) })); } });
                 for (let i = allPossibleQuestions.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [allPossibleQuestions[i], allPossibleQuestions[j]] = [allPossibleQuestions[j], allPossibleQuestions[i]]; }
                 const quizSetForGame = allPossibleQuestions.slice(0, totalQuestions);
-                if (quizSetForGame.length === 0) throw new Error("الفئات المختارة لا تحتوي على أسئلة.");
+                if (quizSetForGame.length === 0) {
+                     showCustomMessageBox("خطأ", "الفئات المختارة لا تحتوي على أسئلة.");
+                     hideLoading();
+                     return;
+                }
 
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
-                await gameRef.set({ hostId: userId, gamePhase: 'lobby', quizSet: quizSetForGame, currentQuestionIndexInGame: 0, timeLimitPerQuestion: timeLimit, lastHostTimeUpdate: null, currentTime: timeLimit });
+                await gameRef.set({ hostId: userId, gamePhase: 'lobby', quizSet: quizSetForGame, currentQuestionIndexInGame: 0, timeLimitPerQuestion: timeLimit });
+                
                 const playerRef = gameRef.collection('players').doc(userId);
                 await playerRef.set({ nickname: hostNickname, score: 0, joinedAt: Date.now(), usedPointsBets: [], powerUpsUsed: { doublePoints: false, extraTime: false, hint: false } });
                 
                 const gameRoomLink = `${window.location.origin}${window.location.pathname}?gameId=${gameId}`;
                 if (gameLinkDisplay) gameLinkDisplay.textContent = gameRoomLink;
-                if (qrcodeDiv) { qrcodeDiv.innerHTML = ''; new QRCode(qrcodeDiv, { text: gameRoomLink, width: 128, height: 128 }); }
+                if (qrcodeDiv) {
+                    qrcodeDiv.innerHTML = '';
+                    try {
+                        if (typeof QRCode !== 'undefined') {
+                            new QRCode(qrcodeDiv, { text: gameRoomLink, width: 128, height: 128 });
+                        } else {
+                            throw new Error("QRCode library not loaded");
+                        }
+                    } catch(e) {
+                         console.error("Failed to generate QR Code:", e);
+                         if(qrcodeFallbackMessage) qrcodeFallbackMessage.textContent = "فشل توليد رمز QR.";
+                    }
+                }
                 if (copyLinkButton) copyLinkButton.onclick = () => { navigator.clipboard.writeText(gameRoomLink).then(() => showCustomMessageBox("تم النسخ!", "تم نسخ رابط الغرفة."), () => showCustomMessageBox("خطأ", "فشل نسخ الرابط.")); };
 
                 showScreen(waitingRoomScreen);
@@ -636,10 +661,85 @@
         }
         
         async function initiateGameStartCountdown() { if (!gameId || !isHost) return; showLoading(); try { const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId); await gameRef.update({ gamePhase: 'game_countdown', countdownStartTime: Date.now() }); } catch (e) { showCustomMessageBox("خطأ", "فشل بدء العد التنازلي."); } finally { hideLoading(); } }
-        async function startNextQuestion() { showLoading(); try { if (!gameId || !isHost) return; const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId); const gameDoc = await gameRef.get(); if (!gameDoc.exists) return; const gameData = gameDoc.data(); const newIndex = gameData.currentQuestionIndexInGame; if (newIndex >= gameData.quizSet.length) { await gameRef.update({ gamePhase: 'final_results' }); return; } const currentQuestion = gameData.quizSet[newIndex]; await gameRef.update({ gamePhase: 'question_active', currentQuestionIndexInGame: newIndex, currentQuestionText: currentQuestion.questionText, currentDisplayAnswer: currentQuestion.displayAnswer, currentCorrectAnswers: currentQuestion.correctAnswers, currentCategory: currentQuestion.category, questionStartTime: Date.now(), currentTime: gameData.timeLimitPerQuestion, lastHostTimeUpdate: Date.now() }); const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`); const playersDocs = await playersCollectionRef.get(); const batch = db.batch(); playersDocs.docs.forEach(playerDoc => { batch.update(playerDoc.ref, { hasSubmittedAnswer: false, playerSubmittedAnswer: '', playerScoreChange: 0 }); }); await batch.commit(); } catch (e) { showCustomMessageBox("خطأ", e.message); } finally { hideLoading(); } }
-        async function endQuestionEarly() { if (!isHost || !gameId) return; showLoading(); try { const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId); await gameRef.update({ gamePhase: 'question_results', scoresReconciledForCurrentQuestion: false, currentTime: 0 }); } catch (e) { showCustomMessageBox("خطأ", "فشل إنهاء السؤال."); } finally { hideLoading(); } }
+        
+        async function startNextQuestion() {
+            showLoading();
+            try {
+                if (!gameId || !isHost) return;
+                const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
+                const gameDoc = await gameRef.get();
+                if (!gameDoc.exists) return;
+                const gameData = gameDoc.data();
+                const newIndex = gameData.currentQuestionIndexInGame;
+                if (newIndex >= gameData.quizSet.length) {
+                    await gameRef.update({ gamePhase: 'final_results' });
+                    return;
+                }
+                const currentQuestion = gameData.quizSet[newIndex];
+                await gameRef.update({
+                    gamePhase: 'question_active',
+                    currentQuestionIndexInGame: newIndex + 1,
+                    currentQuestionText: currentQuestion.questionText,
+                    currentDisplayAnswer: currentQuestion.displayAnswer,
+                    currentCorrectAnswers: currentQuestion.correctAnswers,
+                    currentCategory: currentQuestion.category,
+                    questionStartTime: Date.now(),
+                    currentTime: gameData.timeLimitPerQuestion,
+                    lastHostTimeUpdate: Date.now()
+                });
+                const playersCollectionRef = gameRef.collection('players');
+                const playersDocs = await playersCollectionRef.get();
+                const batch = db.batch();
+                playersDocs.docs.forEach(playerDoc => {
+                    batch.update(playerDoc.ref, {
+                        hasSubmittedAnswer: false,
+                        playerSubmittedAnswer: '',
+                        playerScoreChange: 0
+                    });
+                });
+                await batch.commit();
+            } catch (e) {
+                showCustomMessageBox("خطأ", e.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function endQuestionEarly() { if (!isHost || !gameId) return; showLoading(); try { await db.collection(`artifacts/${appId}/public/data/games`).doc(gameId).update({ gamePhase: 'question_results', scoresReconciledForCurrentQuestion: false }); reconcileQuestionScores(); } catch (e) { showCustomMessageBox("خطأ", "فشل إنهاء السؤال."); } finally { hideLoading(); } }
         async function endGame() { if (!isHost || !gameId) return; showLoading(); try { await db.collection(`artifacts/${appId}/public/data/games`).doc(gameId).update({ gamePhase: 'final_results' }); } catch (e) { showCustomMessageBox("خطأ", "فشل إنهاء اللعبة."); } finally { hideLoading(); } }
-        async function startNewRoundInSameRoom() { if (!isHost || !gameId) return; showLoading(); try { const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId); const gameDoc = await gameRef.get(); if (!gameDoc.exists) throw new Error("اللعبة غير موجودة."); const gameData = gameDoc.data(); const totalQuestions = gameData.quizSet.length; let allPossibleQuestions = []; quizzes.forEach(category => { if (gameData.quizSet.some(q => q.category === category.category)) { category.questions.forEach(q => allPossibleQuestions.push({ ...q, category: category.category, correctAnswers: q.correctAnswers.map(normalize) })); } }); for (let i = allPossibleQuestions.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [allPossibleQuestions[i], allPossibleQuestions[j]] = [allPossibleQuestions[j], allPossibleQuestions[i]]; } const newQuizSet = allPossibleQuestions.slice(0, totalQuestions); const batch = db.batch(); batch.update(gameRef, { gamePhase: 'lobby', quizSet: newQuizSet, currentQuestionIndexInGame: 0 }); const playersDocs = await gameRef.collection('players').get(); playersDocs.forEach(playerDoc => { batch.update(playerDoc.ref, { score: 0, usedPointsBets: [], powerUpsUsed: { doublePoints: false, extraTime: false, hint: false } }); }); await batch.commit(); showScreen(waitingRoomScreen); } catch (e) { showCustomMessageBox("خطأ", e.message); } finally { hideLoading(); } }
+        
+        async function startNewRoundInSameRoom() {
+            if (!isHost || !gameId) return;
+            showLoading();
+            try {
+                const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
+                const gameDoc = await gameRef.get();
+                if (!gameDoc.exists) throw new Error("اللعبة غير موجودة.");
+                const gameData = gameDoc.data();
+                const totalQuestions = gameData.quizSet.length;
+                let allPossibleQuestions = [];
+                gameData.quizSet.forEach(playedQuestion => {
+                    const originalCategory = quizzes.find(q => q.category === playedQuestion.category);
+                    if(originalCategory) {
+                        originalCategory.questions.forEach(q => {
+                             if (!allPossibleQuestions.some(aq => aq.questionText === q.questionText)) {
+                                allPossibleQuestions.push({ ...q, category: originalCategory.category, correctAnswers: q.correctAnswers.map(normalize) });
+                             }
+                        });
+                    }
+                });
+
+                for (let i = allPossibleQuestions.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [allPossibleQuestions[i], allPossibleQuestions[j]] = [allPossibleQuestions[j], allPossibleQuestions[i]]; }
+                const newQuizSet = allPossibleQuestions.slice(0, totalQuestions);
+
+                const batch = db.batch();
+                batch.update(gameRef, { gamePhase: 'lobby', quizSet: newQuizSet, currentQuestionIndexInGame: 0 });
+                const playersDocs = await gameRef.collection('players').get();
+                playersDocs.forEach(playerDoc => { batch.update(playerDoc.ref, { score: 0, usedPointsBets: [], powerUpsUsed: { doublePoints: false, extraTime: false, hint: false } }); });
+                await batch.commit();
+                showScreen(waitingRoomScreen);
+            } catch (e) { showCustomMessageBox("خطأ", e.message); } finally { hideLoading(); }
+        }
 
         async function reconcileQuestionScores() {
             if (!isHost || !gameId) return;
@@ -717,7 +817,7 @@
                     transaction.update(playerRef, updateData);
                 });
                 isDoublePointsActive = false;
-                powerUpDoublePointsBtn.classList.remove('ring-4', 'ring-yellow-300');
+                if(powerUpDoublePointsBtn) powerUpDoublePointsBtn.classList.remove('ring-4', 'ring-yellow-300');
             } catch (error) { showCustomMessageBox("خطأ", error.message); } finally { hideLoading(); }
         }
 
@@ -732,19 +832,42 @@
                 if (gamePhase === 'lobby') { if (lobbyMusicLoop && lobbyMusicLoop.state !== "started") { if(Tone.context.state !== 'running') Tone.start(); Tone.Transport.start(); lobbyMusicLoop.start(0); } }
                 else { if (lobbyMusicLoop && lobbyMusicLoop.state === "started") { Tone.Transport.stop(); lobbyMusicLoop.stop(0); } }
 
-                if (gamePhase === 'question_results' && isHost && !gameData.scoresReconciledForCurrentQuestion) { reconcileQuestionScores(); }
-                if (gamePhase === 'question_results') { db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId).get().then(playerDoc => { if (playerDoc.exists() && playerDoc.data().playerScoreChange > 0) playCorrectAnswerSound(); }); }
+                if (gamePhase === 'question_results') { 
+                    if (isHost && !gameData.scoresReconciledForCurrentQuestion) { reconcileQuestionScores(); }
+                    db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId).get().then(playerDoc => { if (playerDoc.exists && playerDoc.data().playerScoreChange > 0) playCorrectAnswerSound(); }); 
+                }
                 
-                showScreen(document.getElementById(`${gamePhase}-screen` || 'role-selection-screen'));
+                showScreen(document.getElementById(`${gamePhase}-screen`) || document.getElementById('role-selection-screen'));
+                
+                if (questionCounterDisplay && gameData.quizSet) {
+                    const currentQNum = gameData.currentQuestionIndexInGame;
+                    const totalQs = gameData.quizSet.length;
+                    const displayQNum = (gamePhase === 'game_countdown' || gamePhase === 'lobby') ? 0 : currentQNum;
+                    questionCounterDisplay.textContent = `${displayQNum} / ${totalQs}`;
+                }
+
 
                 switch(gamePhase) {
+                    case 'game_countdown':
+                        clearInterval(timerInterval);
+                        let currentCountdown = gameData.countdownDuration || 5;
+                        if (countdownTimerDisplay) countdownTimerDisplay.textContent = currentCountdown;
+                        timerInterval = setInterval(() => {
+                            currentCountdown--;
+                            if (countdownTimerDisplay) countdownTimerDisplay.textContent = currentCountdown > 0 ? currentCountdown : 'انطلق!';
+                            if (currentCountdown <= 0) {
+                                clearInterval(timerInterval);
+                                if (isHost) { startNextQuestion(); }
+                            }
+                        }, 1000);
+                        break;
                     case 'question_active':
                         isDoublePointsActive = false;
                         if(gameCategoryDisplay) gameCategoryDisplay.textContent = gameData.currentCategory;
                         if(gameQuestionDisplay) gameQuestionDisplay.textContent = gameData.currentQuestionText;
-                        if(gameGuessInput) gameGuessInput.disabled = false;
+                        if(gameGuessInput) { gameGuessInput.value = ''; gameGuessInput.disabled = false; }
                         if(submitAnswerButton) submitAnswerButton.disabled = false;
-                        if (powerUpDoublePointsBtn) powerUpDoublePointsBtn.classList.remove('ring-4');
+                        if (powerUpDoublePointsBtn) powerUpDoublePointsBtn.classList.remove('ring-4', 'ring-yellow-300');
                         break;
                     case 'question_results':
                         if(resultsCategory) resultsCategory.textContent = gameData.currentCategory;
@@ -767,6 +890,8 @@
             playersSnapshotUnsubscribe = playersRef.onSnapshot((snapshot) => {
                 if (joinedPlayersList) joinedPlayersList.innerHTML = '';
                 let currentPlayerScore = 0;
+                let playerCount = snapshot.size;
+
                 snapshot.forEach((doc) => {
                     const playerData = doc.data();
                     const playerId = doc.id;
@@ -774,12 +899,53 @@
                     if (playerId === userId) { currentPlayerScore = playerData.score || 0; userUsedPointsBets = playerData.usedPointsBets || []; populatePointsButtons(); updatePowerUpButtonsUI(playerData.powerUpsUsed || {}); }
                 });
                 if (playerScoreDisplay) playerScoreDisplay.textContent = currentPlayerScore;
+                if (isHost && startGameButton) { startGameButton.classList.toggle('hidden', playerCount < 1); }
             });
         }
         
         function updatePowerUpButtonsUI(powerUpsUsed) { if(powerUpDoublePointsBtn) powerUpDoublePointsBtn.disabled = powerUpsUsed.doublePoints; if(powerUpExtraTimeBtn) powerUpExtraTimeBtn.disabled = powerUpsUsed.extraTime; if(powerUpHintBtn) powerUpHintBtn.disabled = powerUpsUsed.hint; }
-        function showQuestionPlayerScoresDetailed() { /* Implementation unchanged */ }
-        async function showFinalScores() { /* Implementation unchanged */ }
+        
+        async function showQuestionPlayerScoresDetailed() {
+             if (!questionPlayerScoresList) return;
+             questionPlayerScoresList.innerHTML = '';
+             showLoading();
+             try {
+                 const playersRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
+                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
+                 const [playersSnapshot, gameDoc] = await Promise.all([playersRef.get(), gameRef.get()]);
+                 if (!gameDoc.exists) return;
+                 const gameData = gameDoc.data();
+                 const currentCorrectAnswers = gameData.currentCorrectAnswers || [];
+                 let questionScores = [];
+                 playersSnapshot.forEach(doc => { const playerData = doc.data(); questionScores.push({ nickname: playerData.nickname, submittedAnswer: playerData.playerSubmittedAnswer || 'لم يجب', selectedPoints: playerData.playerSelectedPoints || 0, scoreChange: playerData.playerScoreChange || 0, overallScore: playerData.score || 0 }); });
+                 questionScores.sort((a, b) => b.overallScore - a.overallScore);
+                 questionScores.forEach((player, index) => { const listItem = document.createElement('li'); listItem.classList.add('py-2', 'px-4', 'rounded-lg', 'mb-2', 'bg-gray-50', 'flex', 'flex-wrap', 'justify-center', 'items-center', 'gap-x-4'); let isCorrect = player.submittedAnswer !== 'لم يجب' && isCorrectAnswer(player.submittedAnswer, currentCorrectAnswers); const icon = player.submittedAnswer !== 'لم يجب' ? (isCorrect ? `<i class="fas fa-check-circle text-green-500 mr-2"></i>` : `<i class="fas fa-times-circle text-red-500 mr-2"></i>`) : `<i class="fas fa-question-circle text-gray-500 mr-2"></i>`; const color = player.submittedAnswer !== 'لم يجب' ? (isCorrect ? 'text-green-700' : 'text-red-700') : 'text-gray-500'; listItem.innerHTML = `<span class="font-bold">المركز ${index + 1}: ${player.nickname}</span> <span class="${color}">${icon} ${player.submittedAnswer}</span> <span class="text-xs text-gray-600">(راهن بـ ${player.selectedPoints} | تغيير: ${player.scoreChange >= 0 ? '+' : ''}${player.scoreChange} | إجمالي: ${player.overallScore})</span>`; questionPlayerScoresList.appendChild(listItem); });
+             } catch (e) { showCustomMessageBox("خطأ", "فشل عرض نتائج السؤال."); } finally { hideLoading(); }
+         }
+        
+        async function showFinalScores() {
+             showLoading();
+             try {
+                 if (gameSnapshotUnsubscribe) gameSnapshotUnsubscribe();
+                 if (playersSnapshotUnsubscribe) playersSnapshotUnsubscribe();
+                 const playersRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
+                 const playersSnapshot = await playersRef.get();
+                 let finalScores = [];
+                 playersSnapshot.forEach(doc => finalScores.push(doc.data()));
+                 finalScores.sort((a, b) => b.score - a.score);
+                 if (finalScoresList) {
+                     finalScoresList.innerHTML = '';
+                     if (finalScores.length > 0) {
+                         finalScores.forEach((player, index) => { const li = document.createElement('li'); li.classList.add('py-2', 'px-4', 'rounded-lg', 'mb-2'); if (index === 0) { li.classList.add('bg-yellow-200', 'font-bold'); li.innerHTML = `<i class="fas fa-trophy text-yellow-600 mr-2"></i> المركز الأول: ${player.nickname} - ${player.score} نقطة`; } else { li.classList.add('bg-gray-50'); li.textContent = `المركز ${index + 1}: ${player.nickname} - ${player.score} نقطة`; } finalScoresList.appendChild(li); });
+                         if (endMessage) endMessage.textContent = `تهانينا! فاز ${finalScores[0].nickname}!`;
+                     } else {
+                         if (endMessage) endMessage.textContent = "لم يكن هناك لاعبون.";
+                     }
+                 }
+                 showScreen(gameEndScreen);
+                 if (isHost && startNewRoundSameRoomButton) startNewRoundSameRoomButton.classList.remove('hidden');
+             } catch (e) { showCustomMessageBox("خطأ", "فشل عرض النتائج النهائية."); } finally { hideLoading(); }
+         }
 
         if (createHostButton) createHostButton.addEventListener('click', () => { setupQuizCategorySelection(); if (hostNicknameInput) hostNicknameInput.value = localStorage.getItem('hostNickname') || ''; showScreen(hostSetupScreen); });
         if (joinPlayerButton) joinPlayerButton.addEventListener('click', () => { if (playerNicknameInput) playerNicknameInput.value = localStorage.getItem('playerNickname') || ''; showScreen(joinGameScreen); });
@@ -796,8 +962,8 @@
         if (gameGuessInput) gameGuessInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); submitGuess(); } });
         if (playAgainButton) playAgainButton.addEventListener('click', exitGame);
         
-        if (powerUpDoublePointsBtn) { powerUpDoublePointsBtn.addEventListener('click', () => { if (powerUpDoublePointsBtn.disabled) return; isDoublePointsActive = true; powerUpDoublePointsBtn.classList.add('ring-4', 'ring-yellow-300'); showCustomMessageBox("ضعف النقاط!", "تم تفعيل قوة ضعف النقاط لهذا السؤال."); }); }
-        if (powerUpExtraTimeBtn) { powerUpExtraTimeBtn.addEventListener('click', async () => { if (powerUpExtraTimeBtn.disabled) return; try { const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId); const playerRef = gameRef.collection('players').doc(userId); await db.runTransaction(async (t) => { t.update(gameRef, { currentTime: firebase.firestore.FieldValue.increment(15) }); t.update(playerRef, { 'powerUpsUsed.extraTime': true }); }); showCustomMessageBox("وقت إضافي!", "تمت إضافة 15 ثانية."); } catch (e) { showCustomMessageBox("خطأ", "لم نتمكن من استخدام القوة."); } }); }
+        if (powerUpDoublePointsBtn) { powerUpDoublePointsBtn.addEventListener('click', async () => { if (powerUpDoublePointsBtn.disabled) return; try { const playerRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId); await playerRef.update({ 'powerUpsUsed.doublePoints': true }); isDoublePointsActive = true; powerUpDoublePointsBtn.classList.add('ring-4', 'ring-yellow-300'); showCustomMessageBox("ضعف النقاط!", "تم تفعيل قوة ضعف النقاط لهذا السؤال."); } catch (e) { showCustomMessageBox("خطأ", "لم نتمكن من استخدام القوة."); } }); }
+        if (powerUpExtraTimeBtn) { powerUpExtraTimeBtn.addEventListener('click', async () => { if (powerUpExtraTimeBtn.disabled) return; try { const playerRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId); await playerRef.update({ 'powerUpsUsed.extraTime': true }); await db.collection(`artifacts/${appId}/public/data/games`).doc(gameId).update({ currentTime: firebase.firestore.FieldValue.increment(15) }); showCustomMessageBox("وقت إضافي!", "تمت إضافة 15 ثانية."); } catch (e) { showCustomMessageBox("خطأ", "لم نتمكن من استخدام القوة."); } }); }
         if (powerUpHintBtn) { powerUpHintBtn.addEventListener('click', async () => { if (powerUpHintBtn.disabled) return; try { const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId); const playerRef = gameRef.collection('players').doc(userId); const gameDoc = await gameRef.get(); if (gameDoc.exists) { const hint = gameDoc.data().currentDisplayAnswer.substring(0, 3); await playerRef.update({ 'powerUpsUsed.hint': true }); showCustomMessageBox("تلميح!", `أول 3 أحرف هي: <strong class="text-2xl">${hint}</strong>`); } } catch (e) { showCustomMessageBox("خطأ", "لم نتمكن من استخدام القوة."); } }); }
 
         lobbyMusicLoop = setupLobbyMusic();
