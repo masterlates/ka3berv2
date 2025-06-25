@@ -16,11 +16,11 @@
     <style>
         /* Base font and direction for Arabic */
         body {
-            font-family: 'Cairo', sans-serif; /* Changed to Cairo font */
-            direction: rtl; /* For Arabic text */
-            text-align: right; /* For Arabic text */
+            font-family: 'Cairo', sans-serif;
+            direction: rtl;
+            text-align: right;
         }
-        /* Custom animation for list items - Tailwind's default doesn't have this exact one */
+        /* Custom animation for list items */
         @keyframes fadeInFromBottom {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -31,7 +31,7 @@
         /* Loading spinner animation */
         .loading-spinner {
             border: 4px solid rgba(0, 0, 0, 0.1);
-            border-left-color: #4a90e2; /* Blue color for spinner */
+            border-left-color: #4a90e2;
             border-radius: 50%;
             width: 24px;
             height: 24px;
@@ -47,7 +47,7 @@
             justify-content: center;
             align-items: center;
             margin-bottom: 1rem;
-            min-height: 128px; /* Ensure space even if QR fails */
+            min-height: 128px;
         }
         .multiselect-container {
             position: relative;
@@ -79,13 +79,13 @@
             flex-wrap: wrap;
             gap: 0.5rem;
             margin-top: 0.5rem;
-            justify-content: center; /* Center the tags */
+            justify-content: center;
         }
         .tag {
-            background-color: #a78bfa; /* Purple-300 */
+            background-color: #a78bfa;
             color: white;
             padding: 0.25rem 0.75rem;
-            border-radius: 9999px; /* Full rounded */
+            border-radius: 9999px;
             font-size: 0.875rem;
             display: flex;
             align-items: center;
@@ -111,31 +111,31 @@
         .points-button {
             padding: 8px 12px;
             border-radius: 8px;
-            border: 2px solid #cbd5e0; /* gray-300 */
-            background-color: #f8fafc; /* gray-50 */
-            color: #4a5568; /* gray-700 */
+            border: 2px solid #cbd5e0;
+            background-color: #f8fafc;
+            color: #4a5568;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s ease;
         }
         .points-button.selected {
-            background-color: #6366f1; /* indigo-500 */
+            background-color: #6366f1;
             color: white;
             border-color: #6366f1;
             transform: scale(1.05);
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        .points-button.used { /* Style for used/disabled buttons */
-            background-color: #e2e8f0; /* gray-200 */
-            color: #94a3b8; /* slate-400 */
-            border-color: #cbd5e0; /* gray-300 */
+        .points-button.used {
+            background-color: #e2e8f0;
+            color: #94a3b8;
+            border-color: #cbd5e0;
             cursor: not-allowed;
             opacity: 0.8;
             text-decoration: line-through;
         }
         .points-button:not(.selected):hover {
-            background-color: #e2e8f0; /* gray-200 */
-            border-color: #a0aec0; /* gray-400 */
+            background-color: #e2e8f0;
+            border-color: #a0aec0;
         }
         .points-button:disabled {
             opacity: 0.6;
@@ -174,52 +174,48 @@
             transform: translateY(0);
         }
         .power-up-btn:disabled {
-            background-color: #9ca3af; /* gray-400 */
-            color: #e5e7eb; /* gray-200 */
+            background-color: #9ca3af;
+            color: #e5e7eb;
             cursor: not-allowed;
             opacity: 0.7;
         }
-        /* Specific colors for power-ups */
-        #power-up-double-points { background-color: #f59e0b; color: white; } /* amber-500 */
-        #power-up-extra-time { background-color: #10b981; color: white; } /* emerald-500 */
-        #power-up-hint { background-color: #8b5cf6; color: white; } /* violet-500 */
+        #power-up-double-points { background-color: #f59e0b; color: white; }
+        #power-up-extra-time { background-color: #10b981; color: white; }
+        #power-up-hint { background-color: #8b5cf6; color: white; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 min-h-screen flex flex-col items-center justify-center p-4 text-gray-800">
 
-    <!-- Loading Overlay - Shown during Firebase initialization or data fetching -->
     <div id="loading-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden">
         <div class="flex flex-col items-center text-white text-xl">
             <div class="loading-spinner mb-4"></div>
-            جاري التحميل... <!-- Loading text in Arabic -->
+            جاري التحميل...
         </div>
     </div>
 
-    <!-- Game Start Countdown Screen -->
     <div id="game-countdown-screen" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center text-yellow-400 text-9xl font-extrabold z-50 hidden">
         <span id="countdown-timer-display">5</span>
     </div>
 
-    <!-- Main Game Container -->
-    <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 max-w-3xl w-full flex flex-col items-center relative overflow-hidden transform transition-all duration-500 ease-in-out">
+    <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 max-w-3xl w-full flex flex-col items-center relative overflow-hidden">
         <h1 class="text-4xl font-extrabold text-gray-800 mb-6 text-center leading-tight">لعبة حرقاسة HARGASA GAME <i class="fas fa-users text-blue-500"></i></h1>
         <p class="text-lg text-gray-600 mb-8 text-center" id="game-description">
-            اختر دورك: إما مضيف لإنشاء غرفة، أو لاعب للانضمام إلى غرفة موجودة. <!-- Game description in Arabic -->
+            اختر دورك: إما مضيف لإنشاء غرفة، أو لاعب للانضمام إلى غرفة موجودة.
         </p>
 
         <!-- Role Selection Screen -->
         <div id="role-selection-screen" class="w-full flex flex-col items-center space-y-6">
-            <button id="create-host-button" class="w-full md:w-2/3 bg-blue-600 hover:bg-blue-700 text-white text-2xl font-bold py-5 rounded-lg shadow-xl transform hover:scale-105 hover:shadow-2xl transition-all duration-300 ease-out flex items-center justify-center gap-3">
-                <i class="fas fa-crown"></i> إنشاء غرفة (مضيف) <!-- Create host room button -->
+            <button id="create-host-button" class="w-11/12 md:w-2/3 bg-blue-600 hover:bg-blue-700 text-white text-2xl font-bold py-5 rounded-lg shadow-xl transform hover:scale-105 hover:shadow-2xl transition-all duration-300 ease-out flex items-center justify-center gap-3">
+                <i class="fas fa-crown"></i> إنشاء غرفة (مضيف)
             </button>
-            <button id="join-player-button" class="w-full md:w-2/3 bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-5 rounded-lg shadow-xl transform hover:scale-105 hover:shadow-2xl transition-all duration-300 ease-out flex items-center justify-center gap-3">
-                <i class="fas fa-gamepad"></i> الانضمام إلى غرفة (لاعب) <!-- Join player room button -->
+            <button id="join-player-button" class="w-11/12 md:w-2/3 bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-5 rounded-lg shadow-xl transform hover:scale-105 hover:shadow-2xl transition-all duration-300 ease-out flex items-center justify-center gap-3">
+                <i class="fas fa-gamepad"></i> الانضمام إلى غرفة (لاعب)
             </button>
         </div>
 
         <!-- Host Room Setup Screen -->
         <div id="host-setup-screen" class="w-full flex flex-col items-center hidden">
-            <h2 class="text-3xl font-bold text-indigo-700 mb-6">إعداد غرفة اللعب</h2> <!-- Host setup title -->
+            <h2 class="text-3xl font-bold text-indigo-700 mb-6">إعداد غرفة اللعب</h2>
 
             <div class="w-full md:w-5/6 mb-6">
                 <label for="host-nickname-input" class="block text-xl font-semibold text-gray-700 mb-2 text-center">اسمك المستعار (المضيف):</label>
@@ -228,21 +224,17 @@
             </div>
 
             <div class="w-full md:w-5/6 mb-6">
-                <label for="quiz-category-input" class="block text-xl font-semibold text-gray-700 mb-2 text-center">اختر فئات الأسئلة (يمكن اختيار أكثر من واحدة):</label>
+                <label for="quiz-category-input" class="block text-xl font-semibold text-gray-700 mb-2 text-center">اختر فئات الأسئلة:</label>
                 <div class="multiselect-container">
                     <input type="text" id="quiz-category-input" readonly placeholder="انقر هنا لاختيار الفئات..."
                            class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50 cursor-pointer text-center">
-                    <div id="quiz-category-dropdown" class="multiselect-dropdown hidden">
-                        <!-- Checkboxes will be populated by JS -->
-                    </div>
+                    <div id="quiz-category-dropdown" class="multiselect-dropdown hidden"></div>
                 </div>
-                <div id="selected-categories-tags" class="multiselect-selected-tags">
-                    <!-- Selected tags will appear here -->
-                </div>
+                <div id="selected-categories-tags" class="multiselect-selected-tags"></div>
             </div>
 
             <div class="w-full md:w-5/6 mb-6">
-                <label for="total-questions-per-game-select" class="block text-xl font-semibold text-gray-700 mb-2 text-center">عدد الأسئلة الكلي في اللعبة:</label>
+                <label for="total-questions-per-game-select" class="block text-xl font-semibold text-gray-700 mb-2 text-center">عدد الأسئلة الكلي:</label>
                 <select id="total-questions-per-game-select" class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50 text-center">
                     <option value="5">5 أسئلة</option>
                     <option value="10">10 أسئلة</option>
@@ -253,7 +245,7 @@
             </div>
 
             <div class="w-full md:w-5/6 mb-6">
-                <label for="time-limit-select" class="block text-xl font-semibold text-gray-700 mb-2 text-center">الوقت المخصص لكل سؤال (بالثواني):</label> <!-- Time limit label -->
+                <label for="time-limit-select" class="block text-xl font-semibold text-gray-700 mb-2 text-center">الوقت لكل سؤال (بالثواني):</label>
                 <select id="time-limit-select" class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50 text-center">
                     <option value="15">15 ثانية</option>
                     <option value="20">20 ثانية</option>
@@ -263,81 +255,74 @@
                 </select>
             </div>
 
-            <button id="create-game-button" class="w-full md:w-2/3 bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300 ease-out flex items-center justify-center gap-3">
-                <i class="fas fa-plus-circle"></i> إنشاء اللعبة <!-- Create game button -->
+            <button id="create-game-button" class="w-11/12 md:w-2/3 bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300 ease-out flex items-center justify-center gap-3">
+                <i class="fas fa-plus-circle"></i> إنشاء اللعبة
             </button>
         </div>
 
-        <!-- Waiting Room Screen (Host & Player) -->
+        <!-- Waiting Room Screen -->
         <div id="waiting-room-screen" class="w-full flex flex-col items-center hidden">
-            <h2 class="text-3xl font-bold text-indigo-700 mb-4" id="waiting-room-title">انتظر انضمام اللاعبين...</h2> <!-- Waiting room title -->
-            <p class="text-xl text-gray-700 mb-6">شارك هذا الرابط مع أصدقائك للانضمام:</p> <!-- Share link instruction -->
+            <h2 class="text-3xl font-bold text-indigo-700 mb-4" id="waiting-room-title">انتظر انضمام اللاعبين...</h2>
+            <p class="text-xl text-gray-700 mb-6">شارك هذا الرابط مع أصدقائك:</p>
             <div class="bg-gray-100 p-4 rounded-lg shadow-inner mb-6 flex flex-col items-center w-full max-w-lg">
                 <span id="game-link-display" class="text-md md:text-xl font-medium text-blue-600 break-all text-center"></span>
                 <div id="qrcode" class="my-4 p-2 bg-white rounded-lg shadow-md flex justify-center items-center">
-                    <!-- QR code will be rendered here by JavaScript -->
-                    <div id="qrcode-fallback-message" class="text-gray-500 text-sm text-center">
-                        <!-- Fallback message for QR code -->
-                    </div>
+                    <div id="qrcode-fallback-message" class="text-gray-500 text-sm text-center"></div>
                 </div>
                 <button id="copy-link-button" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300">
                     <i class="fas fa-copy mr-2"></i> انسخ الرابط
                 </button>
             </div>
             
-            <h3 class="text-2xl font-semibold text-gray-800 mb-4">اللاعبون المنضمون:</h3> <!-- Joined players list title -->
-            <ul id="joined-players-list" class="w-full bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8 h-40 overflow-y-auto shadow-inner text-lg">
-                <!-- Players will be listed here by JavaScript -->
-            </ul>
+            <h3 class="text-2xl font-semibold text-gray-800 mb-4">اللاعبون المنضمون:</h3>
+            <ul id="joined-players-list" class="w-full bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8 h-40 overflow-y-auto shadow-inner text-lg"></ul>
 
-            <button id="start-game-button" class="w-full md:w-2/3 bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300 ease-out hidden">
-                <i class="fas fa-play"></i> بدء اللعب! <!-- Start game button (for host) -->
+            <button id="start-game-button" class="w-11/12 md:w-2/3 bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300 ease-out hidden">
+                <i class="fas fa-play"></i> بدء اللعب!
             </button>
         </div>
 
-        <!-- Join Game Screen (Player) -->
+        <!-- Join Game Screen -->
         <div id="join-game-screen" class="w-full flex flex-col items-center hidden">
-            <h2 class="text-3xl font-bold text-indigo-700 mb-6">الانضمام إلى غرفة اللعب</h2> <!-- Join game title -->
+            <h2 class="text-3xl font-bold text-indigo-700 mb-6">الانضمام إلى غرفة اللعب</h2>
             <div class="w-full md:w-5/6 mb-6">
-                <label for="game-code-input" class="block text-xl font-semibold text-gray-700 mb-2 text-center">أدخل رمز الغرفة:</label> <!-- Game code input label -->
-                <input type="text" id="game-code-input" placeholder="مثال: ABCDE"
+                <label for="game-code-input" class="block text-xl font-semibold text-gray-700 mb-2 text-center">أدخل رمز الغرفة:</label>
+                <input type="text" id="game-code-input" placeholder="مثال: 123"
                        class="w-full p-4 mb-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-400 transition-colors duration-300 bg-gray-50 uppercase text-center tracking-widest">
             </div>
              <div class="w-full md:w-5/6 mb-6">
-                <label for="player-nickname-input" class="block text-xl font-semibold text-gray-700 mb-2 text-center">أدخل اسمك المستعار:</label> <!-- Player nickname input label -->
+                <label for="player-nickname-input" class="block text-xl font-semibold text-gray-700 mb-2 text-center">أدخل اسمك المستعار:</label>
                 <input type="text" id="player-nickname-input" placeholder="اسمك"
                        class="w-full p-4 mb-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-400 transition-colors duration-300 bg-gray-50 text-center">
             </div>
-            <button id="join-room-button" class="w-full md:w-2/3 bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300 ease-out flex items-center justify-center gap-3">
-                <i class="fas fa-door-open"></i> الانضمام <!-- Join button -->
+            <button id="join-room-button" class="w-11/12 md:w-2/3 bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300 ease-out flex items-center justify-center gap-3">
+                <i class="fas fa-door-open"></i> الانضمام
             </button>
         </div>
 
-        <!-- Game Play Screen (Host & Player) -->
+        <!-- Game Play Screen -->
         <div id="game-play-screen" class="w-full flex flex-col items-center hidden">
-            <p class="text-2xl font-bold text-gray-800 mb-4 text-center">الفئة: <span id="game-category" class="text-indigo-600"></span></p> <!-- Current category display -->
+            <p class="text-2xl font-bold text-gray-800 mb-4 text-center">الفئة: <span id="game-category" class="text-indigo-600"></span></p>
             
             <div class="bg-blue-100 p-4 rounded-lg shadow-md mb-6 w-full text-center">
-                <p class="text-2xl font-extrabold text-gray-900" id="game-question"></p> <!-- Current question display -->
+                <p class="text-2xl font-extrabold text-gray-900" id="game-question"></p>
             </div>
 
-            <!-- New responsive layout for Timer, Score, Question Counter -->
             <div class="flex flex-col md:flex-row justify-around items-center w-full mb-6 space-y-4 md:space-y-0 md:space-x-4">
                 <div class="flex items-center space-x-2 space-x-reverse text-xl font-bold text-gray-700 bg-gray-100 px-4 py-2 rounded-lg shadow-md">
                     <i class="fas fa-hourglass-half text-blue-500"></i>
-                    <span>الوقت: <span id="game-timer" class="text-blue-600">--</span> ثانية</span> <!-- Game timer display -->
+                    <span>الوقت: <span id="game-timer" class="text-blue-600">--</span> ثانية</span>
                 </div>
                 <div class="flex items-center space-x-2 space-x-reverse text-xl font-bold text-gray-700 bg-gray-100 px-4 py-2 rounded-lg shadow-md">
                     <i class="fas fa-star text-yellow-500"></i>
-                    <span>نقاطك: <span id="player-score" class="text-yellow-600">0</span></span> <!-- Player's score display -->
+                    <span>نقاطك: <span id="player-score" class="text-yellow-600">0</span></span>
                 </div>
                 <div class="flex items-center space-x-2 space-x-reverse text-xl font-bold text-gray-700 bg-gray-100 px-4 py-2 rounded-lg shadow-md">
                     <i class="fas fa-question-circle text-purple-500"></i>
-                    <span>السؤال: <span id="question-counter" class="text-purple-600">-- / --</span></span> <!-- Question counter -->
+                    <span>السؤال: <span id="question-counter" class="text-purple-600">-- / --</span></span>
                 </div>
             </div>
 
-            <!-- START: Power-ups Section -->
             <div id="power-ups-container" class="power-ups-container">
                  <button id="power-up-double-points" class="power-up-btn">
                      <i class="fas fa-bolt"></i> ضعف النقاط
@@ -349,13 +334,10 @@
                      <i class="fas fa-lightbulb"></i> تلميح
                  </button>
             </div>
-            <!-- END: Power-ups Section -->
             
             <div class="w-full mb-6">
                 <label class="block text-xl font-semibold text-gray-700 mb-2 text-center">راهن بالنقاط:</label>
-                <div id="points-button-group" class="points-button-group">
-                    <!-- Points buttons (1-20) will be generated here by JS -->
-                </div>
+                <div id="points-button-group" class="points-button-group"></div>
             </div>
 
             <div class="flex items-center flex-wrap gap-2 w-full mb-4">
@@ -369,112 +351,88 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mt-4">
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 h-64 overflow-y-auto shadow-inner">
-                    <h3 class="text-xl font-semibold text-blue-800 mb-3 text-center">إجاباتك الصحيحة (لهذا السؤال):</h3> <!-- Player's correct guesses title -->
-                    <ul id="player-correct-guesses-list" class="list-disc pr-6 text-gray-700 text-lg space-y-2">
-                        <!-- Player's correct guesses will be listed here -->
-                    </ul>
+                    <h3 class="text-xl font-semibold text-blue-800 mb-3 text-center">إجاباتك الصحيحة (لهذا السؤال):</h3>
+                    <ul id="player-correct-guesses-list" class="list-disc pr-6 text-gray-700 text-lg space-y-2"></ul>
                 </div>
                 <div class="bg-purple-50 border border-purple-200 rounded-lg p-6 h-64 overflow-y-auto shadow-inner">
-                    <h3 class="text-xl font-semibold text-purple-800 mb-3 text-center">الإجابات المشتركة (لهذا السؤال):</h3> <!-- Shared correct guesses title -->
-                    <ul id="shared-round-guesses-list" class="list-disc pr-6 text-gray-700 text-lg space-y-2">
-                        <!-- All correct guesses across players for THIS QUESTION will be listed here -->
-                    </ul>
+                    <h3 class="text-xl font-semibold text-purple-800 mb-3 text-center">الإجابات المشتركة (لهذا السؤال):</h3>
+                    <ul id="shared-round-guesses-list" class="list-disc pr-6 text-gray-700 text-lg space-y-2"></ul>
                 </div>
             </div>
             
-            <!-- Host-only controls during game play -->
             <div id="host-gameplay-controls" class="w-full flex flex-col items-center gap-4 hidden mt-6">
                 <h3 class="text-xl font-semibold text-gray-800 mb-2">حالة إجابة اللاعبين (المضيف فقط):</h3>
-                <ul id="host-submission-status-list" class="w-full bg-gray-100 border border-gray-200 rounded-lg p-3 mb-4 shadow-inner text-base max-h-32 overflow-y-auto">
-                    <!-- Player submission status will be listed here -->
-                </ul>
-                <button id="end-question-early-button" class="w-full md:w-2/3 bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300 ease-out">
-                    <i class="fas fa-flag-checkered"></i> إنهاء السؤال الآن <!-- End question early button -->
+                <ul id="host-submission-status-list" class="w-full bg-gray-100 border border-gray-200 rounded-lg p-3 mb-4 shadow-inner text-base max-h-32 overflow-y-auto"></ul>
+                <button id="end-question-early-button" class="w-11/12 md:w-2/3 bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300 ease-out">
+                    <i class="fas fa-flag-checkered"></i> إنهاء السؤال الآن
                 </button>
             </div>
 
-            <!-- Player-only Exit Button (visible during gameplay) -->
-            <button id="player-exit-button-gameplay" class="w-full md:w-2/3 bg-gray-500 hover:bg-gray-600 text-white text-xl font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out mt-6 hidden">
+            <button id="player-exit-button-gameplay" class="w-11/12 md:w-2/3 bg-gray-500 hover:bg-gray-600 text-white text-xl font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out mt-6 hidden">
                 <i class="fas fa-sign-out-alt"></i> الخروج من اللعبة
             </button>
         </div>
 
-        <!-- Question Results Screen (New) -->
+        <!-- Question Results Screen -->
         <div id="question-results-screen" class="w-full flex flex-col items-center hidden">
             <h2 class="text-3xl font-bold text-green-700 mb-6 text-center">نتائج السؤال!</h2>
             <p class="text-xl text-gray-700 mb-6 text-center">الفئة: <span id="results-category" class="font-bold text-indigo-600"></span></p>
             <p class="text-2xl font-semibold text-gray-800 mb-4 text-center">السؤال: <span id="results-question" class="font-bold text-gray-900"></span></p>
 
             <h3 class="text-2xl font-semibold text-gray-800 mb-4 text-center">الإجابة الصحيحة:</h3>
-            <ul id="round-correct-answers-list" class="w-full bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8 max-h-64 overflow-y-auto shadow-inner text-lg list-disc pr-6">
-                <!-- All correct answers for the question -->
-            </ul>
+            <ul id="round-correct-answers-list" class="w-full bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8 max-h-64 overflow-y-auto shadow-inner text-lg list-disc pr-6"></ul>
 
             <h3 class="text-2xl font-semibold text-gray-800 mb-4 text-center">أداء اللاعبين في هذا السؤال:</h3>
-            <ul id="question-player-scores-list" class="w-full bg-gray-100 border border-gray-200 rounded-lg p-4 mb-8 shadow-inner text-lg max-h-64 overflow-y-auto">
-                <!-- Player scores for this question -->
-            </ul>
+            <ul id="question-player-scores-list" class="w-full bg-gray-100 border border-gray-200 rounded-lg p-4 mb-8 shadow-inner text-lg max-h-64 overflow-y-auto"></ul>
 
-            <!-- Host controls for next question or end game -->
             <div id="question-results-host-controls" class="w-full flex flex-col items-center gap-4 hidden">
-                <button id="next-question-button" class="w-full md:w-2/3 bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300 ease-out flex items-center justify-center gap-3">
+                <button id="next-question-button" class="w-11/12 md:w-2/3 bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300 ease-out flex items-center justify-center gap-3">
                     <i class="fas fa-forward"></i> السؤال التالي
                 </button>
-                <button id="end-game-final-button" class="w-full md:w-2/3 bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300 ease-out flex items-center justify-center gap-3">
+                <button id="end-game-final-button" class="w-11/12 md:w-2/3 bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300 ease-out flex items-center justify-center gap-3">
                     <i class="fas fa-times-circle"></i> إنهاء اللعبة
                 </button>
             </div>
-            <!-- Player-only Exit Button (visible during question results) -->
-            <button id="player-exit-button-results" class="w-full md:w-2/3 bg-gray-500 hover:bg-gray-600 text-white text-xl font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out mt-6 hidden">
+            <button id="player-exit-button-results" class="w-11/12 md:w-2/3 bg-gray-500 hover:bg-gray-600 text-white text-xl font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out mt-6 hidden">
                 <i class="fas fa-sign-out-alt"></i> الخروج من اللعبة
             </button>
         </div>
 
-        <!-- Game End Screen (Final Results) -->
+        <!-- Game End Screen -->
         <div id="game-end-screen" class="w-full flex flex-col items-center gap-4 hidden">
-            <h2 class="text-3xl font-bold text-indigo-700 mb-6 text-center" id="end-title">النتائج النهائية للعبة!</h2> <!-- Game end title -->
-            <p class="text-xl text-gray-600 mb-6 text-center" id="end-message"></p> <!-- End message -->
+            <h2 class="text-3xl font-bold text-indigo-700 mb-6 text-center" id="end-title">النتائج النهائية للعبة!</h2>
+            <p class="text-xl text-gray-600 mb-6 text-center" id="end-message"></p>
 
-            <h3 class="text-2xl font-semibold text-gray-800 mb-4 text-center">الترتيب النهائي:</h3> <!-- Final scores title -->
-            <ul id="final-scores-list" class="w-full bg-gray-100 border border-gray-200 rounded-lg p-4 mb-8 shadow-inner text-lg max-h-64 overflow-y-auto">
-                <!-- Final scores will be listed here by JavaScript -->
-            </ul>
+            <h3 class="text-2xl font-semibold text-gray-800 mb-4 text-center">الترتيب النهائي:</h3>
+            <ul id="final-scores-list" class="w-full bg-gray-100 border border-gray-200 rounded-lg p-4 mb-8 shadow-inner text-lg max-h-64 overflow-y-auto"></ul>
 
-            <!-- Host only: Start new round in same room -->
-            <button id="start-new-round-same-room-button" class="w-full md:w-2/3 bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300 ease-out flex items-center justify-center gap-3 mb-4 hidden">
-                <i class="fas fa-sync-alt"></i> بدء جولة جديدة في نفس الغرفة
+            <button id="start-new-round-same-room-button" class="w-11/12 md:w-2/3 bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300 ease-out flex items-center justify-center gap-3 mb-4 hidden">
+                <i class="fas fa-sync-alt"></i> بدء جولة جديدة بنفس الغرفة
             </button>
 
-            <!-- All players: Play again (go to role selection) -->
-            <button id="play-again-button" class="w-full md:w-2/3 bg-blue-600 hover:bg-blue-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300 ease-out flex items-center justify-center gap-3">
+            <button id="play-again-button" class="w-11/12 md:w-2/3 bg-blue-600 hover:bg-blue-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300 ease-out flex items-center justify-center gap-3">
                 <i class="fas fa-redo"></i> العب مرة أخرى (غرفة جديدة)
             </button>
         </div>
 
-        <!-- Custom Message Box - For alerts and confirmations -->
+        <!-- Custom Message Box -->
         <div id="custom-message-box" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-40 hidden transition-opacity duration-300 ease-out opacity-0">
             <div class="bg-white rounded-xl p-8 text-center shadow-xl transform scale-90 transition-transform duration-300 ease-out">
-                <h2 id="custom-message-title" class="text-3xl font-bold text-gray-900 mb-4"></h2> <!-- Message title -->
-                <p id="custom-message-content" class="text-xl text-gray-700 mb-6"></p> <!-- Message content -->
-                <div id="custom-message-buttons" class="flex justify-center gap-4">
-                    <!-- Buttons will be dynamically added here by JS -->
-                </div>
+                <h2 id="custom-message-title" class="text-3xl font-bold text-gray-900 mb-4"></h2>
+                <div id="custom-message-content" class="text-xl text-gray-700 mb-6"></div>
+                <div id="custom-message-buttons" class="flex justify-center gap-4"></div>
             </div>
         </div>
     </div>
 
-    <!-- Firebase CDN Scripts - MUST be included BEFORE main game script for global `firebase` object -->
+    <!-- Firebase & Other Scripts -->
     <script type="text/javascript" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
-    <!-- QRCode.js for generating QR codes -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode.js/1.0.0/qrcode.min.js"></script>
-
-    <!-- Main JavaScript Logic -->
     <script type="text/javascript">
-        // Global variables for Firebase and App
-        let app, db, auth, userId, userNickname, appId;
+      // JAVASCRIPT LOGIC
+       let app, db, auth, userId, userNickname, appId;
         let gameId = null;
         let isHost = false;
         let gameSnapshotUnsubscribe = null; // Listener for game document changes
@@ -485,18 +443,21 @@
         let currentQuestionSoundInterval = null; // Interval for repeated sound effect
         let soundStarted = false; // Flag to control sound playback for time running out
         let localTimerRemaining = 0; // Local state for the timer, updated by clients
-        // NEW: Power-up state
         let isDoublePointsActive = false;
-        // NEW: Sound state
         let lobbyMusicLoop = null;
     
-        // Quiz data - IMPORTANT: Each object in quizzes now represents a CATEGORY with multiple questions.
         const quizzes = [
-            // ... (All existing quiz data remains unchanged)
-            { category: "عواصم الدول العربية", questions: [ { questionText: "ما هي عاصمة تونس؟", displayAnswer: "تونس", correctAnswers: ["تونس", "tunis"] }, { questionText: "ما هي عاصمة مصر؟", displayAnswer: "القاهرة", correctAnswers: ["القاهرة", "cairo"] }, { questionText: "ما هي عاصمة السعودية؟", displayAnswer: "الرياض", correctAnswers: ["الرياض", "riyadh"] }, { questionText: "ما هي عاصمة العراق؟", displayAnswer: "بغداد", correctAnswers: ["بغداد", "baghdad"] }, { questionText: "ما هي عاصمة سوريا؟", displayAnswer: "دمشق", correctAnswers: ["دمشق", "damascus"] }, { questionText: "ما هي عاصمة الأردن؟", displayAnswer: "عمان", correctAnswers: ["عمان", "amman"] }, { questionText: "ما هي عاصمة لبنان؟", displayAnswer: "بيروت", correctAnswers: ["بيروت", "beirut"] }, { questionText: "ما هي عاصمة المغرب؟", displayAnswer: "الرباط", correctAnswers: ["الرباط", "rabat"] }, { questionText: "ما هي عاصمة الجزائر؟", displayAnswer: "الجزائر", correctAnswers: ["الجزائر", "algiers"] }, { questionText: "ما هي عاصمة السودان؟", displayAnswer: "الخرطوم", correctAnswers: ["الخرطوم", "khartoum"] }, { questionText: "ما هي عاصمة اليمن؟", displayAnswer: "صنعاء", correctAnswers: ["صنعاء", "sanaa"] }, { questionText: "ما هي عاصمة الإمارات؟", displayAnswer: "أبو ظبي", correctAnswers: ["ابوظبي", "أبو ظبي", "abu dhabi"] }, { questionText: "ما هي عاصمة قطر؟", displayAnswer: "الدوحة", correctAnswers: ["الدوحة", "doha"] }, { questionText: "ما هي عاصمة الكويت؟", displayAnswer: "الكويت", correctAnswers: ["الكويت", "kuwait"] }, { questionText: "ما هي عاصمة البحرين؟", displayAnswer: "المنامة", correctAnswers: ["المنامة", "manama"] }, { questionText: "ما هي عاصمة الصومال؟", displayAnswer: "مقديشو", correctAnswers: ["مقديشو", "mogadishu"] }, { questionText: "ما هي عاصمة جيبوتي؟", displayAnswer: "جيبوتي", correctAnswers: ["جيبوتي", "djibouti"] }, { questionText: "ما هي عاصمة جزر القمر؟", displayAnswer: "موروني", correctAnswers: ["موروني", "moroni"] }, { questionText: "ما هي عاصمة ليبيا؟", displayAnswer: "طرابلس", correctAnswers: ["طرابلس", "tripoli"] }, { questionText: "ما هي عاصمة موريتانيا؟", displayAnswer: "نواكشوط", correctAnswers: ["نواكشوط", "nouakchott"] }, { questionText: "ما هي عاصمة سلطنة عمان؟", displayAnswer: "مسقط", correctAnswers: ["مسقط", "muscat"] }, { questionText: "ما هي عاصمة فلسطين؟", displayAnswer: "القدس", correctAnswers: ["القدس", "jerusalem"] } ] }, { category: "الفواكه", questions: [ { questionText: "فاكهة حمراء وصغيرة غالباً ما تستخدم في الحلويات؟", displayAnswer: "فراولة", correctAnswers: ["فراولة", "كرز", "توت"] }, { questionText: "فاكهة صفراء تنمو في مجموعات وغنية بالبوتاسيوم؟", displayAnswer: "موز", correctAnswers: ["موز"] }, { questionText: "فاكهة برتقالية اللون، غنية بفيتامين سي؟", displayAnswer: "برتقال", correctAnswers: ["برتقال", "يوسفي", "مانجو"] }, { questionText: "فاكهة استوائية كبيرة ذات قشرة خائكة ولحم أصفر حلو جداً؟", displayAnswer: "أناناس", correctAnswers: ["أناناس"] }, { questionText: "فاكهة صيفية كبيرة الحجم، خضراء من الخارج وحمراء من الداخل مع بذور سوداء؟", displayAnswer: "دلاع", correctAnswers: ["دلاع"] } ] }, { category: "عواصم دول أوروبية", questions: [ { questionText: "ما هي عاصمة ألمانيا؟", displayAnswer: "برلين", correctAnswers: ["برلين", "berlin"] }, { questionText: "ما هي عاصمة فرنسا؟", displayAnswer: "باريس", correctAnswers: ["باريس", "paris"] }, { questionText: "ما هي عاصمة إيطاليا؟", displayAnswer: "روما", correctAnswers: ["روما", "rome"] }, { questionText: "ما هي عاصمة إسبانيا؟", displayAnswer: "مدريد", correctAnswers: ["مدريد", "madrid"] }, { questionText: "ما هي عاصمة المملكة المتحدة؟", displayAnswer: "لندن", correctAnswers: ["لندن", "london"] }, { questionText: "ما هي عاصمة بولندا؟", displayAnswer: "وارسو", correctAnswers: ["وارسو", "warsaw"] }, { questionText: "ما هي عاصمة أوكرانيا؟", displayAnswer: "كييف", correctAnswers: ["كييف", "kiev"] }, { questionText: "ما هي عاصمة رومانيا؟", displayAnswer: "بوخارست", correctAnswers: ["بوخارست", "bucharest"] }, { questionText: "ما هي عاصمة هولندا؟", displayAnswer: "أمستردام", correctAnswers: ["أمستردام", "amsterdam"] }, { questionText: "ما هي عاصمة بلجيكا؟", displayAnswer: "بروكسل", correctAnswers: ["بروكسل", "brussels"] }, { questionText: "ما هي عاصمة اليونان؟", displayAnswer: "أثينا", correctAnswers: ["أثينا", "athens"] }, { questionText: "ما هي عاصمة البرتغال؟", displayAnswer: "لشبونة", correctAnswers: ["لشبونة", "lisbon"] }, { questionText: "ما هي عاصمة السويد؟", displayAnswer: "ستوكهولم", correctAnswers: ["ستوكهولم", "stockholm"] }, { questionText: "ما هي عاصمة النمسا؟", displayAnswer: "فيينا", correctAnswers: ["فيينا", "vienna"] }, { questionText: "ما هي عاصمة سويسرا؟", displayAnswer: "برن", correctAnswers: ["برن", "bern"] }, { questionText: "ما هي عاصمة الدنمارك؟", displayAnswer: "كوبنهاغن", correctAnswers: ["كوبنهاغن", "copenhagen"] }, { questionText: "ما هي عاصمة فنلندا؟", displayAnswer: "هلسنكي", correctAnswers: ["هلسنكي", "helsinki"] }, { questionText: "ما هي عاصمة النرويج؟", displayAnswer: "أوسلو", correctAnswers: ["أوسلو", "oslo"] }, { questionText: "ما هي عاصمة إيرلندا؟", displayAnswer: "دبلن", correctAnswers: ["دبلن", "dublin"] }, { questionText: "ما هي عاصمة كرواتيا؟", displayAnswer: "زغرب", correctAnswers: ["زغرب", "zagreb"] } ] }, { category: "أمثال شعبية تونسية", questions: [ { questionText: "كمل المثل: قلك عمرك ما تحط القزار في طريق الرجالة ...", displayAnswer: "يجي نهار و تقصدهم حفيان ", correctAnswers: [" يجي نهار و تقصدهم حفيان ", "يجي نهار و تقصدهم حفيان "] }, { questionText: "كمل المثل: إلّي في كرشه التبن...", displayAnswer: "يخاف من النار", correctAnswers: ["يخاف من النار", "يخاف من العافية"] }, { questionText: "كمل المثل: الباب إلّي يجيك منّو الريح...", displayAnswer: "سدّو واستريح", correctAnswers: ["سدّو واستريح", "سدّو"] }, { questionText: "كمل المثل: قطوسة تتغزل في خنافرها...", displayAnswer: "والفار يلعب قدّامها", correctAnswers: ["والفار يلعب قدّامها"] }, { questionText: "كمل المثل: إلّي ما يعرفك...", displayAnswer: "يجهلك", correctAnswers: ["يجهلك"] }, { questionText: "كمل المثل: العزوزة إذا تحفّت...", displayAnswer: "تحنّ للرقص", correctAnswers: ["تحنّ للرقص", "ترقص"] }, { questionText: "كمل المثل: تفرهد القطوس...", displayAnswer: "يلعب بديلو", correctAnswers: ["يلعب بديلو"] }, { questionText: "كمل المثل: طاحت الصمعة...", displayAnswer: "علّقو الحجام", correctAnswers: ["علّقو الحجام", "علقوا الحجام"] }, { questionText: "كمل المثل: لا يعجبه العجب...", displayAnswer: "ولا صيام رجب", correctAnswers: ["ولا صيام رجب"] }, { questionText: "كمل المثل: القطوس ما يهرّبش...", displayAnswer: "على دار فيها لحمة", correctAnswers: ["على دار فيها لحمة", "على الدار فيها لحمة"] }, { questionText: "كمل المثل: إلّي تحبو يكثر...", displayAnswer: "منو الهزار", correctAnswers: ["منو الهزار"] }, { questionText: "كمل المثل: ما يحس الجمرة...", displayAnswer: "كان إلي عافس عليها", correctAnswers: ["كان إلي عافس عليها", "كان الي عافس عليها"] }, { questionText: "كمل المثل: اللّي فيه طبّة...", displayAnswer: "ما ينساهاش", correctAnswers: ["ما ينساهاش"] }, { questionText: "كمل المثل: شد مشومك...", displayAnswer: "لا يجيك ما أشوم منّو", correctAnswers: ["لا يجيك ما أشوم منّو", "ما أشوم منو"] }, { questionText: "كمل المثل: الجمل ما يشوفش...", displayAnswer: "حدبتو", correctAnswers: ["حدبتو"] }, { questionText: "كمل المثل: إلّي يخاف من عشاه...", displayAnswer: "ما يشبعش", correctAnswers: ["ما يشبعش"] }, { questionText: "كمل المثل: قالولو زغرت، قال...", displayAnswer: "نعرف نبكي", correctAnswers: ["نعرف نبكي"] }, { questionText: "كمل المثل: كي تتفرهد العصفورة...", displayAnswer: "تجيها السقطة", correctAnswers: ["تجيها السقطة"] }, { questionText: "كمل المثل: كي تطيح البقرة...", displayAnswer: "يكثروا سكاكينها", correctAnswers: ["يكثروا سكاكينها", "تكتر سكاكينها"] }, { questionText: "كمل المثل: إلّي شاف البلا يصيح...", displayAnswer: "و إلّي ما شافش يقول سحر", correctAnswers: ["و إلّي ما شافش يقول سحر", "اللي ما شافش يقول سحر"] }, { questionText: "كمل المثل: الهدرة كيف السكاكين...", displayAnswer: "تجرح", correctAnswers: ["تجرح"] }, { questionText: "كمل المثل: إلّي ما ربحك...", displayAnswer: "ما يجرحكش", correctAnswers: ["ما يجرحكش"] }, { questionText: "كمل المثل: إلّي يحبك...", displayAnswer: "ما يضربكش بالعصا", correctAnswers: ["ما يضربكش بالعصا"] }, { questionText: "كمل المثل: الطماع يغلبو...", displayAnswer: "الكذاب", correctAnswers: ["الكذاب"] }, { questionText: "كمل المثل: ما يفلّ الحديد...", displayAnswer: "كان الحديد", correctAnswers: ["كان الحديد"] }, { questionText: "كمل المثل: إلّي يعوم ما يخافش...", displayAnswer: "من الموج", correctAnswers: ["من الموج"] }, { questionText: "كمل المثل: قالو لو ثنيها، قال...", displayAnswer: "كي نعدلها", correctAnswers: ["كي نعدلها"] }, { questionText: "كمل المثل: الباهي كيف الذهب...", displayAnswer: "ما يتخبّاش", correctAnswers: ["ما يتخبّاش"] }, { questionText: "كمل المثل: سكران ومبلول...", displayAnswer: "ويطلب في النار", correctAnswers: ["ويطلب في النار"] }, { questionText: "كمل المثل: الجبان...", displayAnswer: "يموت ألف مرّة", correctAnswers: ["يموت ألف مرّة", "يموت ألف مرة"] }, { questionText: "كمل المثل: رزق البخيل...", displayAnswer: "ياكلو العيّار", correctAnswers: ["ياكلو العيّار"] }, { questionText: "كمل المثل: حوت ياكل حوت...", displayAnswer: "وقليل الجهد يموت", correctAnswers: ["وقليل الجهد يموت"] }, { questionText: "كمل المثل: كيف يضيق بيك الحال...", displayAnswer: "رد بالك من الرجال", correctAnswers: ["رد بالك من الرجال"] }, { questionText: "كمل المثل: كثر الهم...", displayAnswer: "يضحّك", correctAnswers: ["يضحّك"] }, { questionText: "كمل المثل: الدنيا كالبحر...", displayAnswer: "يوم هادي ويوم هايج", correctAnswers: ["يوم هادي ويوم هايج"] }, { questionText: "كمل المثل: نعرفك تعوم...", displayAnswer: "وقت الغرق", correctAnswers: ["وقت الغرق"] }, { questionText: "كمل المثل: دابّة ما تعضّيش...", displayAnswer: "ما تخوّفنيش", correctAnswers: ["ما تخوّفنيش"] }, { questionText: "كمل المثل: الكلب كيف يكثر نباحو...", displayAnswer: "ما يعضّيش", correctAnswers: ["ما يعضّيش"] }, { questionText: "كمل المثل: الزين...", displayAnswer: "زين الروح", correctAnswers: ["زين الروح"] }, { questionText: "كمل المثل: ما تشوف بعينك...", displayAnswer: "أصدق من إلّي تسمع بأذنك", correctAnswers: ["أصدق من إلّي تسمع بأذنك"] }, { questionText: "كمل المثل: من طيّب أصله...", displayAnswer: "ما يخونكش", correctAnswers: ["ما يخونكش"] }, { questionText: "كمل المثل: إلّي يطيّحك من السرج...", displayAnswer: "ما هوش صاحبك", correctAnswers: ["ما هوش صاحبك"] }, { questionText: "كمل المثل: ثمة ناس...", displayAnswer: "تلبس ذهب وتخونك", correctAnswers: ["تلبس ذهب وتخونك"] }, { questionText: "كمل المثل: الزوالي كيف...", displayAnswer: "يطيح تكسرولو ضرسو", correctAnswers: ["يطيح تكسرولو ضرسو"] }, { questionText: "كمل المثل: إلّي ما عندوش ظهر...", displayAnswer: "ما يسوى شي", correctAnswers: ["ما يسوى شي"] }, { questionText: "كمل المثل: إلّي يزرع ريح...", displayAnswer: "يحصد العاصفة", correctAnswers: ["يحصد العاصفة"] }, { questionText: "كمل المثل: الكلمة كيف الرصاصة...", displayAnswer: "إذا خرجت ما ترجعش", correctAnswers: ["إذا خرجت ما ترجعش"] }, { questionText: "كمل المثل: اللسان...", displayAnswer: "يكسر العظم", correctAnswers: ["يكسر العظم"] }, { questionText: "كمل المثل: باش تحكم عالناس...", displayAnswer: "شوف أفعالهم", correctAnswers: ["شوف أفعالهم"] }, { questionText: "كمل المثل: ثمة ناس في وجهك مراية...", displayAnswer: "وفي ظهرك سكاكية", correctAnswers: ["وفي ظهرك سكاكية"] }, { questionText: "كمل المثل: الصحبة الزينة...", displayAnswer: "كنز ما يفنى", correctAnswers: ["كنز ما يفنى"] } ] }, { category: "الثقافة العامة", questions: [ { questionText: "ما اسم عاصمة فلسطين؟", displayAnswer: "القدس", correctAnswers: ["القدس", "القدس الشريف"] }, { questionText: "ما هو الحيوان الذي يُصدر أعلى صوت؟", displayAnswer: "الحوت الأزرق", correctAnswers: ["الحوت الأزرق"] }, { questionText: "في أي سنة قامت الثورة الفرنسية؟", displayAnswer: "1789", correctAnswers: ["1789"] }, { questionText: "من هو أول من رسم خريطة للعالم؟", displayAnswer: "الإدريسي", correctAnswers: ["الإدريسي"] }, { questionText: "ما هو الشيء الذي لا يمشي إلا بالضرب؟", displayAnswer: "المسمار", correctAnswers: ["المسمار"] }, { questionText: "ما اسم أقصر سورة في القرآن؟", displayAnswer: "سورة الكوثر", correctAnswers: ["سورة الكوثر", "الكوثر"] }, { questionText: "كم عدد أسنان الطفل اللبنية؟", displayAnswer: "20", correctAnswers: ["20", "عشرون"] }, { questionText: "ما هو الحيوان الذي يُعتبر أطول الحيوانات رقبة؟", displayAnswer: "الزرافة", correctAnswers: ["الزرافة"] }, { questionText: "ما اسم أول دولة عربية نالت استقلالها؟", displayAnswer: "مصر", correctAnswers: ["مصر"] }, { questionText: "من هو الصحابي الملقب بترجمان القرآن؟", displayAnswer: "عبد الله بن عباس", correctAnswers: ["عبد الله بن عباس", "ابن عباس"] }, { questionText: "ما اسم العملة في بريطانيا؟", displayAnswer: "الجنيه الإسترليني", correctAnswers: ["الجنيه الإسترليني", "إسترليني"] }, { questionText: "في أي دولة يوجد برج بيزا المائل؟", displayAnswer: "إيطاليا", correctAnswers: ["إيطاليا"] }, { questionText: "من هو أول سفير في الإسلام؟", displayAnswer: "مصعب بن عمير", correctAnswers: ["مصعب بن عمير", "مصعب"] }, { questionText: "من هو مؤسس الدولة العباسية؟", displayAnswer: "أبو العباس السفاح", correctAnswers: ["أبو العباس السفاح", "السفاح"] }, { questionText: "ما هو أسرع المخلوقات البحرية؟", displayAnswer: "سمكة الزعنفة الشراعية", correctAnswers: ["سمكة الزعنفة الشراعية", "الزعنفة الشراعية"] }, { questionText: "من أول من آمن من الصبيان؟", displayAnswer: "علي بن أبي طالب", correctAnswers: ["علي بن أبي طالب", "علي"] }, { questionText: "ما اسم الدولة التي يُطلق عليها 'أرض الشمس المشرقة'؟", displayAnswer: "اليابان", correctAnswers: ["اليابان"] }, { questionText: "كم عدد النجوم على علم الولايات المتحدة؟", displayAnswer: "50", correctAnswers: ["50", "خمسون"] }, { questionText: "ما هو المضيق الذي يفصل بين إفريقيا وأوروبا؟", displayAnswer: "مضيق جبل طارق", correctAnswers: ["مضيق جبل طارق", "جبل طارق"] }, { questionText: "من هو الفيلسوف الذي قال: 'أنا أفكر إذن أنا موجود'؟", displayAnswer: "ديكارت", correctAnswers: ["ديكارت", "رينيه ديكارت"] }, { questionText: "ما اسم الكتاب السماوي الذي أُنزل على عيسى عليه السلام؟", displayAnswer: "الإنجيل", correctAnswers: ["الإنجيل"] }, { questionText: "ما اسم المدينة التي تُعرف بمدينة الضباب؟", displayAnswer: "لندن", correctAnswers: ["لندن"] }, { questionText: "كم عدد لاعبي فريق كرة القدم الأساسي؟", displayAnswer: "11", correctAnswers: ["11", "أحد عشر"] }, { questionText: "من هو العالم المسلم الذي اشتهر بالطب والجراحة؟", displayAnswer: "الزهراوي", correctAnswers: ["الزهراوي"] }, { questionText: "ما هو أقدم علم في التاريخ؟", displayAnswer: "الفلك", correctAnswers: ["الفلك", "علم الفلك"] }, { questionText: "من أول من استخدم الشوكة في الأكل؟", displayAnswer: "العرب", correctAnswers: ["العرب"] }, { questionText: "من هو أول من كتب بسم الله الرحمن الرحيم؟", displayAnswer: "سليمان عليه السلام", correctAnswers: ["سليمان", "سليمان عليه السلام"] }, { questionText: "ما اسم الطائر الذي كلمه النبي سليمان؟", displayAnswer: "الهدهد", correctAnswers: ["الهدهد"] }, { questionText: "ما اسم أكبر جزر العالم؟", displayAnswer: "جرينلاند", correctAnswers: ["جرينلاند", "غرينلاند"] }, { questionText: "ما هو الحيوان الذي يمتلك حاسة شم أقوى من الكلب؟", displayAnswer: "الدب", correctAnswers: ["الدب"] }, { questionText: "ما اسم عاصمة ليبيا؟", displayAnswer: "طرابلس", correctAnswers: ["طرابلس"] }, { questionText: "ما اسم أكبر بحيرة عذبة في العالم؟", displayAnswer: "بحيرة سوبيريور", correctAnswers: ["بحيرة سوبيريور"] }, { questionText: "ما هو العلم الذي يدرس الأحياء المجهرية؟", displayAnswer: "علم الميكروبيولوجيا", correctAnswers: ["علم الميكروبيولوجيا", "الميكروبيولوجيا"] }, { questionText: "من هو القائد الذي فتح الأندلس؟", displayAnswer: "طارق بن زياد", correctAnswers: ["طارق بن زياد", "طارق"] }, { questionText: "ما اسم العضو الذي يضخ الدم في الجسم؟", displayAnswer: "القلب", correctAnswers: ["القلب"] }, { questionText: "ما اسم أول دولة فازت بكأس العالم؟", displayAnswer: "الأوروغواي", correctAnswers: ["الأوروغواي", "أوروغواي"] }, { questionText: "من هو الصحابي الذي اهتز له عرش الرحمن؟", displayAnswer: "سعد بن معاذ", correctAnswers: ["سعد بن معاذ", "سعد"] }, { questionText: "ما اسم أكبر مدينة في العالم من حيث عدد السكان؟", displayAnswer: "طوكيو", correctAnswers: ["طوكيو"] }, { questionText: "ما اسم الحيوان الذي يعيش في الماء واليابسة؟", displayAnswer: "الضفدع", correctAnswers: ["الضفدع"] }, { questionText: "كم عدد أجنحة الملَك؟", displayAnswer: "600", correctAnswers: ["600", "ستمئة"] }, { questionText: "من هو الخليفة الذي أنشأ نظام البريد؟", displayAnswer: "عمر بن الخطاب", correctAnswers: ["عمر بن الخطاب", "عمر"] }, { questionText: "من هو العالم الذي اخترع المصعد؟", displayAnswer: "إليشا أوتيس", correctAnswers: ["إليشا أوتيس", "أوتيس"] }, { questionText: "ما هو أصل كلمة 'بنطلون'؟", displayAnswer: "فرنسية", correctAnswers: ["فرنسية"] }, { questionText: "في أي قارة تقع دولة كينيا؟", displayAnswer: "أفريقيا", correctAnswers: ["أفريقيا"] }, { questionText: "ما اسم الجهاز الذي يقيس سرعة الرياح؟", displayAnswer: "الأنيمومتر", correctAnswers: ["الأنيمومتر"] }, { questionText: "من هو الشاعر الجاهلي الذي لقب بالملك الضليل؟", displayAnswer: "امرؤ القيس", correctAnswers: ["امرؤ القيس"] }, { questionText: "كم عدد عيون النحلة؟", displayAnswer: "5", correctAnswers: ["5", "خمسة"] }, { questionText: "ما اسم الجبل الذي كلم الله عليه موسى؟", displayAnswer: "جبل الطور", correctAnswers: ["جبل الطور", "الطور"] }, { questionText: "ما اسم الكتاب الذي كتبه ابن خلدون؟", displayAnswer: "المقدمة", correctAnswers: ["المقدمة"] }, { questionText: "ما اسم أكبر نهر في أوروبا؟", displayAnswer: "نهر الفولغا", correctAnswers: ["نهر الفولغا", "الفولغا"] }, { questionText: "من هو أول من خطّ بالقلم؟", displayAnswer: "إدريس عليه السلام", correctAnswers: ["إدريس", "إدريس عليه السلام"] }, { questionText: "ما هو أول شيء خلقه الله؟", displayAnswer: "القلم", correctAnswers: ["القلم"] }, { questionText: "ما اسم الغاز الذي تنفثه السيارات؟", displayAnswer: "ثاني أكسيد الكربون", correctAnswers: ["ثاني أكسيد الكربون", "CO2"] }, { questionText: "ما اسم أبطأ الكائنات في العالم؟", displayAnswer: "الكسلان", correctAnswers: ["الكسلان"] }, { questionText: "من هو صاحب كتاب 'الأغاني'؟", displayAnswer: "أبو الفرج الأصفهاني", correctAnswers: ["أبو الفرج الأصفهاني"] }, { questionText: "ما اسم أول دولة عربية استضافت كأس العالم؟", displayAnswer: "قطر", correctAnswers: ["قطر"] }, { questionText: "ما اسم الدولة التي تتكون من 7000 جزيرة؟", displayAnswer: "الفلبين", correctAnswers: ["الفلبين"] }, { questionText: "من هو الصحابي الذي جمع القرآن الكريم في عهد عثمان؟", displayAnswer: "زيد بن ثابت", correctAnswers: ["زيد بن ثابت", "زيد"] }, { questionText: "كم عدد أرجل الحشرة؟", displayAnswer: "6", correctAnswers: ["6", "ستة"] }, { questionText: "من أول من سكن مكة؟", displayAnswer: "قبيلة جرهم", correctAnswers: ["قبيلة جرهم", "جرهم"] }, { questionText: "ما اسم أول كائن خلقه الله من الملائكة؟", displayAnswer: "جبريل", correctAnswers: ["جبريل"] }, { questionText: "ما اسم المرض الذي يُصيب كريات الدم الحمراء؟", displayAnswer: "فقر الدم", correctAnswers: ["فقر الدم", "أنيميا"] }, { questionText: "ما اسم وحدة قياس الضغط الجوي؟", displayAnswer: "بار", correctAnswers: ["بار"] }, { questionText: "ما اسم أصغر قارة في العالم؟", displayAnswer: "أوقيانوسيا", correctAnswers: ["أوقيانوسيا"] } ] }, { category: " اسئلة الشلة ", questions: [ { questionText: " كي نقولو كنترول شنوة يجي للبالك ؟  ", displayAnswer: "كعبورة", correctAnswers: ["لمكعبر", "كعبر" , " ka3boura " , " كعبورة "   ] }, { questionText: "     شكون الي يفلم برشا في الشلة و يحب يجيبها يعرف كل شي ؟    ", displayAnswer: " ولد الورغي   ", correctAnswers: [" lou ", "لؤي" , " louay " , " ولد الورغي " ] }, { questionText: " قلك عمرك ما ترمي القزاز في طريق الرجالة ... ", displayAnswer: "يجي نهار و تقصدهم حفيان ، و اضرب نعنبو الي بكاهم واطا واطططططط ", correctAnswers: ["يجي نهار و تقصدهم حفيان", "واطططططط"] }, { questionText: "قلك على شلة تجي كل يوم للقهوة علالة و لا نهار قعدو مع طفلة ", displayAnswer: "شلتنا", correctAnswers: ["النياكة", "المكاحيط" , " المنيكين " ] }, { questionText: "شكون انيك واحد في الشلة ؟  ", displayAnswer: "كلكم كي زبي ", correctAnswers: ["الكل", "hama" , " الزعيم "  , " za3im " , " louay " , "ka3boura" , " lahdir " , " hayder "] }, { questionText: "رسلان  علاه معادش يقعد معانا ؟   ", displayAnswer: "رجولية هاذي ؟ وبنة نرا دينمها ... تبع لبنات تو تربح", correctAnswers: ["nour ", "نور" , " miboun "  , " ميبون " , " تبع لبنات " , "نور " , " نور متاع زبي  " , " wabna "] }, { questionText: "كعبورة قداه من مرة طاح كنترول ؟   ", displayAnswer: "قول قداه من مرة نجح برانسيبال ههه  ", correctAnswers: ["5", "2" , " 3 "  , " 4 " , " louay " , "ka3boura" , " lahdir " , " hayder "] }, { questionText: "شكون اكثر واحد يكره صاحبة الحرقاسة ؟ ", displayAnswer: "ولد الورغي اكيد ", correctAnswers: ["ولد الورغي", "louay" , "لؤي" ] } ] }, { category: "حيوانات الغابة", questions: [ { questionText: "ملك الغابة؟", displayAnswer: "أسد", correctAnswers: ["أسد", "اسد"] }, { questionText: "حيوان مخطط بالأبيض والأسود يشبه الحصان؟", displayAnswer: "حمار وحشي", correctAnswers: ["حمار وحشي", "حماروحشي"] }, { questionText: "أكبر حيوان بري على وجه الأرض، بخرطوم طويل وأذنين كبيرتين؟", displayAnswer: "فيل", correctAnswers: ["فيل", "الفيل"] }, { questionText: "حيوان طويل العنق ذو بقع بنية، يتغذى على أوراق الأشجار العالية؟", displayAnswer: "زرافة", correctAnswers: ["زرافة", "الزرافة"] }, { questionText: "حيوان ذكي يعيش في الغابات يأكل الموز ويتأرجح بين الأشجار؟", displayAnswer: "قرد", correctAnswers: ["قرد", "القرد"] } ] }, { category: "عواصم دول العالم (غير العربية)", questions: [ { questionText: "ما هي عاصمة اليابان؟", displayAnswer: "طوكيو", correctAnswers: ["طوكيو", "tokyo"] }, { questionText: "ما هي عاصمة الولايات المتحدة الأمريكية؟", displayAnswer: "واشنطن", correctAnswers: ["واشنطن", "washington"] }, { questionText: "ما هي عاصمة روسيا؟", displayAnswer: "موسكو", correctAnswers: ["موسكو", "moscow"] }, { questionText: "ما هي عاصمة الصين؟", displayAnswer: "بكين", correctAnswers: ["بكين", "beijing"] }, { questionText: "ما هي عاصمة الهند؟", displayAnswer: "نيودلهي", correctAnswers: ["نيودلهي", "new delhi"] } ] }, { category: "أسئلة تونسية", questions: [ { questionText: "شنوة عاصمة تونس؟", displayAnswer: "تونس", correctAnswers: ["تونس", "tunis", "tounes"] }, { questionText: "شنوة اسم العملة التونسية؟", displayAnswer: "دينار", correctAnswers: ["دينار", "dinar", "دنيار"] }, { questionText: "شكون ربح كاس افريقيا 2004؟", displayAnswer: "تونس", correctAnswers: ["تونس", "المنتخب التونسي", "tounes", "منتخب تونس"] }, { questionText: "شنوة اسم أطول واد في تونس؟", displayAnswer: "واد مجردة", correctAnswers: ["واد مجردة", "مجردة", "وادي مجردة", "oued mejerdah"] }, { questionText: "شكون الرئيس الأول لتونس؟", displayAnswer: "الحبيب بورقيبة", correctAnswers: ["الحبيب بورقيبة", "بورقيبة", "حبيب بورقيبة", "bourguiba"] }, { questionText: "شنوة اسم مدينة تونسية مشهورة بالحمامات الطبيعية؟", displayAnswer: "حمام الأنف", correctAnswers: ["حمام الأنف", "حمام الانف", "hammam linf", "hamam lanf"] }, { questionText: "شنوة الأكلة التونسية المشهورة اللي فيها كسكسي وخضرة ولحم؟", displayAnswer: "كسكسي", correctAnswers: ["كسكسي", "كسكس", "couscous"] }, { questionText: "شنوة العاصمة الثقافية لتونس؟", displayAnswer: "القيروان", correctAnswers: ["القيروان", "kairouan", "kayrawan"] }, { questionText: "شنوة اسم أشهر طبق حلويات تونسي في الأعياد؟", displayAnswer: "المقروض", correctAnswers: ["المقروض", "مقروض", "makroudh"] }, { questionText: "أكبر جزيرة تونسية؟", displayAnswer: "جربة", correctAnswers: ["جربة", "djerba", "jareba"] }, { questionText: "شنوة اسم الجبل الأعلى في تونس؟", displayAnswer: "جبل الشعانبي", correctAnswers: ["جبل الشعانبي", "الشعانبي", "chambi"] }, { questionText: "فنان تونسي مشهور بأغنية 'يا ليلى يا ليلة'؟", displayAnswer: "صابر الرباعي", correctAnswers: ["صابر الرباعي", "رباعي", "saber rebai"] }, { questionText: "شنوة اسم بحيرة تونسية مشهورة بالطيور المهاجرة؟", displayAnswer: "بحيرة إشكل", correctAnswers: ["بحيرة إشكل", "إشكل", "ichkeul"] }, { questionText: "اسم الملعب الوطني في تونس العاصمة؟", displayAnswer: "ملعب حمادي العقربي", correctAnswers: ["ملعب حمادي العقربي", "ملعب رادس", "رادس", "hamadi agerbi"] }, { questionText: "في أي ولاية تونسية توجد مدينة دقة الأثرية؟", displayAnswer: "باجة", correctAnswers: ["باجة", "beja"] } ] }
+            { category: "عواصم الدول العربية", questions: [ { questionText: "ما هي عاصمة تونس؟", displayAnswer: "تونس", correctAnswers: ["تونس", "tunis"] }, { questionText: "ما هي عاصمة مصر؟", displayAnswer: "القاهرة", correctAnswers: ["القاهرة", "cairo"] }, { questionText: "ما هي عاصمة السعودية؟", displayAnswer: "الرياض", correctAnswers: ["الرياض", "riyadh"] }, { questionText: "ما هي عاصمة العراق؟", displayAnswer: "بغداد", correctAnswers: ["بغداد", "baghdad"] }, { questionText: "ما هي عاصمة سوريا؟", displayAnswer: "دمشق", correctAnswers: ["دمشق", "damascus"] }, { questionText: "ما هي عاصمة الأردن؟", displayAnswer: "عمان", correctAnswers: ["عمان", "amman"] }, { questionText: "ما هي عاصمة لبنان؟", displayAnswer: "بيروت", correctAnswers: ["بيروت", "beirut"] }, { questionText: "ما هي عاصمة المغرب؟", displayAnswer: "الرباط", correctAnswers: ["الرباط", "rabat"] }, { questionText: "ما هي عاصمة الجزائر؟", displayAnswer: "الجزائر", correctAnswers: ["الجزائر", "algiers"] }, { questionText: "ما هي عاصمة السودان؟", displayAnswer: "الخرطوم", correctAnswers: ["الخرطوم", "khartoum"] }, { questionText: "ما هي عاصمة اليمن؟", displayAnswer: "صنعاء", correctAnswers: ["صنعاء", "sanaa"] }, { questionText: "ما هي عاصمة الإمارات؟", displayAnswer: "أبو ظبي", correctAnswers: ["ابوظبي", "أبو ظبي", "abu dhabi"] }, { questionText: "ما هي عاصمة قطر؟", displayAnswer: "الدوحة", correctAnswers: ["الدوحة", "doha"] }, { questionText: "ما هي عاصمة الكويت؟", displayAnswer: "الكويت", correctAnswers: ["الكويت", "kuwait"] }, { questionText: "ما هي عاصمة البحرين؟", displayAnswer: "المنامة", correctAnswers: ["المنامة", "manama"] }, { questionText: "ما هي عاصمة الصومال؟", displayAnswer: "مقديشو", correctAnswers: ["مقديشو", "mogadishu"] }, { questionText: "ما هي عاصمة جيبوتي؟", displayAnswer: "جيبوتي", correctAnswers: ["جيبوتي", "djibouti"] }, { questionText: "ما هي عاصمة جزر القمر؟", displayAnswer: "موروني", correctAnswers: ["موروني", "moroni"] }, { questionText: "ما هي عاصمة ليبيا؟", displayAnswer: "طرابلس", correctAnswers: ["طرابلس", "tripoli"] }, { questionText: "ما هي عاصمة موريتانيا؟", displayAnswer: "نواكشوط", correctAnswers: ["نواكشوط", "nouakchott"] }, { questionText: "ما هي عاصمة سلطنة عمان؟", displayAnswer: "مسقط", correctAnswers: ["مسقط", "muscat"] }, { questionText: "ما هي عاصمة فلسطين؟", displayAnswer: "القدس", correctAnswers: ["القدس", "jerusalem"] } ] },
+            { category: "الفواكه", questions: [ { questionText: "فاكهة حمراء وصغيرة غالباً ما تستخدم في الحلويات؟", displayAnswer: "فراولة", correctAnswers: ["فراولة", "كرز", "توت"] }, { questionText: "فاكهة صفراء تنمو في مجموعات وغنية بالبوتاسيوم؟", displayAnswer: "موز", correctAnswers: ["موز"] }, { questionText: "فاكهة برتقالية اللون، غنية بفيتامين سي؟", displayAnswer: "برتقال", correctAnswers: ["برتقال", "يوسفي", "مانجو"] }, { questionText: "فاكهة استوائية كبيرة ذات قشرة خائكة ولحم أصفر حلو جداً؟", displayAnswer: "أناناس", correctAnswers: ["أناناس"] }, { questionText: "فاكهة صيفية كبيرة الحجم، خضراء من الخارج وحمراء من الداخل مع بذور سوداء؟", displayAnswer: "دلاع", correctAnswers: ["دلاع"] } ] },
+            { category: "عواصم دول أوروبية", questions: [ { questionText: "ما هي عاصمة ألمانيا؟", displayAnswer: "برلين", correctAnswers: ["برلين", "berlin"] }, { questionText: "ما هي عاصمة فرنسا؟", displayAnswer: "باريس", correctAnswers: ["باريس", "paris"] }, { questionText: "ما هي عاصمة إيطاليا؟", displayAnswer: "روما", correctAnswers: ["روما", "rome"] }, { questionText: "ما هي عاصمة إسبانيا؟", displayAnswer: "مدريد", correctAnswers: ["مدريد", "madrid"] }, { questionText: "ما هي عاصمة المملكة المتحدة؟", displayAnswer: "لندن", correctAnswers: ["لندن", "london"] }, { questionText: "ما هي عاصمة بولندا؟", displayAnswer: "وارسو", correctAnswers: ["وارسو", "warsaw"] }, { questionText: "ما هي عاصمة أوكرانيا؟", displayAnswer: "كييف", correctAnswers: ["كييف", "kiev"] }, { questionText: "ما هي عاصمة رومانيا؟", displayAnswer: "بوخارست", correctAnswers: ["بوخارست", "bucharest"] }, { questionText: "ما هي عاصمة هولندا؟", displayAnswer: "أمستردام", correctAnswers: ["أمستردام", "amsterdam"] }, { questionText: "ما هي عاصمة بلجيكا؟", displayAnswer: "بروكسل", correctAnswers: ["بروكسل", "brussels"] }, { questionText: "ما هي عاصمة اليونان؟", displayAnswer: "أثينا", correctAnswers: ["أثينا", "athens"] }, { questionText: "ما هي عاصمة البرتغال؟", displayAnswer: "لشبونة", correctAnswers: ["لشبونة", "lisbon"] }, { questionText: "ما هي عاصمة السويد؟", displayAnswer: "ستوكهولم", correctAnswers: ["ستوكهولم", "stockholm"] }, { questionText: "ما هي عاصمة النمسا؟", displayAnswer: "فيينا", correctAnswers: ["فيينا", "vienna"] }, { questionText: "ما هي عاصمة سويسرا؟", displayAnswer: "برن", correctAnswers: ["برن", "bern"] }, { questionText: "ما هي عاصمة الدنمارك؟", displayAnswer: "كوبنهاغن", correctAnswers: ["كوبنهاغن", "copenhagen"] }, { questionText: "ما هي عاصمة فنلندا؟", displayAnswer: "هلسنكي", correctAnswers: ["هلسنكي", "helsinki"] }, { questionText: "ما هي عاصمة النرويج؟", displayAnswer: "أوسلو", correctAnswers: ["أوسلو", "oslo"] }, { questionText: "ما هي عاصمة إيرلندا؟", displayAnswer: "دبلن", correctAnswers: ["دبلن", "dublin"] }, { questionText: "ما هي عاصمة كرواتيا؟", displayAnswer: "زغرب", correctAnswers: ["زغرب", "zagreb"] } ] },
+            { category: "أمثال شعبية تونسية", questions: [ { questionText: "كمل المثل: قلك عمرك ما تحط القزار في طريق الرجالة ...", displayAnswer: "يجي نهار و تقصدهم حفيان ", correctAnswers: [" يجي نهار و تقصدهم حفيان ", "يجي نهار و تقصدهم حفيان "] }, { questionText: "كمل المثل: إلّي في كرشه التبن...", displayAnswer: "يخاف من النار", correctAnswers: ["يخاف من النار", "يخاف من العافية"] }, { questionText: "كمل المثل: الباب إلّي يجيك منّو الريح...", displayAnswer: "سدّو واستريح", correctAnswers: ["سدّو واستريح", "سدّو"] }, { questionText: "كمل المثل: قطوسة تتغزل في خنافرها...", displayAnswer: "والفار يلعب قدّامها", correctAnswers: ["والفار يلعب قدّامها"] }, { questionText: "كمل المثل: إلّي ما يعرفك...", displayAnswer: "يجهلك", correctAnswers: ["يجهلك"] }, { questionText: "كمل المثل: العزوزة إذا تحفّت...", displayAnswer: "تحنّ للرقص", correctAnswers: ["تحنّ للرقص", "ترقص"] }, { questionText: "كمل المثل: تفرهد القطوس...", displayAnswer: "يلعب بديلو", correctAnswers: ["يلعب بديلو"] }, { questionText: "كمل المثل: طاحت الصمعة...", displayAnswer: "علّقو الحجام", correctAnswers: ["علّقو الحجام", "علقوا الحجام"] }, { questionText: "كمل المثل: لا يعجبه العجب...", displayAnswer: "ولا صيام رجب", correctAnswers: ["ولا صيام رجب"] }, { questionText: "كمل المثل: القطوس ما يهرّبش...", displayAnswer: "على دار فيها لحمة", correctAnswers: ["على دار فيها لحمة", "على الدار فيها لحمة"] }, { questionText: "كمل المثل: إلّي تحبو يكثر...", displayAnswer: "منو الهزار", correctAnswers: ["منو الهزار"] }, { questionText: "كمل المثل: ما يحس الجمرة...", displayAnswer: "كان إلي عافس عليها", correctAnswers: ["كان إلي عافس عليها", "كان الي عافس عليها"] }, { questionText: "كمل المثل: اللّي فيه طبّة...", displayAnswer: "ما ينساهاش", correctAnswers: ["ما ينساهاش"] }, { questionText: "كمل المثل: شد مشومك...", displayAnswer: "لا يجيك ما أشوم منّو", correctAnswers: ["لا يجيك ما أشوم منّو", "ما أشوم منو"] }, { questionText: "كمل المثل: الجمل ما يشوفش...", displayAnswer: "حدبتو", correctAnswers: ["حدبتو"] }, { questionText: "كمل المثل: إلّي يخاف من عشاه...", displayAnswer: "ما يشبعش", correctAnswers: ["ما يشبعش"] }, { questionText: "كمل المثل: قالولو زغرت، قال...", displayAnswer: "نعرف نبكي", correctAnswers: ["نعرف نبكي"] }, { questionText: "كمل المثل: كي تتفرهد العصفورة...", displayAnswer: "تجيها السقطة", correctAnswers: ["تجيها السقطة"] }, { questionText: "كمل المثل: كي تطيح البقرة...", displayAnswer: "يكثروا سكاكينها", correctAnswers: ["يكثروا سكاكينها", "تكتر سكاكينها"] }, { questionText: "كمل المثل: إلّي شاف البلا يصيح...", displayAnswer: "و إلّي ما شافش يقول سحر", correctAnswers: ["و إلّي ما شافش يقول سحر", "اللي ما شافش يقول سحر"] }, { questionText: "كمل المثل: الهدرة كيف السكاكين...", displayAnswer: "تجرح", correctAnswers: ["تجرح"] }, { questionText: "كمل المثل: إلّي ما ربحك...", displayAnswer: "ما يجرحكش", correctAnswers: ["ما يجرحكش"] }, { questionText: "كمل المثل: إلّي يحبك...", displayAnswer: "ما يضربكش بالعصا", correctAnswers: ["ما يضربكش بالعصا"] }, { questionText: "كمل المثل: الطماع يغلبو...", displayAnswer: "الكذاب", correctAnswers: ["الكذاب"] }, { questionText: "كمل المثل: ما يفلّ الحديد...", displayAnswer: "كان الحديد", correctAnswers: ["كان الحديد"] }, { questionText: "كمل المثل: إلّي يعوم ما يخافش...", displayAnswer: "من الموج", correctAnswers: ["من الموج"] }, { questionText: "كمل المثل: قالو لو ثنيها، قال...", displayAnswer: "كي نعدلها", correctAnswers: ["كي نعدلها"] }, { questionText: "كمل المثل: الباهي كيف الذهب...", displayAnswer: "ما يتخبّاش", correctAnswers: ["ما يتخبّاش"] }, { questionText: "كمل المثل: سكران ومبلول...", displayAnswer: "ويطلب في النار", correctAnswers: ["ويطلب في النار"] }, { questionText: "كمل المثل: الجبان...", displayAnswer: "يموت ألف مرّة", correctAnswers: ["يموت ألف مرّة", "يموت ألف مرة"] }, { questionText: "كمل المثل: رزق البخيل...", displayAnswer: "ياكلو العيّار", correctAnswers: ["ياكلو العيّار"] }, { questionText: "كمل المثل: حوت ياكل حوت...", displayAnswer: "وقليل الجهد يموت", correctAnswers: ["وقليل الجهد يموت"] }, { questionText: "كمل المثل: كيف يضيق بيك الحال...", displayAnswer: "رد بالك من الرجال", correctAnswers: ["رد بالك من الرجال"] }, { questionText: "كمل المثل: كثر الهم...", displayAnswer: "يضحّك", correctAnswers: ["يضحّك"] }, { questionText: "كمل المثل: الدنيا كالبحر...", displayAnswer: "يوم هادي ويوم هايج", correctAnswers: ["يوم هادي ويوم هايج"] }, { questionText: "كمل المثل: نعرفك تعوم...", displayAnswer: "وقت الغرق", correctAnswers: ["وقت الغرق"] }, { questionText: "كمل المثل: دابّة ما تعضّيش...", displayAnswer: "ما تخوّفنيش", correctAnswers: ["ما تخوّفنيش"] }, { questionText: "كمل المثل: الكلب كيف يكثر نباحو...", displayAnswer: "ما يعضّيش", correctAnswers: ["ما يعضّيش"] }, { questionText: "كمل المثل: الزين...", displayAnswer: "زين الروح", correctAnswers: ["زين الروح"] }, { questionText: "كمل المثل: ما تشوف بعينك...", displayAnswer: "أصدق من إلّي تسمع بأذنك", correctAnswers: ["أصدق من إلّي تسمع بأذنك"] }, { questionText: "كمل المثل: من طيّب أصله...", displayAnswer: "ما يخونكش", correctAnswers: ["ما يخونكش"] }, { questionText: "كمل المثل: إلّي يطيّحك من السرج...", displayAnswer: "ما هوش صاحبك", correctAnswers: ["ما هوش صاحبك"] }, { questionText: "كمل المثل: ثمة ناس...", displayAnswer: "تلبس ذهب وتخونك", correctAnswers: ["تلبس ذهب وتخونك"] }, { questionText: "كمل المثل: الزوالي كيف...", displayAnswer: "يطيح تكسرولو ضرسو", correctAnswers: ["يطيح تكسرولو ضرسو"] }, { questionText: "كمل المثل: إلّي ما عندوش ظهر...", displayAnswer: "ما يسوى شي", correctAnswers: ["ما يسوى شي"] }, { questionText: "كمل المثل: إلّي يزرع ريح...", displayAnswer: "يحصد العاصفة", correctAnswers: ["يحصد العاصفة"] }, { questionText: "كمل المثل: الكلمة كيف الرصاصة...", displayAnswer: "إذا خرجت ما ترجعش", correctAnswers: ["إذا خرجت ما ترجعش"] }, { questionText: "كمل المثل: اللسان...", displayAnswer: "يكسر العظم", correctAnswers: ["يكسر العظم"] }, { questionText: "كمل المثل: باش تحكم عالناس...", displayAnswer: "شوف أفعالهم", correctAnswers: ["شوف أفعالهم"] }, { questionText: "كمل المثل: ثمة ناس في وجهك مراية...", displayAnswer: "وفي ظهرك سكاكية", correctAnswers: ["وفي ظهرك سكاكية"] }, { questionText: "كمل المثل: الصحبة الزينة...", displayAnswer: "كنز ما يفنى", correctAnswers: ["كنز ما يفنى"] } ] },
+            { category: "الثقافة العامة", questions: [ { questionText: "ما اسم عاصمة فلسطين؟", displayAnswer: "القدس", correctAnswers: ["القدس", "القدس الشريف"] }, { questionText: "ما هو الحيوان الذي يُصدر أعلى صوت؟", displayAnswer: "الحوت الأزرق", correctAnswers: ["الحوت الأزرق"] }, { questionText: "في أي سنة قامت الثورة الفرنسية؟", displayAnswer: "1789", correctAnswers: ["1789"] }, { questionText: "من هو أول من رسم خريطة للعالم؟", displayAnswer: "الإدريسي", correctAnswers: ["الإدريسي"] }, { questionText: "ما هو الشيء الذي لا يمشي إلا بالضرب؟", displayAnswer: "المسمار", correctAnswers: ["المسمار"] }, { questionText: "ما اسم أقصر سورة في القرآن؟", displayAnswer: "سورة الكوثر", correctAnswers: ["سورة الكوثر", "الكوثر"] }, { questionText: "كم عدد أسنان الطفل اللبنية؟", displayAnswer: "20", correctAnswers: ["20", "عشرون"] }, { questionText: "ما هو الحيوان الذي يُعتبر أطول الحيوانات رقبة؟", displayAnswer: "الزرافة", correctAnswers: ["الزرافة"] }, { questionText: "ما اسم أول دولة عربية نالت استقلالها؟", displayAnswer: "مصر", correctAnswers: ["مصر"] }, { questionText: "من هو الصحابي الملقب بترجمان القرآن؟", displayAnswer: "عبد الله بن عباس", correctAnswers: ["عبد الله بن عباس", "ابن عباس"] }, { questionText: "ما اسم العملة في بريطانيا؟", displayAnswer: "الجنيه الإسترليني", correctAnswers: ["الجنيه الإسترليني", "إسترليني"] }, { questionText: "في أي دولة يوجد برج بيزا المائل؟", displayAnswer: "إيطاليا", correctAnswers: ["إيطاليا"] }, { questionText: "من هو أول سفير في الإسلام؟", displayAnswer: "مصعب بن عمير", correctAnswers: ["مصعب بن عمير", "مصعب"] }, { questionText: "من هو مؤسس الدولة العباسية؟", displayAnswer: "أبو العباس السفاح", correctAnswers: ["أبو العباس السفاح", "السفاح"] }, { questionText: "ما هو أسرع المخلوقات البحرية؟", displayAnswer: "سمكة الزعنفة الشراعية", correctAnswers: ["سمكة الزعنفة الشراعية", "الزعنفة الشراعية"] }, { questionText: "من أول من آمن من الصبيان؟", displayAnswer: "علي بن أبي طالب", correctAnswers: ["علي بن أبي طالب", "علي"] }, { questionText: "ما اسم الدولة التي يُطلق عليها 'أرض الشمس المشرقة'؟", displayAnswer: "اليابان", correctAnswers: ["اليابان"] }, { questionText: "كم عدد النجوم على علم الولايات المتحدة؟", displayAnswer: "50", correctAnswers: ["50", "خمسون"] }, { questionText: "ما هو المضيق الذي يفصل بين إفريقيا وأوروبا؟", displayAnswer: "مضيق جبل طارق", correctAnswers: ["مضيق جبل طارق", "جبل طارق"] }, { questionText: "من هو الفيلسوف الذي قال: 'أنا أفكر إذن أنا موجود'؟", displayAnswer: "ديكارت", correctAnswers: ["ديكارت", "رينيه ديكارت"] }, { questionText: "ما اسم الكتاب السماوي الذي أُنزل على عيسى عليه السلام؟", displayAnswer: "الإنجيل", correctAnswers: ["الإنجيل"] }, { questionText: "ما اسم المدينة التي تُعرف بمدينة الضباب؟", displayAnswer: "لندن", correctAnswers: ["لندن"] }, { questionText: "كم عدد لاعبي فريق كرة القدم الأساسي؟", displayAnswer: "11", correctAnswers: ["11", "أحد عشر"] }, { questionText: "من هو العالم المسلم الذي اشتهر بالطب والجراحة؟", displayAnswer: "الزهراوي", correctAnswers: ["الزهراوي"] }, { questionText: "ما هو أقدم علم في التاريخ؟", displayAnswer: "الفلك", correctAnswers: ["الفلك", "علم الفلك"] }, { questionText: "من أول من استخدم الشوكة في الأكل؟", displayAnswer: "العرب", correctAnswers: ["العرب"] }, { questionText: "من هو أول من كتب بسم الله الرحمن الرحيم؟", displayAnswer: "سليمان عليه السلام", correctAnswers: ["سليمان", "سليمان عليه السلام"] }, { questionText: "ما اسم الطائر الذي كلمه النبي سليمان؟", displayAnswer: "الهدهد", correctAnswers: ["الهدهد"] }, { questionText: "ما اسم أكبر جزر العالم؟", displayAnswer: "جرينلاند", correctAnswers: ["جرينلاند", "غرينلاند"] }, { questionText: "ما هو الحيوان الذي يمتلك حاسة شم أقوى من الكلب؟", displayAnswer: "الدب", correctAnswers: ["الدب"] }, { questionText: "ما اسم عاصمة ليبيا؟", displayAnswer: "طرابلس", correctAnswers: ["طرابلس"] }, { questionText: "ما اسم أكبر بحيرة عذبة في العالم؟", displayAnswer: "بحيرة سوبيريور", correctAnswers: ["بحيرة سوبيريور"] }, { questionText: "ما هو العلم الذي يدرس الأحياء المجهرية؟", displayAnswer: "علم الميكروبيولوجيا", correctAnswers: ["علم الميكروبيولوجيا", "الميكروبيولوجيا"] }, { questionText: "من هو القائد الذي فتح الأندلس؟", displayAnswer: "طارق بن زياد", correctAnswers: ["طارق بن زياد", "طارق"] }, { questionText: "ما اسم العضو الذي يضخ الدم في الجسم؟", displayAnswer: "القلب", correctAnswers: ["القلب"] }, { questionText: "ما اسم أول دولة فازت بكأس العالم؟", displayAnswer: "الأوروغواي", correctAnswers: ["الأوروغواي", "أوروغواي"] }, { questionText: "من هو الصحابي الذي اهتز له عرش الرحمن؟", displayAnswer: "سعد بن معاذ", correctAnswers: ["سعد بن معاذ", "سعد"] }, { questionText: "ما اسم أكبر مدينة في العالم من حيث عدد السكان؟", displayAnswer: "طوكيو", correctAnswers: ["طوكيو"] }, { questionText: "ما اسم الحيوان الذي يعيش في الماء واليابسة؟", displayAnswer: "الضفدع", correctAnswers: ["الضفدع"] }, { questionText: "كم عدد أجنحة الملَك؟", displayAnswer: "600", correctAnswers: ["600", "ستمئة"] }, { questionText: "من هو الخليفة الذي أنشأ نظام البريد؟", displayAnswer: "عمر بن الخطاب", correctAnswers: ["عمر بن الخطاب", "عمر"] }, { questionText: "من هو العالم الذي اخترع المصعد؟", displayAnswer: "إليشا أوتيس", correctAnswers: ["إليشا أوتيس", "أوتيس"] }, { questionText: "ما هو أصل كلمة 'بنطلون'؟", displayAnswer: "فرنسية", correctAnswers: ["فرنسية"] }, { questionText: "في أي قارة تقع دولة كينيا؟", displayAnswer: "أفريقيا", correctAnswers: ["أفريقيا"] }, { questionText: "ما اسم الجهاز الذي يقيس سرعة الرياح؟", displayAnswer: "الأنيمومتر", correctAnswers: ["الأنيمومتر"] }, { questionText: "من هو الشاعر الجاهلي الذي لقب بالملك الضليل؟", displayAnswer: "امرؤ القيس", correctAnswers: ["امرؤ القيس"] }, { questionText: "كم عدد عيون النحلة؟", displayAnswer: "5", correctAnswers: ["5", "خمسة"] }, { questionText: "ما اسم الجبل الذي كلم الله عليه موسى؟", displayAnswer: "جبل الطور", correctAnswers: ["جبل الطور", "الطور"] }, { questionText: "ما اسم الكتاب الذي كتبه ابن خلدون؟", displayAnswer: "المقدمة", correctAnswers: ["المقدمة"] }, { questionText: "ما اسم أكبر نهر في أوروبا؟", displayAnswer: "نهر الفولغا", correctAnswers: ["نهر الفولغا", "الفولغا"] }, { questionText: "من هو أول من خطّ بالقلم؟", displayAnswer: "إدريس عليه السلام", correctAnswers: ["إدريس", "إدريس عليه السلام"] }, { questionText: "ما هو أول شيء خلقه الله؟", displayAnswer: "القلم", correctAnswers: ["القلم"] }, { questionText: "ما اسم الغاز الذي تنفثه السيارات؟", displayAnswer: "ثاني أكسيد الكربون", correctAnswers: ["ثاني أكسيد الكربون", "CO2"] }, { questionText: "ما اسم أبطأ الكائنات في العالم؟", displayAnswer: "الكسلان", correctAnswers: ["الكسلان"] }, { questionText: "من هو صاحب كتاب 'الأغاني'؟", displayAnswer: "أبو الفرج الأصفهاني", correctAnswers: ["أبو الفرج الأصفهاني"] }, { questionText: "ما اسم أول دولة عربية استضافت كأس العالم؟", displayAnswer: "قطر", correctAnswers: ["قطر"] }, { questionText: "ما اسم الدولة التي تتكون من 7000 جزيرة؟", displayAnswer: "الفلبين", correctAnswers: ["الفلبين"] }, { questionText: "من هو الصحابي الذي جمع القرآن الكريم في عهد عثمان؟", displayAnswer: "زيد بن ثابت", correctAnswers: ["زيد بن ثابت", "زيد"] }, { questionText: "كم عدد أرجل الحشرة؟", displayAnswer: "6", correctAnswers: ["6", "ستة"] }, { questionText: "من أول من سكن مكة؟", displayAnswer: "قبيلة جرهم", correctAnswers: ["قبيلة جرهم", "جرهم"] }, { questionText: "ما اسم أول كائن خلقه الله من الملائكة؟", displayAnswer: "جبريل", correctAnswers: ["جبريل"] }, { questionText: "ما اسم المرض الذي يُصيب كريات الدم الحمراء؟", displayAnswer: "فقر الدم", correctAnswers: ["فقر الدم", "أنيميا"] }, { questionText: "ما اسم وحدة قياس الضغط الجوي؟", displayAnswer: "بار", correctAnswers: ["بار"] }, { questionText: "ما اسم أصغر قارة في العالم؟", displayAnswer: "أوقيانوسيا", correctAnswers: ["أوقيانوسيا"] } ] },
+            { category: " اسئلة الشلة ", questions: [ { questionText: " كي نقولو كنترول شنوة يجي للبالك ؟  ", displayAnswer: "كعبورة", correctAnswers: ["لمكعبر", "كعبر" , " ka3boura " , " كعبورة "   ] }, { questionText: "     شكون الي يفلم برشا في الشلة و يحب يجيبها يعرف كل شي ؟    ", displayAnswer: " ولد الورغي   ", correctAnswers: [" lou ", "لؤي" , " louay " , " ولد الورغي " ] }, { questionText: " قلك عمرك ما ترمي القزاز في طريق الرجالة ... ", displayAnswer: "يجي نهار و تقصدهم حفيان ، و اضرب نعنبو الي بكاهم واطا واطططططط ", correctAnswers: ["يجي نهار و تقصدهم حفيان", "واطططططط"] }, { questionText: "قلك على شلة تجي كل يوم للقهوة علالة و لا نهار قعدو مع طفلة ", displayAnswer: "شلتنا", correctAnswers: ["النياكة", "المكاحيط" , " المنيكين " ] }, { questionText: "شكون انيك واحد في الشلة ؟  ", displayAnswer: "كلكم كي زبي ", correctAnswers: ["الكل", "hama" , " الزعيم "  , " za3im " , " louay " , "ka3boura" , " lahdir " , " hayder "] }, { questionText: "رسلان  علاه معادش يقعد معانا ؟   ", displayAnswer: "رجولية هاذي ؟ وبنة نرا دينمها ... تبع لبنات تو تربح", correctAnswers: ["nour ", "نور" , " miboun "  , " ميبون " , " تبع لبنات " , "نور " , " نور متاع زبي  " , " wabna "] }, { questionText: "كعبورة قداه من مرة طاح كنترول ؟   ", displayAnswer: "قول قداه من مرة نجح برانسيبال ههه  ", correctAnswers: ["5", "2" , " 3 "  , " 4 " , " louay " , "ka3boura" , " lahdir " , " hayder "] }, { questionText: "شكون اكثر واحد يكره صاحبة الحرقاسة ؟ ", displayAnswer: "ولد الورغي اكيد ", correctAnswers: ["ولد الورغي", "louay" , "لؤي" ] } ] },
+            { category: "حيوانات الغابة", questions: [ { questionText: "ملك الغابة؟", displayAnswer: "أسد", correctAnswers: ["أسد", "اسد"] }, { questionText: "حيوان مخطط بالأبيض والأسود يشبه الحصان؟", displayAnswer: "حمار وحشي", correctAnswers: ["حمار وحشي", "حماروحشي"] }, { questionText: "أكبر حيوان بري على وجه الأرض، بخرطوم طويل وأذنين كبيرتين؟", displayAnswer: "فيل", correctAnswers: ["فيل", "الفيل"] }, { questionText: "حيوان طويل العنق ذو بقع بنية، يتغذى على أوراق الأشجار العالية؟", displayAnswer: "زرافة", correctAnswers: ["زرافة", "الزرافة"] }, { questionText: "حيوان ذكي يعيش في الغابات يأكل الموز ويتأرجح بين الأشجار؟", displayAnswer: "قرد", correctAnswers: ["قرد", "القرد"] } ] },
+            { category: "عواصم دول العالم (غير العربية)", questions: [ { questionText: "ما هي عاصمة اليابان؟", displayAnswer: "طوكيو", correctAnswers: ["طوكيو", "tokyo"] }, { questionText: "ما هي عاصمة الولايات المتحدة الأمريكية؟", displayAnswer: "واشنطن", correctAnswers: ["واشنطن", "washington"] }, { questionText: "ما هي عاصمة روسيا؟", displayAnswer: "موسكو", correctAnswers: ["موسكو", "moscow"] }, { questionText: "ما هي عاصمة الصين؟", displayAnswer: "بكين", correctAnswers: ["بكين", "beijing"] }, { questionText: "ما هي عاصمة الهند؟", displayAnswer: "نيودلهي", correctAnswers: ["نيودلهي", "new delhi"] } ] },
+            { category: "أسئلة تونسية", questions: [ { questionText: "شنوة عاصمة تونس؟", displayAnswer: "تونس", correctAnswers: ["تونس", "tunis", "tounes"] }, { questionText: "شنوة اسم العملة التونسية؟", displayAnswer: "دينار", correctAnswers: ["دينار", "dinar", "دنيار"] }, { questionText: "شكون ربح كاس افريقيا 2004؟", displayAnswer: "تونس", correctAnswers: ["تونس", "المنتخب التونسي", "tounes", "منتخب تونس"] }, { questionText: "شنوة اسم أطول واد في تونس؟", displayAnswer: "واد مجردة", correctAnswers: ["واد مجردة", "مجردة", "وادي مجردة", "oued mejerdah"] }, { questionText: "شكون الرئيس الأول لتونس؟", displayAnswer: "الحبيب بورقيبة", correctAnswers: ["الحبيب بورقيبة", "بورقيبة", "حبيب بورقيبة", "bourguiba"] }, { questionText: "شنوة اسم مدينة تونسية مشهورة بالحمامات الطبيعية؟", displayAnswer: "حمام الأنف", correctAnswers: ["حمام الأنف", "حمام الانف", "hammam linf", "hamam lanf"] }, { questionText: "شنوة الأكلة التونسية المشهورة اللي فيها كسكسي وخضرة ولحم؟", displayAnswer: "كسكسي", correctAnswers: ["كسكسي", "كسكس", "couscous"] }, { questionText: "شنوة العاصمة الثقافية لتونس؟", displayAnswer: "القيروان", correctAnswers: ["القيروان", "kairouan", "kayrawan"] }, { questionText: "شنوة اسم أشهر طبق حلويات تونسي في الأعياد؟", displayAnswer: "المقروض", correctAnswers: ["المقروض", "مقروض", "makroudh"] }, { questionText: "أكبر جزيرة تونسية؟", displayAnswer: "جربة", correctAnswers: ["جربة", "djerba", "jareba"] }, { questionText: "شنوة اسم الجبل الأعلى في تونس؟", displayAnswer: "جبل الشعانبي", correctAnswers: ["جبل الشعانبي", "الشعانبي", "chambi"] }, { questionText: "فنان تونسي مشهور بأغنية 'يا ليلى يا ليلة'؟", displayAnswer: "صابر الرباعي", correctAnswers: ["صابر الرباعي", "رباعي", "saber rebai"] }, { questionText: "شنوة اسم بحيرة تونسية مشهورة بالطيور المهاجرة؟", displayAnswer: "بحيرة إشكل", correctAnswers: ["بحيرة إشكل", "إشكل", "ichkeul"] }, { questionText: "اسم الملعب الوطني في تونس العاصمة؟", displayAnswer: "ملعب حمادي العقربي", correctAnswers: ["ملعب حمادي العقربي", "ملعب رادس", "رادس", "hamadi agerbi"] }, { questionText: "في أي ولاية تونسية توجد مدينة دقة الأثرية؟", displayAnswer: "باجة", correctAnswers: ["باجة", "beja"] } ] }
         ];
         
-        // دالة تطبيع النص (Normalize text for fuzzy matching)
         function normalize(text) {
             return text
                 .toLowerCase()
@@ -506,10 +467,9 @@
                 .replace(/ة/g, 'ه')
                 .replace(/ؤ/g, 'و')
                 .replace(/ئ/g, 'ي')
-                .replace(/[^a-zA-Z0-9\u0600-\u06FF]/g, ''); // Keep Arabic and English alphanumeric
+                .replace(/[^a-zA-Z0-9\u0600-\u06FF]/g, '');
         }
 
-        // دالة التشابه بين كلمتين (Calculate similarity between two normalized strings)
         function similarity(a, b) {
             a = normalize(a);
             b = normalize(b);
@@ -523,21 +483,18 @@
             return matches / len;
         }
 
-        // التحقق من صحة الإجابة (Check if a player's answer is correct using fuzzy matching)
         function isCorrectAnswer(playerAnswer, acceptedAnswers) {
             const normalizedPlayerAnswer = normalize(playerAnswer);
             return acceptedAnswers.some(ans => similarity(normalizedPlayerAnswer, ans) >= 0.8);
         }
 
-        // Multi-select quiz categories logic
-        let selectedQuizIndices = []; // Stores indices of selected CATEGORIES for host setup
+        let selectedQuizIndices = [];
         const quizCategoryInput = document.getElementById('quiz-category-input');
         const quizCategoryDropdown = document.getElementById('quiz-category-dropdown');
         const selectedCategoriesTags = document.getElementById('selected-categories-tags');
         const hostNicknameInput = document.getElementById('host-nickname-input');
         const totalQuestionsPerGameSelect = document.getElementById('total-questions-per-game-select');
 
-        // Function to populate and manage the multi-select dropdown for quiz categories
         function setupQuizCategorySelection() {
             if (!quizCategoryDropdown) {
                 console.error("Error: quizCategoryDropdown element not found.");
@@ -550,9 +507,7 @@
                 checkbox.type = 'checkbox';
                 checkbox.value = index;
                 checkbox.className = 'ml-2';
-
                 checkbox.checked = selectedQuizIndices.includes(index);
-
                 label.appendChild(checkbox);
                 const displayText = quiz.category;  
                 label.appendChild(document.createTextNode(displayText));
@@ -573,7 +528,6 @@
             updateSelectedCategoriesTags();
         }
 
-        // Function to update the displayed tags for selected categories
         function updateSelectedCategoriesTags() {
             if (!selectedCategoriesTags) {
                 console.error("Error: selectedCategoriesTags element not found.");
@@ -598,7 +552,6 @@
                     selectedCategoriesTags.appendChild(tag);
                 }
             });
-            // Update input placeholder based on selection
             if (quizCategoryInput) {
                 if (selectedQuizIndices.length === 0) {
                     quizCategoryInput.placeholder = "انقر هنا لاختيار الفئات...";
@@ -608,7 +561,6 @@
             }
         }
         
-        // Add event listeners for multi-select dropdown
         if (quizCategoryInput) {
             quizCategoryInput.addEventListener('click', () => {
                 if (quizCategoryDropdown) {
@@ -617,7 +569,6 @@
             });
         }
 
-        // Hide dropdown when clicking outside
         document.addEventListener('click', (event) => {
             const clickedInsideInput = quizCategoryInput && quizCategoryInput.contains(event.target);
             const clickedInsideDropdown = quizCategoryDropdown && quizCategoryDropdown.contains(event.target);
@@ -628,8 +579,6 @@
             }
         });
 
-
-        // --- DOM Elements ---
         const loadingOverlay = document.getElementById('loading-overlay');
         const roleSelectionScreen = document.getElementById('role-selection-screen');
         const hostSetupScreen = document.getElementById('host-setup-screen');
@@ -638,7 +587,6 @@
         const gamePlayScreen = document.getElementById('game-play-screen');
         const questionResultsScreen = document.getElementById('question-results-screen');  
         const gameEndScreen = document.getElementById('game-end-screen');
-
         const createHostButton = document.getElementById('create-host-button');
         const joinPlayerButton = document.getElementById('join-player-button');
         const timeLimitSelect = document.getElementById('time-limit-select');
@@ -647,7 +595,6 @@
         const qrcodeDiv = document.getElementById('qrcode');  
         const qrcodeFallbackMessage = document.getElementById('qrcode-fallback-message');  
         const copyLinkButton = document.getElementById('copy-link-button');
-
         const joinedPlayersList = document.getElementById('joined-players-list');
         const startGameButton = document.getElementById('start-game-button');  
         const gameCodeInput = document.getElementById('game-code-input');
@@ -663,7 +610,6 @@
         const playerCorrectGuessesList = document.getElementById('player-correct-guesses-list');
         const sharedRoundGuessesList = document.getElementById('shared-round-guesses-list');  
         const endQuestionEarlyButton = document.getElementById('end-question-early-button');  
-
         const resultsCategory = document.getElementById('results-category');
         const resultsQuestion = document.getElementById('results-question');  
         const roundCorrectAnswersList = document.getElementById('round-correct-answers-list');  
@@ -671,14 +617,11 @@
         const questionResultsHostControls = document.getElementById('question-results-host-controls');  
         const nextQuestionButton = document.getElementById('next-question-button');  
         const endGameFinalButton = document.getElementById('end-game-final-button');
-
         const gameCountdownScreen = document.getElementById('game-countdown-screen');  
         const countdownTimerDisplay = document.getElementById('countdown-timer-display');  
         const questionCounterDisplay = document.getElementById('question-counter');  
-
         const hostSubmissionStatusList = document.getElementById('host-submission-status-list');  
         const hostGameplayControls = document.getElementById('host-gameplay-controls');  
-
         const endTitle = document.getElementById('end-title');
         const endMessage = document.getElementById('end-message');
         const finalScoresList = document.getElementById('final-scores-list');
@@ -686,55 +629,43 @@
         const startNewRoundSameRoomButton = document.getElementById('start-new-round-same-room-button');
         const playerExitButtonGameplay = document.getElementById('player-exit-button-gameplay');
         const playerExitButtonResults = document.getElementById('player-exit-button-results');
-
-        // Reference to the new button container for custom message box
         const customMessageButtonsContainer = document.getElementById('custom-message-buttons'); 
         const customMessageBox = document.getElementById('custom-message-box');
         const customMessageTitle = document.getElementById('custom-message-title');
         const customMessageContent = document.getElementById('custom-message-content');
-
-        // NEW: Power-up buttons
         const powerUpDoublePointsBtn = document.getElementById('power-up-double-points');
         const powerUpExtraTimeBtn = document.getElementById('power-up-extra-time');
         const powerUpHintBtn = document.getElementById('power-up-hint');
 
-        // Initialize Tone.js synths for sound effects
         const timerSynth = new Tone.Synth({ type: "sine" , envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.5 }}).toDestination();
         const correctAnswerSynth = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.2 } }).toDestination();
         
-        // Function to play a simple sound effect for the timer
         function playTimerSound() {
             if (Tone.context.state !== 'running') { Tone.start(); }
             timerSynth.triggerAttackRelease("C4", "16n");
         }
-        // NEW: Function to play a sound for correct answers
         function playCorrectAnswerSound() {
             if (Tone.context.state !== 'running') { Tone.start(); }
             correctAnswerSynth.triggerAttackRelease("C5", "8n", Tone.now());
             correctAnswerSynth.triggerAttackRelease("G5", "8n", Tone.now() + 0.1);
         }
 
-        // NEW: Function to setup and control lobby music
         function setupLobbyMusic() {
             const synth = new Tone.Synth({ oscillator: { type: "pwm", modulationFrequency: 0.2 }, envelope: { attack: 0.02, decay: 0.1, sustain: 0.2, release: 0.9 } }).toDestination();
             const pattern = new Tone.Sequence((time, note) => {
                 synth.triggerAttackRelease(note, 0.1, time);
             }, ["C4", "E4", "G4", "B4"], "4n");
-
             pattern.loop = true;
             pattern.humanize = true;
             Tone.Transport.bpm.value = 100;
             return pattern;
         }
 
-        // Initial check for all important DOM elements
         document.addEventListener('DOMContentLoaded', () => {
-            // ... (All existing DOM element checks remain unchanged)
             populatePointsButtons();
             initializeFirebase();
         });
 
-        // Function to populate and manage the points buttons (1-20)
         function populatePointsButtons() {
             if (!pointsButtonGroup) return;
             pointsButtonGroup.innerHTML = '';
@@ -770,9 +701,7 @@
             }
         }
 
-        // --- Firebase Initialization ---
         async function initializeFirebase() {
-            // ... (Firebase init code is unchanged)
             showLoading();
             try {
                 const firebaseConfig = {
@@ -785,10 +714,7 @@
                     measurementId: "G-9413DFK5DF"
                 };
                 
-                console.log("Using Firebase Config:", firebaseConfig);
                 appId = firebaseConfig.projectId;
-                console.log("Derived App ID for Firestore path (Global):", appId);
-
                 app = firebase.initializeApp(firebaseConfig);
                 db = firebase.firestore(app);
                 auth = firebase.auth(app);
@@ -798,7 +724,6 @@
                 auth.onAuthStateChanged((user) => {
                     if (user) {
                         userId = user.uid;
-                        console.log("Authenticated with userId:", userId);
                         hideLoading();
 
                         const urlParams = new URLSearchParams(window.location.search);
@@ -810,15 +735,13 @@
                             playerNicknameInput.value = localStorage.getItem('playerNickname') || '';
 
                             if (!playerNicknameInput.value) {
-                                // If no nickname, show message asking for nickname
                                 showScreen(joinGameScreen);
                                 showCustomMessageBox("الانضمام إلى لعبة", `أدخل اسمك المستعار للانضمام إلى اللعبة برمز ${gameId}.`, {
                                     buttons: [
-                                        { text: 'حسناً', callback: hideCustomMessageBox } // Only one button to acknowledge and manually type nickname
+                                        { text: 'حسناً', callback: hideCustomMessageBox }
                                     ]
                                 });
                             } else {
-                                // If nickname exists, offer to auto-join or cancel
                                 showCustomMessageBox("الانضمام إلى لعبة", `هل تريد الانضمام إلى اللعبة برمز ${gameId} باسم ${playerNicknameInput.value}؟`, {
                                     buttons: [
                                         { text: 'حسناً', callback: () => joinGame(gameId, playerNicknameInput.value) },
@@ -830,7 +753,6 @@
                             showScreen(roleSelectionScreen);
                         }
                     } else {
-                        console.log("No user signed in.");
                         hideLoading();
                         showScreen(roleSelectionScreen);
                     }
@@ -838,26 +760,22 @@
 
             } catch (error) {
                 console.error("Firebase Initialization Error Details:", error);
-                showCustomMessageBox("خطأ", `فشل تهيئة اللعبة. تأكد من إعداد Firebase بشكل صحيح وقواعد الأمان. التفاصيل: ${error.message}`);
+                showCustomMessageBox("خطأ", `فشل تهيئة اللعبة. التفاصيل: ${error.message}`);
                 hideLoading();
             }
         }
 
-        // --- UI Management Functions ---
         function showLoading() { if (loadingOverlay) loadingOverlay.classList.remove('hidden'); }
         function hideLoading() { if (loadingOverlay) loadingOverlay.classList.add('hidden'); }
 
         function showCustomMessageBox(title, content, options = {}) {
-            // ... (Unchanged)
             if (!customMessageBox || !customMessageTitle || !customMessageContent || !customMessageButtonsContainer) {
-                console.error("Error: Custom message box elements not found. Cannot display message.");
-                alert(`خطأ: ${title}\n${content}`); // Fallback to native alert
+                alert(`خطأ: ${title}\n${content}`);
                 return;
             }
             customMessageTitle.textContent = title;
-            customMessageContent.innerHTML = content; // Use innerHTML to allow icons in message
+            customMessageContent.innerHTML = content;
             
-            // Clear previous buttons
             customMessageButtonsContainer.innerHTML = '';
 
             const buttonsToRender = options.buttons || [{ text: 'حسناً', callback: hideCustomMessageBox, className: 'bg-blue-600 hover:bg-blue-700 text-white text-xl font-semibold py-3 px-8 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out' }];
@@ -867,8 +785,8 @@
                 button.textContent = btnConfig.text;
                 button.className = btnConfig.className || 'bg-blue-600 hover:bg-blue-700 text-white text-xl font-semibold py-3 px-8 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out';
                 button.onclick = () => {
-                    if (btnConfig.callback) btnConfig.callback(); // Execute the specific button's callback
-                    hideCustomMessageBox(); // Always hide the message box after a button is clicked
+                    if (btnConfig.callback) btnConfig.callback();
+                    hideCustomMessageBox();
                 };
                 customMessageButtonsContainer.appendChild(button);
             });
@@ -878,7 +796,6 @@
         }
 
         function hideCustomMessageBox() {
-            // ... (Unchanged)
             if (customMessageBox) {
                 customMessageBox.classList.remove('flex', 'opacity-100');
                 customMessageBox.classList.add('hidden', 'opacity-0');
@@ -886,11 +803,8 @@
         }
 
         function showScreen(screenElement) {
-            // ... (Unchanged)
-            console.log("Attempting to show screen:", screenElement ? screenElement.id : "undefined/null screenElement");
             if (!screenElement || !(screenElement instanceof HTMLElement)) {
-                console.error("Invalid screenElement provided to showScreen:", screenElement);
-                showCustomMessageBox("خطأ في العرض", "حدث خطأ غير متوقع في واجهة المستخدم (عنصر الشاشة غير صالح).");
+                showCustomMessageBox("خطأ في العرض", "عنصر الشاشة غير صالح.");
                 return;
             }
 
@@ -909,21 +823,16 @@
             }
 
             screenElement.classList.remove('hidden');
-            if (screenElement !== customMessageBox) {
-                screenElement.classList.remove('flex', 'opacity-100');
-            }
         }
 
         function exitGame() {
-            // ... (Unchanged, but ensure sound stops)
             showLoading();
             if (lobbyMusicLoop && lobbyMusicLoop.state === "started") {
                  Tone.Transport.stop();
                  lobbyMusicLoop.stop(0);
-                 console.log("Lobby music stopped.");
             }
-            gameId = null; // Clear current game ID
-            isHost = false; // Reset host status
+            gameId = null;
+            isHost = false;
             clearInterval(timerInterval);
             clearInterval(currentQuestionSoundInterval);
             soundStarted = false;
@@ -935,17 +844,15 @@
                 playersSnapshotUnsubscribe();
                 playersSnapshotUnsubscribe = null;
             }
-            selectedQuizIndices = []; // Reset selected quizzes for new game
-            userUsedPointsBets = []; // Reset locally used points
-            populatePointsButtons(); // Re-render points buttons
-            window.history.pushState({}, '', window.location.pathname); // Clear gameId from URL
+            selectedQuizIndices = [];
+            userUsedPointsBets = [];
+            populatePointsButtons();
+            window.history.pushState({}, '', window.location.pathname);
             hideLoading();
             showScreen(roleSelectionScreen);
         }
 
-        // --- Game Helper Functions ---
         async function generateUniqueGameCode() {
-            // ... (Unchanged)
             let newGameId;
             let isUnique = false;
             let attempts = 0;
@@ -958,39 +865,17 @@
                 if (!docSnap.exists) {
                     isUnique = true;
                 } else {
-                    console.warn(`Generated ID ${newGameId} is already in use. Retrying...`);
                     attempts++;
                 }
             }
             if (!isUnique) {
-                throw new Error("فشل توليد رمز غرفة فريد بعد عدة محاولات. الرجاء المحاولة مرة أخرى.");
+                throw new Error("فشل توليد رمز غرفة فريد.");
             }
             return newGameId;
         }
 
-        // --- Host Specific Functions ---
         async function createGame() {
-             // ... (Code to get host nickname, categories, etc., is unchanged)
-            // ADDED: Initialize player's power-ups
-             const playerRef = gameRef.collection('players').doc(userId);
-             await playerRef.set({
-                 nickname: hostNickname,
-                 score: 0,
-                 joinedAt: Date.now(),
-                 playerSubmittedAnswer: '',
-                 playerSelectedPoints: 0,
-                 playerScoreChange: 0,
-                 hasSubmittedAnswer: false,
-                 usedPointsBets: [],
-                 // NEW: Initialize power-ups state
-                 powerUpsUsed: {
-                     doublePoints: false,
-                     extraTime: false,
-                     hint: false
-                 }
-             });
-             // ... (Rest of the function is unchanged)
-             showLoading();
+            showLoading();
             try {
                 const hostNickname = hostNicknameInput.value.trim();
                 if (!hostNickname) {
@@ -1005,7 +890,6 @@
                 }
 
                 gameId = await generateUniqueGameCode();
-
                 isHost = true;
                 userNickname = hostNickname;
                 localStorage.setItem('hostNickname', hostNickname);
@@ -1035,12 +919,13 @@
                 const quizSetForGame = allPossibleQuestions.slice(0, totalQuestions);
 
                 if (quizSetForGame.length === 0) {
-                    showCustomMessageBox("خطأ", "الفئات المختارة لا تحتوي على أي أسئلة كافية.");
+                    showCustomMessageBox("خطأ", "الفئات المختارة لا تحتوي على أي أسئلة.");
                     hideLoading();
                     return;
                 }
 
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
+                
                 await gameRef.set({
                     hostId: userId,
                     gamePhase: 'lobby',
@@ -1058,9 +943,9 @@
                     countdownDuration: 5,
                     scoresReconciledForCurrentQuestion: false,
                     lastHostTimeUpdate: null, 
-                    currentTime: timeLimit // Initialize current time on host side
+                    currentTime: timeLimit
                 });
-
+                
                 const playerRef = gameRef.collection('players').doc(userId);
                 await playerRef.set({
                     nickname: hostNickname,
@@ -1075,7 +960,6 @@
                 });
                 userUsedPointsBets = [];
 
-                console.log("Game created with ID:", gameId);
                 const gameRoomLink = `${window.location.origin}${window.location.pathname}?gameId=${gameId}`;
                 if (gameLinkDisplay) {
                     gameLinkDisplay.textContent = gameRoomLink;
@@ -1087,14 +971,11 @@
                 try {
                     if (typeof QRCode !== 'undefined' && QRCode && qrcodeDiv) {  
                         new QRCode(qrcodeDiv, { text: gameRoomLink, width: 128, height: 128, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H });
-                        console.log("QR Code generated successfully.");
                     } else {
-                        throw new Error("QRCode library not available or qrcodeDiv missing (fallback).");
+                        throw new Error("QRCode library not available.");
                     }
                 } catch (qrError) {
-                    console.warn("Failed to generate QR Code:", qrError);
-                    if (qrcodeFallbackMessage) { qrcodeFallbackMessage.textContent = "فشل توليد رمز QR. يرجى استخدام الرابط أعلاه للانضمام."; }
-                    if (qrcodeDiv) { qrcodeDiv.style.minHeight = 'auto'; qrcodeDiv.style.border = '1px dashed #ddd'; qrcodeDiv.style.padding = '10px'; }
+                    if (qrcodeFallbackMessage) { qrcodeFallbackMessage.textContent = "فشل توليد رمز QR."; }
                 }
 
                 if (copyLinkButton) {
@@ -1103,8 +984,8 @@
                         textArea.value = gameRoomLink;
                         document.body.appendChild(textArea);
                         textArea.select();
-                        try { document.execCommand('copy'); showCustomMessageBox("تم النسخ!", "تم نسخ رابط الغرفة إلى الحافظة."); }
-                        catch (err) { console.error('Failed to copy text: ', err); showCustomMessageBox("خطأ في النسخ", "فشل نسخ الرابط، يرجى نسخه يدوياً."); }
+                        try { document.execCommand('copy'); showCustomMessageBox("تم النسخ!", "تم نسخ رابط الغرفة."); }
+                        catch (err) { showCustomMessageBox("خطأ", "فشل نسخ الرابط."); }
                         document.body.removeChild(textArea);
                     };
                 }
@@ -1115,26 +996,20 @@
                 if (startGameButton) startGameButton.classList.remove('hidden');
             } catch (error) {
                 console.error("Error creating game:", error);
-                showCustomMessageBox("خطأ في إنشاء اللعبة", error.message || "حدث خطأ أثناء إنشاء الغرفة.");
+                showCustomMessageBox("خطأ في إنشاء اللعبة", error.message);
             } finally {
                 hideLoading();
             }
         }
         
-        // ... (initiateGameStartCountdown, startNextQuestion, etc. are unchanged)
         async function initiateGameStartCountdown() {  
             showLoading();
             try {
-                if (!gameId) throw new Error("لا يوجد معرف لعبة.");
-                if (!isHost) throw new Error("فقط المضيف يمكنه بدء اللعبة.");
+                if (!gameId || !isHost) return;
 
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
                 const gameDoc = await gameRef.get();
-                if (!gameDoc.exists) throw new Error("اللعبة غير موجودة.");
-
-                const gameData = gameDoc.data();
-                if (gameData.gamePhase !== 'lobby') {
-                    console.log("Game already started or in countdown phase.");
+                if (!gameDoc.exists || gameDoc.data().gamePhase !== 'lobby') {
                     hideLoading();
                     return;
                 }
@@ -1144,23 +1019,17 @@
                     countdownStartTime: Date.now(),
                     countdownDuration: 5
                 });
-                console.log("Initiated game start countdown.");
-
             } catch (error) {
-                console.error("Error initiating game start countdown:", error);
-                showCustomMessageBox("خطأ", error.message || "فشل بدء العد التنازلي للعبة.");
+                showCustomMessageBox("خطأ", "فشل بدء العد التنازلي.");
             } finally {
                 hideLoading();
             }
         }
 
-
-        // Function to start the next question or a new round (for host)
         async function startNextQuestion() {
             showLoading();
             try {
-                if (!gameId) throw new Error("لا يوجد معرف لعبة.");
-                if (!isHost) throw new Error("فقط المضيف يمكنه بدء السؤال التالي.");
+                if (!gameId || !isHost) return;
 
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
                 const gameDoc = await gameRef.get();
@@ -1188,7 +1057,6 @@
                     questionStartTime: Date.now(),
                     timeLimitPerQuestion: gameData.timeLimitPerQuestion,
                     scoresReconciledForCurrentQuestion: false,
-                    // NEW: Initialize currentTime for host-driven synchronization
                     currentTime: gameData.timeLimitPerQuestion, 
                     lastHostTimeUpdate: Date.now()
                 });
@@ -1197,8 +1065,7 @@
                 const playersDocs = await playersCollectionRef.get();
                 const batch = db.batch();
                 playersDocs.docs.forEach(playerDoc => {
-                    const playerRef = playerDoc.ref;
-                    batch.update(playerRef, {  
+                    batch.update(playerDoc.ref, {  
                         playerSubmittedAnswer: '',
                         playerSelectedPoints: 0,
                         playerScoreChange: 0,
@@ -1206,18 +1073,12 @@
                     });
                 });
                 await batch.commit();
-                console.log("Reset player-specific question data for new question.");
-
-                // UI elements are now reset and re-enabled directly in listenToGameChanges for question_active phase.
 
                 clearInterval(currentQuestionSoundInterval);
                 soundStarted = false;
 
-                console.log(`Starting question ${currentQuestionIndex + 1}: ${currentQuestion.category} - Question: ${currentQuestion.question}`);
-
             } catch (error) {
-                console.error("Error starting next question:", error);
-                showCustomMessageBox("خطأ", error.message || "فشل بدء السؤال التالي.");
+                showCustomMessageBox("خطأ", error.message);
             } finally {
                 hideLoading();
             }
@@ -1232,13 +1093,11 @@
                 await gameRef.update({
                     gamePhase: 'question_results',
                     scoresReconciledForCurrentQuestion: false,
-                    currentTime: 0, // Ensure timer stops on end early
+                    currentTime: 0,
                     lastHostTimeUpdate: Date.now()
                 });
                 reconcileQuestionScores();
-                console.log("Host ended question early.");
             } catch (error) {
-                console.error("Error ending question early:", error);
                 showCustomMessageBox("خطأ", "فشل إنهاء السؤال مبكراً.");
             } finally {
                 hideLoading();
@@ -1250,19 +1109,14 @@
             showLoading();
             try {
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
-                await gameRef.update({
-                    gamePhase: 'final_results'
-                });
-                console.log("Host ended the entire game.");
+                await gameRef.update({ gamePhase: 'final_results' });
             } catch (error) {
-                console.error("Error ending game:", error);
                 showCustomMessageBox("خطأ", "فشل إنهاء اللعبة.");
             } finally {
                 hideLoading();
             }
         }
 
-        // NEW: Host function to start a new round in the same room
         async function startNewRoundInSameRoom() {
             if (!isHost || !gameId) return;
             showLoading();
@@ -1270,16 +1124,15 @@
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
                 const gameDoc = await gameRef.get();
                 if (!gameDoc.exists) {
-                    showCustomMessageBox("خطأ", "اللعبة غير موجودة لبدء جولة جديدة.");
+                    showCustomMessageBox("خطأ", "اللعبة غير موجودة.");
                     return;
                 }
                 const gameData = gameDoc.data();
-
                 const selectedCategories = gameData.selectedCategoryIndices || [];
                 const totalQuestions = gameData.quizSet ? gameData.quizSet.length : 10; 
 
                 if (selectedCategories.length === 0) {
-                    showCustomMessageBox("خطأ", "لا توجد فئات أسئلة مختارة سابقة لبدء جولة جديدة.");
+                    showCustomMessageBox("خطأ", "لا توجد فئات أسئلة مختارة.");
                     return;
                 }
 
@@ -1304,16 +1157,14 @@
                 const newQuizSetForGame = allPossibleQuestions.slice(0, totalQuestions);
 
                 if (newQuizSetForGame.length === 0) {
-                    showCustomMessageBox("خطأ", "الفئات المختارة لا تحتوي على أي أسئلة كافية لإنشاء جولة جديدة.");
+                    showCustomMessageBox("خطأ", "الفئات المختارة لا تحتوي على أسئلة.");
                     return;
                 }
 
                 const batch = db.batch();
-
-                // Update game document to start new round
                 batch.update(gameRef, {
-                    gamePhase: 'lobby', // Set to lobby to transition all players to waiting screen
-                    quizSet: newQuizSetForGame, // New set of questions
+                    gamePhase: 'lobby',
+                    quizSet: newQuizSetForGame,
                     currentQuestionIndexInGame: 0,
                     currentCategory: '',
                     currentQuestionText: '',
@@ -1323,55 +1174,42 @@
                     questionStartTime: null,
                     countdownStartTime: null,
                     scoresReconciledForCurrentQuestion: false,
-                    // FIX: Reset currentTime and lastHostTimeUpdate for new round lobby sync
-                    currentTime: 0, // Should be 0 in lobby or null, but for sync, 0 works.
+                    currentTime: 0,
                     lastHostTimeUpdate: Date.now() 
                 });
 
-                // Reset all players' scores and states for the new round
                 const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
                 const playersDocs = await playersCollectionRef.get();
                 playersDocs.forEach(playerDoc => {
-                    const playerRef = playerDoc.ref;
-                    batch.update(playerRef, {
-                        score: 0, // Reset overall score for new round
+                    batch.update(playerDoc.ref, {
+                        score: 0,
                         playerSubmittedAnswer: '',
                         playerSelectedPoints: 0,
                         playerScoreChange: 0,
                         hasSubmittedAnswer: false,
-                        usedPointsBets: [], // Clear used points for the new round
-                        powerUpsUsed: { doublePoints: false, extraTime: false, hint: false } // NEW: Reset power-ups
+                        usedPointsBets: [],
+                        powerUpsUsed: { doublePoints: false, extraTime: false, hint: false }
                     });
                 });
                 await batch.commit();
-                console.log("New round data committed to Firestore.");
 
-                // FIX: Explicitly reset host's local score display and UI state for the new round.
-                if (playerScoreDisplay) playerScoreDisplay.textContent = '0'; // Reset host's score display
-                userUsedPointsBets = []; // Reset local state for host
-                populatePointsButtons(); // Update UI for points buttons (for host)
+                if (playerScoreDisplay) playerScoreDisplay.textContent = '0';
+                userUsedPointsBets = [];
+                populatePointsButtons();
 
-                console.log("New round setup complete. Transitioning to waiting screen.");
-                // Explicitly show waiting room screen for the host (and players will follow via listener)
                 showScreen(waitingRoomScreen); 
             } catch (error) {
-                console.error("Error starting new round in same room:", error);
-                showCustomMessageBox("خطأ", error.message || "فشل بدء جولة جديدة في نفس الغرفة.");
+                showCustomMessageBox("خطأ", error.message);
             } finally {
-                hideLoading(); // Always hide loading after operation
+                hideLoading();
             }
         }
 
-
         async function reconcileQuestionScores() {
-             // ... (Unchanged)
             if (!isHost || !gameId) return;
-            console.log("Reconciling scores for the ended question...");
-            
             const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
             const gameDoc = await gameRef.get();
             if (!gameDoc.exists || gameDoc.data().scoresReconciledForCurrentQuestion) {
-                console.log("Scores already reconciled for this question, or game data missing.");
                 return;
             }
 
@@ -1382,21 +1220,17 @@
                 
                 const batch = db.batch();
                 let roundCorrectGuesses = [];
-
                 const gameData = gameDoc.data();
                 const currentCorrectAnswers = gameData.currentCorrectAnswers || [];
-
 
                 for (const playerDoc of playersDocs.docs) {
                     const playerRef = playerDoc.ref;
                     const playerData = playerDoc.data();
-                    
                     let scoreChange = 0;
                     let submittedAnswer = playerData.playerSubmittedAnswer;
 
                     if (playerData.hasSubmittedAnswer) {
                         const normalizedSubmittedAnswer = normalize(submittedAnswer);
-                        
                         if (isCorrectAnswer(normalizedSubmittedAnswer, currentCorrectAnswers)) {
                             scoreChange = playerData.playerSelectedPoints;
                             if (!roundCorrectGuesses.some(g => normalize(g) === normalizedSubmittedAnswer)) { 
@@ -1421,28 +1255,14 @@
                     scoresReconciledForCurrentQuestion: true
                 });
                 await batch.commit();
-                console.log("Scores reconciled and player flags updated for the question. Shared guesses updated by host.");
             } catch (error) {
-                console.error("Error reconciling scores:", error);
-                showCustomMessageBox("خطأ في تحديث النقاط", error.message || "حدث خطأ أثناء تحديث نقاط اللاعبين.");
+                showCustomMessageBox("خطأ في تحديث النقاط", error.message);
             } finally {
                 hideLoading();
             }
         }
 
-
-        // --- Player Specific Functions ---
         async function joinGame(code, nickname) {
-            // ADDED: Initialize player's power-ups
-             await playerRef.set({
-                 // ... other player data
-                 powerUpsUsed: {
-                     doublePoints: false,
-                     extraTime: false,
-                     hint: false
-                 }
-             }, { merge: true });
-             // ... (Rest of the function is unchanged)
              showLoading();
             try {
                 if (!code || !nickname) {
@@ -1453,7 +1273,7 @@
                 const gameDoc = await gameRef.get();
 
                 if (!gameDoc.exists) {
-                    showCustomMessageBox("اللعبة غير موجودة", "رمز اللعبة غير صحيح أو الغرفة غير موجودة.");
+                    showCustomMessageBox("اللعبة غير موجودة", "رمز اللعبة غير صحيح.");
                     hideLoading();
                     exitGame();
                     return;
@@ -1461,7 +1281,7 @@
 
                 const gameData = gameDoc.data();
                 if (gameData.gamePhase === 'final_results') {
-                    showCustomMessageBox("اللعبة انتهت", "عذراً، هذه اللعبة قد انتهت بالفعل.");
+                    showCustomMessageBox("اللعبة انتهت", "هذه اللعبة قد انتهت بالفعل.");
                     hideLoading();
                     exitGame();
                     return;
@@ -1486,7 +1306,6 @@
                 }, { merge: true });
                 userUsedPointsBets = [];
 
-                console.log("Joined game:", gameId);
                 if (!window.location.search.includes(`gameId=${gameId}`)) {
                     const newUrl = `${window.location.origin}${window.location.pathname}?gameId=${gameId}`;
                     window.history.pushState({ path: newUrl }, '', newUrl);
@@ -1504,40 +1323,22 @@
                 listenToGameChanges();
                 listenToPlayers();
             } catch (error) {
-                console.error("Error joining game:", error);
-                showCustomMessageBox("خطأ في الانضمام", error.message || "فشل الانضمام إلى الغرفة.");
+                showCustomMessageBox("خطأ في الانضمام", error.message);
             } finally {
                 hideLoading();
             }
         }
 
         async function submitGuess() {
-            // ... (Code before transaction is unchanged)
-            // MODIFIED: Check for double points power-up
-             let pointsToSubmit = pointsBet;
-             if (isDoublePointsActive) {
-                 pointsToSubmit *= 2;
-                 console.log(`Double Points active! Submitting ${pointsToSubmit} instead of ${pointsBet}`);
-             }
-             // ... inside transaction.update ...
-             // playerSelectedPoints: pointsBet,
-             transaction.update(playerRef, {
-                playerSubmittedAnswer: guess,
-                playerSelectedPoints: pointsToSubmit, // Submit potentially doubled points
-                hasSubmittedAnswer: true,
-                usedPointsBets: firebase.firestore.FieldValue.arrayUnion(pointsBet) // Still use original bet value here
-             });
-            // ... (Code after transaction is unchanged)
-             isDoublePointsActive = false; // Reset after submission
              if (!gameId || (gamePlayScreen && gamePlayScreen.classList.contains('hidden'))) { return; }
-            if (!gameGuessInput || !pointsButtonGroup || !submitAnswerButton) { console.error("Error: Game input elements not found."); return; }
-            if (gameGuessInput.disabled) { showCustomMessageBox("تم الإجابة", "لقد أجبت بالفعل على هذا السؤال."); return; }
+            if (!gameGuessInput || !pointsButtonGroup || !submitAnswerButton) { return; }
+            if (gameGuessInput.disabled) { showCustomMessageBox("تم الإجابة", "لقد أجبت بالفعل."); return; }
 
             const guess = gameGuessInput.value.trim();  
             const pointsBet = selectedPointsBet;
 
-            if (guess === '') { showCustomMessageBox("خطأ في الإدخال", "الرجاء كتابة إجابتك قبل الإرسال."); return; }
-            if (isNaN(pointsBet) || pointsBet < 1 || pointsBet > 20) { showCustomMessageBox("خطأ في النقاط", "الرجاء اختيار عدد نقاط صحيح بين 1 و 20."); return; }
+            if (guess === '') { showCustomMessageBox("خطأ", "الرجاء كتابة إجابتك."); return; }
+            if (isNaN(pointsBet) || pointsBet < 1 || pointsBet > 20) { showCustomMessageBox("خطأ", "الرجاء اختيار عدد نقاط صحيح."); return; }
 
             showLoading();
             try {
@@ -1550,23 +1351,14 @@
                 }
 
                 await db.runTransaction(async (transaction) => {
-                    const gameDoc = await transaction.get(gameRef);
                     const playerDoc = await transaction.get(playerRef);
-
-                    if (!gameDoc.exists || !playerDoc.exists) { throw "Game or player data not found."; }
-
+                    if (!playerDoc.exists) { throw "Player data not found."; }
                     const playerData = playerDoc.data();
-
-                    const hasSubmittedAnswer = playerData.hasSubmittedAnswer || false;
-                    const playerUsedPointsBets = playerData.usedPointsBets || [];
-
-                    if (hasSubmittedAnswer) {
-                        console.log("Player already submitted answer for this question (transaction check).");
-                        throw new Error("لقد أجبت بالفعل على هذا السؤال.");
+                    if (playerData.hasSubmittedAnswer) {
+                        throw new Error("لقد أجبت بالفعل.");
                     }
-                    if (playerUsedPointsBets.includes(pointsBet)) {
-                         console.log("Player already used this point value in this game (transaction check).");
-                         throw new Error(`لقد استخدمت قيمة ${pointsBet} نقطة بالفعل في هذه اللعبة. الرجاء اختيار قيمة أخرى.`);
+                    if (playerData.usedPointsBets.includes(pointsBet)) {
+                         throw new Error(`لقد استخدمت قيمة ${pointsBet} نقطة بالفعل.`);
                     }
 
                     transaction.update(playerRef, {
@@ -1586,256 +1378,230 @@
                 if (submitAnswerButton) submitAnswerButton.disabled = true;
 
             } catch (error) {
-                console.error("Error submitting guess:", error);
-                if (error.message.includes("لقد أجبت بالفعل")) { showCustomMessageBox("تم الإجابة", error.message); }
-                else if (error.message.includes("لقد استخدمت قيمة")) { showCustomMessageBox("نقاط مستخدمة", error.message); }
-                else { showCustomMessageBox("خطأ في الإجابة", error.message || "حدث خطأ أثناء إرسال الإجابة."); }
+                showCustomMessageBox("خطأ في الإجابة", error.message);
             } finally {
                 hideLoading();
             }
         }
 
-        // --- Real-time Listeners ---
         function listenToGameChanges() {
-             // ... (Inside the snapshot listener)
-             if (gamePhase === 'lobby') {
-                 // Start lobby music
-                 if (lobbyMusicLoop && lobbyMusicLoop.state !== "started") {
-                     Tone.Transport.start();
-                     lobbyMusicLoop.start(0);
-                     console.log("Lobby music started.");
-                 }
-             } else {
-                 // Stop lobby music if it's playing
-                 if (lobbyMusicLoop && lobbyMusicLoop.state === "started") {
-                     Tone.Transport.stop();
-                     lobbyMusicLoop.stop(0);
-                     console.log("Lobby music stopped.");
-                 }
-             }
-
-             if (gamePhase === 'question_results') {
-                // ...
-                // Check if *this* player got the answer right to play sound
-                db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId).get().then(playerDoc => {
-                    if (playerDoc.exists) {
-                        const playerData = playerDoc.data();
-                        if (playerData.playerScoreChange > 0) {
-                            playCorrectAnswerSound();
-                        }
-                    }
-                });
-                // ...
-             }
-            // ... (Rest of the function is unchanged)
             if (gameSnapshotUnsubscribe) gameSnapshotUnsubscribe();
 
             const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
-            console.log("Listening to game changes at path:", gameRef.path);
 
             gameSnapshotUnsubscribe = gameRef.onSnapshot((docSnap) => {
                 if (docSnap.exists) {
                     const gameData = docSnap.data();
                     const gamePhase = gameData.gamePhase;
-                    console.log(`[listenToGameChanges] Game phase changed to: ${gamePhase}`);
 
                     if (gamePhase === 'lobby') {
                         if (lobbyMusicLoop && lobbyMusicLoop.state !== "started") {
                              if (Tone.context.state !== 'running') { Tone.start(); }
                              Tone.Transport.start();
                              lobbyMusicLoop.start(0);
-                             console.log("Lobby music started.");
                         }
                     } else {
                         if (lobbyMusicLoop && lobbyMusicLoop.state === "started") {
                              Tone.Transport.stop();
                              lobbyMusicLoop.stop(0);
-                             console.log("Lobby music stopped.");
                         }
                     }
-                    // ... (The rest of the phase handling logic is the same as before) ...
                     if (gamePhase === 'question_results') {
-                         console.log("[listenToGameChanges] Showing question results screen.");
-                         // Check if this player got it right, to play sound
                          db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId).get().then(playerDoc => {
                              if (playerDoc.exists && playerDoc.data().playerScoreChange > 0) {
                                  playCorrectAnswerSound();
                              }
                          });
-                         // The rest of the `question_results` logic...
-                         if (isHost && !gameData.scoresReconciledForCurrentQuestion) {
-                            reconcileQuestionScores();  
-                        }
-                        showScreen(questionResultsScreen);
-                        clearInterval(timerInterval);
-                        clearInterval(currentQuestionSoundInterval);
-                        soundStarted = false;
+                    }
 
-                        if (resultsCategory) resultsCategory.textContent = gameData.currentCategory;
-                        if (resultsQuestion) resultsQuestion.textContent = gameData.currentQuestionText;
-                        
-                        if (roundCorrectAnswersList) {
-                            roundCorrectAnswersList.innerHTML = '';
-                            const primaryCorrectAnswer = gameData.currentDisplayAnswer;
-                            const listItem = document.createElement('li');
-                            if (primaryCorrectAnswer) {
-                                const wasPrimaryGuessed = (gameData.currentQuestionGuessedAnswers || []).some(guessed => isCorrectAnswer(primaryCorrectAnswer, [guessed]));
-                                if (wasPrimaryGuessed) { listItem.innerHTML = `<i class="fas fa-check-circle text-green-500 mr-2"></i> ${primaryCorrectAnswer}`; }
-                                else { listItem.innerHTML = `<i class="fas fa-times-circle text-red-500 mr-2"></i> ${primaryCorrectAnswer}`; }
-                            } else { listItem.textContent = "لا توجد إجابة صحيحة أساسية محددة لهذا السؤال."; }
-                            roundCorrectAnswersList.appendChild(listItem);
-                        }
+                    if (questionCounterDisplay) {
+                        const currentQNum = gameData.currentQuestionIndexInGame;
+                        const totalQs = gameData.quizSet ? gameData.quizSet.length : 0;
+                        const displayQNum = (gamePhase === 'game_countdown' || gamePhase === 'lobby') ? 0 : currentQNum;
+                        if (totalQs > 0) { questionCounterDisplay.textContent = `${displayQNum} / ${totalQs}`; } 
+                        else { questionCounterDisplay.textContent = `-- / --`; }
+                    }
 
-                        if (sharedRoundGuessesList) {
-                            sharedRoundGuessesList.innerHTML = '';
-                            (gameData.currentQuestionGuessedAnswers || []).forEach(answer => {
-                                const listItem = document.createElement('li');
-                                listItem.textContent = answer;
-                                listItem.classList.add('text-purple-700', 'font-semibold', 'opacity-0', 'animate-fade-in-up');
-                                sharedRoundGuessesList.appendChild(listItem);
-                            });
-                        }
-
-                        showQuestionPlayerScoresDetailed();
-
-                        if (isHost) {
-                            if (questionResultsHostControls) questionResultsHostControls.classList.remove('hidden');
-                            if (gameData.currentQuestionIndexInGame < gameData.quizSet.length) {
-                                if (nextQuestionButton) nextQuestionButton.classList.remove('hidden');
-                                if (endGameFinalButton) endGameFinalButton.classList.add('hidden');
-                            } else {
-                                if (nextQuestionButton) nextQuestionButton.classList.add('hidden');
-                                if (endGameFinalButton) endGameFinalButton.classList.remove('hidden');
+                    switch(gamePhase) {
+                        case 'lobby':
+                            if (gameGuessInput) {
+                                gameGuessInput.value = '';
+                                gameGuessInput.disabled = false;
                             }
-                            if (playerExitButtonResults) playerExitButtonResults.classList.add('hidden');
-                        } else {
-                            if (questionResultsHostControls) questionResultsHostControls.classList.add('hidden');
-                            if (playerExitButtonResults) playerExitButtonResults.classList.remove('hidden');
-                        }
-                    } else if (gamePhase === 'final_results') {
-                         console.log("[listenToGameChanges] Showing final results screen.");
-                        clearInterval(timerInterval);
-                        clearInterval(currentQuestionSoundInterval);
-                        soundStarted = false;
-                        showFinalScores();
-                    } else if (gamePhase === 'question_active') {
-                        // ...
-                        isDoublePointsActive = false;
-                        if (powerUpDoublePointsBtn) powerUpDoublePointsBtn.classList.remove('ring-4', 'ring-yellow-300');
-                        // ...
-                        console.log("[listenToGameChanges] Showing game play screen.");
-                        showScreen(gamePlayScreen);
-                        if (gameCategoryDisplay) gameCategoryDisplay.textContent = gameData.currentCategory;
-                        if (gameQuestionDisplay) gameQuestionDisplay.textContent = gameData.currentQuestionText;
-                        
-                        // FIX: Explicitly clear and re-enable input and buttons for a new question
-                        if (gameGuessInput) {
-                            gameGuessInput.value = ''; // Clear previous answer
-                            gameGuessInput.disabled = false; // Explicitly re-enable input
-                        }
-                        if (submitAnswerButton) {
-                            submitAnswerButton.disabled = false; // Explicitly re-enable submit button
-                        }
-                        // Clear local correct guesses list for new question
-                        if (playerCorrectGuessesList) { playerCorrectGuessesList.innerHTML = ''; }
-                        // Clear shared guesses list for new question (will be populated by host later)
-                        if (sharedRoundGuessesList) { sharedRoundGuessesList.innerHTML = ''; }
-                        isDoublePointsActive = false;
-                        if (powerUpDoublePointsBtn) powerUpDoublePointsBtn.classList.remove('ring-4', 'ring-yellow-300', 'opacity-50');
-
-                        // Re-fetch player data to update local 'used points' and re-render buttons
-                        // This uses a .then() to ensure the player data is fetched before populating buttons
-                        db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId).get().then(playerDoc => {
-                            if (playerDoc.exists) {
-                                const currentPlayerData = playerDoc.data();
-                                userUsedPointsBets = currentPlayerData.usedPointsBets || []; // Update local used points state
-                                populatePointsButtons(); // Re-render buttons based on updated local state (disabling used ones)
-                                
-                                // After re-enabling globally, if player has ALREADY submitted for *this* question, re-disable.
-                                if (currentPlayerData.hasSubmittedAnswer) {
-                                    console.log(`Player ${userId} has already submitted for this question. Re-disabling input.`);
-                                    if (gameGuessInput) gameGuessInput.disabled = true;
-                                    if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
-                                    if (submitAnswerButton) submitAnswerButton.disabled = true;
-                                } else {
-                                    console.log(`Player ${userId} has NOT submitted for this question. Input enabled.`);
+                            if (submitAnswerButton) submitAnswerButton.disabled = false;
+                            selectedPointsBet = 1;
+                            userUsedPointsBets = [];
+                            populatePointsButtons();
+                            if (playerCorrectGuessesList) playerCorrectGuessesList.innerHTML = '';
+                            if (sharedRoundGuessesList) sharedRoundGuessesList.innerHTML = '';
+                            showScreen(waitingRoomScreen);
+                            if (isHost) {
+                                if (startGameButton) {
+                                    startGameButton.textContent = "بدء الجولة!";
+                                    startGameButton.onclick = initiateGameStartCountdown;
                                 }
                             } else {
-                                // Fallback if player doc is missing (shouldn't happen, but defensive)
-                                console.warn("Player document not found while updating input state.");
-                                if (gameGuessInput) gameGuessInput.disabled = true;
-                                if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
-                                if (submitAnswerButton) submitAnswerButton.disabled = true;
+                                if (startGameButton) startGameButton.classList.add('hidden');
                             }
-                        }).catch(e => console.error("Error checking player submission status on game changes:", e));
-                        
-                        if (gameGuessInput) gameGuessInput.focus();
-
-                        if (isHost) {
-                            if (hostGameplayControls) hostGameplayControls.classList.remove('hidden');
                             if (playerExitButtonGameplay) playerExitButtonGameplay.classList.add('hidden');
-                        } else {
-                            if (hostGameplayControls) hostGameplayControls.classList.add('hidden');
-                            if (playerExitButtonGameplay) playerExitButtonGameplay.classList.remove('hidden');
-                        }
-
-                        clearInterval(timerInterval);
-                        clearInterval(currentQuestionSoundInterval);
-                        soundStarted = false;
-
-                        // FIX: Host-driven timer synchronization
-                        timerInterval = setInterval(() => {
-                            const now = Date.now();
-                            const lastHostTimeUpdate = gameData.lastHostTimeUpdate || now; // Fallback to now if not set
-                            const timeFromHost = gameData.currentTime || gameData.timeLimitPerQuestion; // Fallback
-                            // Compensate for network latency
-                            const compensatedTime = timeFromHost - Math.floor((now - lastHostTimeUpdate) / 1000);
-                            
-                            localTimerRemaining = Math.max(0, compensatedTime); // Ensure time doesn't go negative
-                            if (gameTimerDisplay) gameTimerDisplay.textContent = localTimerRemaining;
-
-                            if (localTimerRemaining <= 5 && !soundStarted) {
-                                currentQuestionSoundInterval = setInterval(playTimerSound, 500);
-                                soundStarted = true;
-                            }
-                            if (localTimerRemaining <= 0) {
-                                clearInterval(timerInterval);
-                                clearInterval(currentQuestionSoundInterval);
-                                soundStarted = false;
-                                if (isHost) {
-                                    db.collection(`artifacts/${appId}/public/data/games`).doc(gameId).update({ gamePhase: 'question_results', scoresReconciledForCurrentQuestion: false });
-                                    reconcileQuestionScores();
+                            if (playerExitButtonResults) playerExitButtonResults.classList.add('hidden');
+                            break;
+                        case 'game_countdown':
+                            showScreen(gameCountdownScreen);
+                            clearInterval(timerInterval);
+                            clearInterval(currentQuestionSoundInterval);
+                            soundStarted = false;
+                            const countdownDuration = gameData.countdownDuration || 5;
+                            let currentCountdown = countdownDuration;
+                            if (countdownTimerDisplay) countdownTimerDisplay.textContent = currentCountdown;
+                            timerInterval = setInterval(() => {
+                                currentCountdown--;
+                                if (countdownTimerDisplay) countdownTimerDisplay.textContent = currentCountdown > 0 ? currentCountdown : 'انطلق!';
+                                if (currentCountdown <= 0) {
+                                    clearInterval(timerInterval);
+                                    if (isHost) { startNextQuestion(); }
                                 }
+                            }, 1000);
+                            if (playerExitButtonGameplay) playerExitButtonGameplay.classList.add('hidden');
+                            if (playerExitButtonResults) playerExitButtonResults.classList.add('hidden');
+                            break;
+                        case 'question_active':
+                            showScreen(gamePlayScreen);
+                            if (gameCategoryDisplay) gameCategoryDisplay.textContent = gameData.currentCategory;
+                            if (gameQuestionDisplay) gameQuestionDisplay.textContent = gameData.currentQuestionText;
+                            if (gameGuessInput) {
+                                gameGuessInput.value = '';
+                                gameGuessInput.disabled = false;
                             }
-                        }, 1000);
+                            if (submitAnswerButton) submitAnswerButton.disabled = false;
+                            if (playerCorrectGuessesList) playerCorrectGuessesList.innerHTML = '';
+                            if (sharedRoundGuessesList) sharedRoundGuessesList.innerHTML = '';
+                            isDoublePointsActive = false;
+                            if (powerUpDoublePointsBtn) powerUpDoublePointsBtn.classList.remove('ring-4', 'ring-yellow-300', 'opacity-50');
+
+                            db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId).get().then(playerDoc => {
+                                if (playerDoc.exists) {
+                                    const currentPlayerData = playerDoc.data();
+                                    userUsedPointsBets = currentPlayerData.usedPointsBets || [];
+                                    populatePointsButtons();
+                                    if (currentPlayerData.hasSubmittedAnswer) {
+                                        if (gameGuessInput) gameGuessInput.disabled = true;
+                                        if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
+                                        if (submitAnswerButton) submitAnswerButton.disabled = true;
+                                    }
+                                }
+                            });
+                            
+                            if (gameGuessInput) gameGuessInput.focus();
+
+                            if (isHost) {
+                                if (hostGameplayControls) hostGameplayControls.classList.remove('hidden');
+                                if (playerExitButtonGameplay) playerExitButtonGameplay.classList.add('hidden');
+                            } else {
+                                if (hostGameplayControls) hostGameplayControls.classList.add('hidden');
+                                if (playerExitButtonGameplay) playerExitButtonGameplay.classList.remove('hidden');
+                            }
+
+                            clearInterval(timerInterval);
+                            clearInterval(currentQuestionSoundInterval);
+                            soundStarted = false;
+
+                            timerInterval = setInterval(() => {
+                                const now = Date.now();
+                                const lastHostTimeUpdate = gameData.lastHostTimeUpdate || now;
+                                const timeFromHost = gameData.currentTime || gameData.timeLimitPerQuestion;
+                                const compensatedTime = timeFromHost - Math.floor((now - lastHostTimeUpdate) / 1000);
+                                
+                                localTimerRemaining = Math.max(0, compensatedTime);
+                                if (gameTimerDisplay) gameTimerDisplay.textContent = localTimerRemaining;
+
+                                if (localTimerRemaining <= 5 && !soundStarted) {
+                                    currentQuestionSoundInterval = setInterval(playTimerSound, 500);
+                                    soundStarted = true;
+                                }
+                                if (localTimerRemaining <= 0) {
+                                    clearInterval(timerInterval);
+                                    clearInterval(currentQuestionSoundInterval);
+                                    soundStarted = false;
+                                    if (isHost) {
+                                        db.collection(`artifacts/${appId}/public/data/games`).doc(gameId).update({ gamePhase: 'question_results', scoresReconciledForCurrentQuestion: false });
+                                        reconcileQuestionScores();
+                                    }
+                                }
+                            }, 1000);
+                            break;
+                        case 'question_results':
+                            if (isHost && !gameData.scoresReconciledForCurrentQuestion) {
+                                reconcileQuestionScores();  
+                            }
+                            showScreen(questionResultsScreen);
+                            clearInterval(timerInterval);
+                            clearInterval(currentQuestionSoundInterval);
+                            soundStarted = false;
+
+                            if (resultsCategory) resultsCategory.textContent = gameData.currentCategory;
+                            if (resultsQuestion) resultsQuestion.textContent = gameData.currentQuestionText;
+                            
+                            if (roundCorrectAnswersList) {
+                                roundCorrectAnswersList.innerHTML = '';
+                                const primaryCorrectAnswer = gameData.currentDisplayAnswer;
+                                const listItem = document.createElement('li');
+                                if (primaryCorrectAnswer) {
+                                    listItem.innerHTML = `<i class="fas fa-check-circle text-green-500 mr-2"></i> ${primaryCorrectAnswer}`;
+                                } else { listItem.textContent = "لا توجد إجابة صحيحة."; }
+                                roundCorrectAnswersList.appendChild(listItem);
+                            }
+
+                            if (sharedRoundGuessesList) {
+                                sharedRoundGuessesList.innerHTML = '';
+                                (gameData.currentQuestionGuessedAnswers || []).forEach(answer => {
+                                    const listItem = document.createElement('li');
+                                    listItem.textContent = answer;
+                                    listItem.classList.add('text-purple-700', 'font-semibold', 'opacity-0', 'animate-fade-in-up');
+                                    sharedRoundGuessesList.appendChild(listItem);
+                                });
+                            }
+
+                            showQuestionPlayerScoresDetailed();
+
+                            if (isHost) {
+                                if (questionResultsHostControls) questionResultsHostControls.classList.remove('hidden');
+                                if (gameData.currentQuestionIndexInGame < gameData.quizSet.length) {
+                                    if (nextQuestionButton) nextQuestionButton.classList.remove('hidden');
+                                    if (endGameFinalButton) endGameFinalButton.classList.add('hidden');
+                                } else {
+                                    if (nextQuestionButton) nextQuestionButton.classList.add('hidden');
+                                    if (endGameFinalButton) endGameFinalButton.classList.remove('hidden');
+                                }
+                                if (playerExitButtonResults) playerExitButtonResults.classList.add('hidden');
+                            } else {
+                                if (questionResultsHostControls) questionResultsHostControls.classList.add('hidden');
+                                if (playerExitButtonResults) playerExitButtonResults.classList.remove('hidden');
+                            }
+                            break;
+                        case 'final_results':
+                            clearInterval(timerInterval);
+                            clearInterval(currentQuestionSoundInterval);
+                            soundStarted = false;
+                            showFinalScores();
+                            break;
                     }
                 } else {
-                    console.log("Game document deleted or does not exist. Redirecting.");
-                    showCustomMessageBox("اللعبة غير موجودة", "غرفة اللعب هذه لم تعد موجودة. قد يكون المضيف قد أغلقها.");
-                    exitGame(); // Clear URL and redirect cleanly
+                    showCustomMessageBox("اللعبة غير موجودة", "تم إغلاق الغرفة.");
+                    exitGame();
                 }
             }, (error) => {
-                console.error("Error listening to game changes:", error);
-                showCustomMessageBox("خطأ في الاتصال", `فقد الاتصال باللعبة. يرجى التحقق من اتصالك بالإنترنت. التفاصيل: ${error.message}`);
-                exitGame(); // In case of a persistent error, also offer to exit
+                showCustomMessageBox("خطأ في الاتصال", `فقد الاتصال باللعبة.`);
+                exitGame();
             });
         }
 
         function listenToPlayers() {
-            // ... (Inside the snapshot listener, after getting playerData)
-            // ADDED: Update power-up button UI based on Firebase state
-            if (playerId === userId) {
-                 const powerUps = playerData.powerUpsUsed || { doublePoints: false, extraTime: false, hint: false };
-                 updatePowerUpButtonsUI(powerUps);
-            }
-            // ... (Rest of the function is unchanged)
             if (playersSnapshotUnsubscribe) playersSnapshotUnsubscribe();
 
             const playersRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
-            console.log("Listening to players at path:", playersRef.path);
-            const q = playersRef;
 
-            playersSnapshotUnsubscribe = q.onSnapshot((snapshot) => {
+            playersSnapshotUnsubscribe = playersRef.onSnapshot((snapshot) => {
                 if (joinedPlayersList) joinedPlayersList.innerHTML = '';
                 
                 let currentPlayerOverallScore = 0;
@@ -1853,7 +1619,6 @@
                         hostSubmissionStatusList.innerHTML = '';
                     }
 
-
                     snapshot.forEach((doc) => {
                         const playerData = doc.data();
                         const playerId = doc.id;
@@ -1870,31 +1635,15 @@
 
                         if (hostSubmissionStatusList && isHost) {
                             const statusItem = document.createElement('li');
-                            let statusIcon = '';
-                            let submittedAnswerText = '';
-                            let scoreInfo = '';
-
                             const scoreChangeValue = playerData.playerScoreChange || 0;
                             const submittedAnswerActual = playerData.playerSubmittedAnswer;
                             const selectedPointsActual = playerData.playerSelectedPoints || 0;
-
-
-                            if (playerData.hasSubmittedAnswer) {
-                                statusIcon = '<i class="fas fa-check-circle text-green-500 ml-2"></i>';
-                                submittedAnswerText = `إجابة: ${submittedAnswerActual || 'لا توجد'}`;
-                                if (scoreChangeValue !== 0 || selectedPointsActual > 0) {
-                                        scoreInfo = `(راهن بـ ${selectedPointsActual} نقطة، تغيير: ${scoreChangeValue >= 0 ? '+' : ''}${scoreChangeValue} نقطة)`;
-                                }
-                            } else {  
-                                statusIcon = '<i class="fas fa-hourglass-half text-gray-500 ml-2"></i>';
-                                submittedAnswerText = 'لم يجب';
-                            }
-                            statusItem.innerHTML = `
-                                ${playerData.nickname || 'لاعب مجهول'}: ${statusIcon} ${submittedAnswerText} ${scoreInfo}
-                            `;
+                            let statusIcon = playerData.hasSubmittedAnswer ? '<i class="fas fa-check-circle text-green-500 ml-2"></i>' : '<i class="fas fa-hourglass-half text-gray-500 ml-2"></i>';
+                            let submittedAnswerText = playerData.hasSubmittedAnswer ? `إجابة: ${submittedAnswerActual || 'لا توجد'}` : 'لم يجب';
+                            let scoreInfo = (scoreChangeValue !== 0 || selectedPointsActual > 0) ? `(راهن بـ ${selectedPointsActual}، تغيير: ${scoreChangeValue >= 0 ? '+' : ''}${scoreChangeValue})` : '';
+                            statusItem.innerHTML = `${playerData.nickname || 'مجهول'}: ${statusIcon} ${submittedAnswerText} ${scoreInfo}`;
                             hostSubmissionStatusList.appendChild(statusItem);
                         }
-
 
                         if (playerId === userId) {
                             currentPlayerOverallScore = playerData.score || 0;
@@ -1907,25 +1656,24 @@
                     if (playerScoreDisplay) playerScoreDisplay.innerHTML = currentPlayerOverallScore;
 
                     if (gamePhase === 'lobby' && isHost) {
-                        if (snapshot.size >= 2) { if (startGameButton) startGameButton.classList.remove('hidden'); }
-                        else { if (startGameButton) startGameButton.classList.add('hidden'); }
+                        if (snapshot.size >= 1) { // Changed to 1 so host can start alone
+                           if (startGameButton) startGameButton.classList.remove('hidden'); 
+                        } else { 
+                           if (startGameButton) startGameButton.classList.add('hidden'); 
+                        }
                     }
 
-                }).catch(error => console.error("Error checking game phase/hostId for players listener:", error));
+                });
 
-            }, (error) => {
-                console.error("Error listening to players:", error);
             });
         }
         
-        // NEW: Function to update the UI of power-up buttons
         function updatePowerUpButtonsUI(powerUpsUsed) {
             if (powerUpDoublePointsBtn) powerUpDoublePointsBtn.disabled = powerUpsUsed.doublePoints;
             if (powerUpExtraTimeBtn) powerUpExtraTimeBtn.disabled = powerUpsUsed.extraTime;
             if (powerUpHintBtn) powerUpHintBtn.disabled = powerUpsUsed.hint;
         }
 
-        // ... (showQuestionPlayerScoresDetailed and showFinalScores are unchanged)
         function showQuestionPlayerScoresDetailed() {
             if (questionPlayerScoresList) questionPlayerScoresList.innerHTML = '';
             showLoading();
@@ -1935,7 +1683,6 @@
                     db.collection(`artifacts/${appId}/public/data/games`).doc(gameId).get().then(gameDoc => {
                         const gameData = gameDoc.data();
                         const currentCorrectAnswers = gameData.currentCorrectAnswers || [];
-
                         let questionScores = [];
                         playersSnapshot.forEach(doc => {
                             const playerData = doc.data();
@@ -1947,54 +1694,30 @@
                                 overallScore: playerData.score || 0
                             });
                         });
-
                         questionScores.sort((a, b) => (b.overallScore || 0) - (a.overallScore || 0));
 
                         if (questionPlayerScoresList) {
                             questionScores.forEach((player, index) => {
                                 const listItem = document.createElement('li');
                                 listItem.classList.add('py-2', 'px-4', 'rounded-lg', 'mb-2', 'bg-gray-50', 'flex', 'flex-wrap', 'justify-center', 'items-center', 'gap-x-4');
-                                
-                                let answerStatusIcon = '';
-                                let answerColorClass = 'text-gray-700';
-
                                 let isPlayerAnswerCorrect = false;
                                 if (player.submittedAnswer !== 'لم يجب') {
                                     isPlayerAnswerCorrect = isCorrectAnswer(player.submittedAnswer, currentCorrectAnswers);
                                 }
-
-                                if (player.submittedAnswer !== 'لم يجب') {
-                                    if (isPlayerAnswerCorrect) {
-                                        answerStatusIcon = `<i class="fas fa-check-circle text-green-500 mr-2"></i>`;
-                                        answerColorClass = 'text-green-700';
-                                    } else {
-                                        answerStatusIcon = `<i class="fas fa-times-circle text-red-500 mr-2"></i>`;
-                                        answerColorClass = 'text-red-700';
-                                    }
-                                } else {
-                                    answerStatusIcon = `<i class="fas fa-question-circle text-gray-500 mr-2"></i>`;
-                                    answerColorClass = 'text-gray-500';
-                                }
-
-                                listItem.innerHTML = `
-                                    <span class="font-bold">المركز ${index + 1}: ${player.nickname}</span>  
-                                    <span class="${answerColorClass}">${answerStatusIcon} ${player.submittedAnswer}</span>  
-                                    <span class="text-xs text-gray-600">(راهن بـ ${player.selectedPoints} | تغيير: ${player.scoreChange >= 0 ? '+' : ''}${player.scoreChange} | إجمالي: ${player.overallScore})</span>
-                                `;
+                                const answerStatusIcon = player.submittedAnswer !== 'لم يجب' ? (isPlayerAnswerCorrect ? `<i class="fas fa-check-circle text-green-500 mr-2"></i>` : `<i class="fas fa-times-circle text-red-500 mr-2"></i>`) : `<i class="fas fa-question-circle text-gray-500 mr-2"></i>`;
+                                const answerColorClass = player.submittedAnswer !== 'لم يجب' ? (isPlayerAnswerCorrect ? 'text-green-700' : 'text-red-700') : 'text-gray-500';
+                                listItem.innerHTML = `<span class="font-bold">المركز ${index + 1}: ${player.nickname}</span> <span class="${answerColorClass}">${answerStatusIcon} ${player.submittedAnswer}</span> <span class="text-xs text-gray-600">(راهن بـ ${player.selectedPoints} | تغيير: ${player.scoreChange >= 0 ? '+' : ''}${player.scoreChange} | إجمالي: ${player.overallScore})</span>`;
                                 questionPlayerScoresList.appendChild(listItem);
                             });
                         }
-                    }).catch(error => { console.error("Error fetching gameData for scores:", error); showCustomMessageBox("خطأ", "فشل جلب بيانات اللعبة لنتائج السؤال."); });
-                }).catch(error => { console.error("Error fetching players for scores:", error); showCustomMessageBox("خطأ", "فشل جلب بيانات اللاعبين لنتائج السؤال."); });
-
+                    });
+                });
             } catch (error) {
-                console.error("Error showing question player scores detailed:", error);
-                showCustomMessageBox("خطأ", "فشل عرض نتائج السؤال بالتفصيل.");
+                showCustomMessageBox("خطأ", "فشل عرض نتائج السؤال.");
             } finally {
                 hideLoading();
             }
         }
-
 
         async function showFinalScores() {
             showLoading();
@@ -2007,10 +1730,8 @@
 
                 const playersRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
                 const playersSnapshot = await playersRef.get();
-
                 let finalScores = [];
                 playersSnapshot.forEach(doc => { finalScores.push(doc.data()); });
-
                 finalScores.sort((a, b) => (b.score || 0) - (a.score || 0));
 
                 if (finalScoresList) {
@@ -2032,7 +1753,7 @@
                         if (endMessage) endMessage.textContent = `تهانينا! فاز ${finalScores[0].nickname} بـ ${finalScores[0].score} نقطة!`;
                     } else {
                         if (endTitle) endTitle.textContent = "انتهت اللعبة!";
-                        if (endMessage) endMessage.textContent = "لم يكن هناك لاعبون في هذه الجولة.";
+                        if (endMessage) endMessage.textContent = "لم يكن هناك لاعبون.";
                     }
                 }
 
@@ -2045,14 +1766,12 @@
                 }
 
             } catch (error) {
-                console.error("Error showing final scores:", error);
-                showCustomMessageBox("خطأ في النتائج", "فشل عرض النتائج النهائية.");
+                showCustomMessageBox("خطأ", "فشل عرض النتائج النهائية.");
             } finally {
                 hideLoading();
             }
         }
-        // --- Event Listeners ---
-        // ... (All existing event listeners are unchanged)
+
         if (createHostButton) { createHostButton.addEventListener('click', () => { setupQuizCategorySelection(); if (hostNicknameInput) hostNicknameInput.value = localStorage.getItem('hostNickname') || ''; showScreen(hostSetupScreen); }); }
         if (joinPlayerButton) { joinPlayerButton.addEventListener('click', () => { if (playerNicknameInput) playerNicknameInput.value = localStorage.getItem('playerNickname') || ''; showScreen(joinGameScreen); }); }
         if (createGameButton) createGameButton.addEventListener('click', createGame);
@@ -2062,8 +1781,6 @@
         if (nextQuestionButton) nextQuestionButton.addEventListener('click', startNextQuestion);  
         if (endGameFinalButton) endGameFinalButton.addEventListener('click', endGame);
         if (startNewRoundSameRoomButton) startNewRoundSameRoomButton.addEventListener('click', startNewRoundInSameRoom);
-
-        // New exit button listeners for players
         if (playerExitButtonGameplay) playerExitButtonGameplay.addEventListener('click', exitGame);
         if (playerExitButtonResults) playerExitButtonResults.addEventListener('click', exitGame);
 
@@ -2072,7 +1789,7 @@
                 const code = gameCodeInput ? gameCodeInput.value.trim().toUpperCase() : '';
                 const nickname = playerNicknameInput ? playerNicknameInput.value.trim() : '';
                 if (code && nickname) { joinGame(code, nickname); }
-                else { showCustomMessageBox("خطأ في الإدخال", "يرجى إدخال رمز الغرفة واسمك المستعار."); }
+                else { showCustomMessageBox("خطأ", "يرجى إدخال رمز الغرفة واسمك المستعار."); }
             });
         }
 
@@ -2085,17 +1802,15 @@
             });
         }
 
-        // Play again button (always returns to role selection)
         if (playAgainButton) { playAgainButton.addEventListener('click', exitGame); }
         
-        // NEW: Event Listeners for Power-ups
         if (powerUpDoublePointsBtn) {
             powerUpDoublePointsBtn.addEventListener('click', () => {
                 if (powerUpDoublePointsBtn.disabled) return;
-                isDoublePointsActive = !isDoublePointsActive; // Toggle active state
+                isDoublePointsActive = !isDoublePointsActive;
                 if (isDoublePointsActive) {
                     powerUpDoublePointsBtn.classList.add('ring-4', 'ring-yellow-300', 'opacity-50');
-                    showCustomMessageBox("ضعف النقاط!", "تم تفعيل قوة ضعف النقاط لهذا السؤال. ستتم مضاعفة نقاط رهانك.");
+                    showCustomMessageBox("ضعف النقاط!", "تم تفعيل قوة ضعف النقاط لهذا السؤال.");
                 } else {
                     powerUpDoublePointsBtn.classList.remove('ring-4', 'ring-yellow-300', 'opacity-50');
                 }
@@ -2108,14 +1823,12 @@
                 try {
                     const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
                     const playerRef = gameRef.collection('players').doc(userId);
-                    // Atomically add time and disable powerup
                     await db.runTransaction(async (transaction) => {
                          transaction.update(gameRef, { currentTime: firebase.firestore.FieldValue.increment(15) });
                          transaction.update(playerRef, { 'powerUpsUsed.extraTime': true });
                     });
-                     showCustomMessageBox("وقت إضافي!", "تمت إضافة 15 ثانية إلى المؤقت.");
+                     showCustomMessageBox("وقت إضافي!", "تمت إضافة 15 ثانية.");
                 } catch (e) {
-                     console.error("Error using extra time power-up:", e);
                      showCustomMessageBox("خطأ", "لم نتمكن من استخدام قوة الوقت الإضافي.");
                 }
             });
@@ -2135,15 +1848,12 @@
                          showCustomMessageBox("تلميح!", `الحرف الأول من الإجابة هو: <strong class="text-2xl">${firstLetter}</strong>`);
                      }
                  } catch (e) {
-                     console.error("Error using hint power-up:", e);
                      showCustomMessageBox("خطأ", "لم نتمكن من استخدام قوة التلميح.");
                  }
             });
         }
 
-        // Initialize lobby music
         lobbyMusicLoop = setupLobbyMusic();
-        
     </script>
 </body>
 </html>
