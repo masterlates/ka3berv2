@@ -245,6 +245,36 @@
         #submit-answer-button {
             width: 100%;
         }
+
+        /* Styles for multiple choice buttons */
+        .multiple-choice-option-btn {
+            background-color: #a78bfa; /* Purple-500 */
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem; /* rounded-xl */
+            font-weight: bold;
+            font-size: 1.25rem; /* text-xl */
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            width: 100%; /* Full width */
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* shadow-md */
+        }
+        .multiple-choice-option-btn:hover:not(:disabled) {
+            background-color: #8b5cf6; /* Purple-600 */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15); /* shadow-lg */
+        }
+        .multiple-choice-option-btn:disabled {
+            background-color: #9ca3af; /* Gray-400 */
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .multiple-choice-option-btn.selected-option {
+            background-color: #4a90e2; /* Blue-500, or a distinct selected color */
+            border: 2px solid #3b82f6; /* Blue-600 */
+            transform: scale(1.02);
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 min-h-screen flex flex-col items-center justify-center p-4 text-gray-800">
@@ -404,6 +434,11 @@
                 <div id="points-button-group" class="points-button-group"></div>
             </div>
 
+            <!-- Multiple Choice Options Container (initially hidden) -->
+            <div id="multiple-choice-options" class="w-full flex flex-col items-center gap-4 mb-4 hidden">
+                <!-- Options buttons will be injected here by JavaScript -->
+            </div>
+
             <div class="game-input-send flex items-center flex-wrap gap-2 w-full mb-4">
                 <label for="game-guess-input" class="sr-only">اكتب إجابتك هنا</label>
                 <input type="text" id="game-guess-input" placeholder="اكتب إجابتك هنا..."
@@ -502,17 +537,61 @@
         let lobbyMusicLoop = null;
         // Track the currently displayed question index to prevent input clearing on every timer update
         let lastDisplayedQuestionIndex = -1;
+        let selectedMultipleChoiceOption = null; // To store the selected option text for multiple choice
+
+        const multipleChoiceOptionsContainer = document.getElementById('multiple-choice-options');
     
         const quizzes = [
             { category: "عواصم الدول العربية", questions: [ { questionText: "ما هي عاصمة تونس؟", displayAnswer: "تونس", correctAnswers: ["تونس", "tunis"] }, { questionText: "ما هي عاصمة مصر؟", displayAnswer: "القاهرة", correctAnswers: ["القاهرة", "cairo"] }, { questionText: "ما هي عاصمة السعودية؟", displayAnswer: "الرياض", correctAnswers: ["الرياض", "riyadh"] }, { questionText: "ما هي عاصمة العراق؟", displayAnswer: "بغداد", correctAnswers: ["بغداد", "baghdad"] }, { questionText: "ما هي عاصمة سوريا؟", displayAnswer: "دمشق", correctAnswers: ["دمشق", "damascus"] }, { questionText: "ما هي عاصمة الأردن؟", displayAnswer: "عمان", correctAnswers: ["عمان", "amman"] }, { questionText: "ما هي عاصمة لبنان؟", displayAnswer: "بيروت", correctAnswers: ["بيروت", "beirut"] }, { questionText: "ما هي عاصمة المغرب؟", displayAnswer: "الرباط", correctAnswers: ["الرباط", "rabat"] }, { questionText: "ما هي عاصمة الجزائر؟", displayAnswer: "الجزائر", correctAnswers: ["الجزائر", "algiers"] }, { questionText: "ما هي عاصمة السودان؟", displayAnswer: "الخرطوم", correctAnswers: ["الخرطوم", "khartoum"] }, { questionText: "ما هي عاصمة اليمن؟", displayAnswer: "صنعاء", correctAnswers: ["صنعاء", "sanaa"] }, { questionText: "ما هي عاصمة الإمارات؟", displayAnswer: "أبو ظبي", correctAnswers: ["ابوظبي", "أبو ظبي", "abu dhabi"] }, { questionText: "ما هي عاصمة قطر؟", displayAnswer: "الدوحة", correctAnswers: ["الدوحة", "doha"] }, { questionText: "ما هي عاصمة الكويت؟", displayAnswer: "الكويت", correctAnswers: ["الكويت", "kuwait"] }, { questionText: "ما هي عاصمة البحرين؟", displayAnswer: "المنامة", correctAnswers: ["المنامة", "manama"] }, { questionText: "ما هي عاصمة الصومال؟", displayAnswer: "مقديشو", correctAnswers: ["مقديشو", "mogadishu"] }, { questionText: "ما هي عاصمة جيبوتي؟", displayAnswer: "جيبوتي", correctAnswers: ["جيبوتي", "djibouti"] }, { questionText: "ما هي عاصمة جزر القمر؟", displayAnswer: "موروني", correctAnswers: ["موروني", "moroni"] }, { questionText: "ما هي عاصمة ليبيا؟", displayAnswer: "طرابلس", correctAnswers: ["طرابلس", "tripoli"] }, { questionText: "ما هي عاصمة موريتانيا؟", displayAnswer: "نواكشوط", correctAnswers: ["نواكشوط", "nouakchott"] }, { questionText: "ما هي عاصمة سلطنة عمان؟", displayAnswer: "مسقط", correctAnswers: ["مسقط", "muscat"] }, { questionText: "ما هي عاصمة فلسطين؟", displayAnswer: "القدس", correctAnswers: ["القدس", "jerusalem"] } ] },
             { category: "الفواكه", questions: [ { questionText: "فاكهة حمراء وصغيرة غالباً ما تستخدم في الحلويات؟", displayAnswer: "فراولة", correctAnswers: ["فراولة", "كرز", "توت"] }, { questionText: "فاكهة صفراء تنمو في مجموعات وغنية بالبوتاسيوم؟", displayAnswer: "موز", correctAnswers: ["موز"] }, { questionText: "فاكهة برتقالية اللون، غنية بفيتامين سي؟", displayAnswer: "برتقال", correctAnswers: ["برتقال", "يوسفي", "مانجو"] }, { questionText: "فاكهة استوائية كبيرة ذات قشرة خائكة ولحم أصفر حلو جداً؟", displayAnswer: "أناناس", correctAnswers: ["أناناس"] }, { questionText: "فاكهة صيفية كبيرة الحجم، خضراء من الخارج وحمراء من الداخل مع بذور سوداء؟", displayAnswer: "دلاع", correctAnswers: ["دلاع"] } ] },
             { category: "عواصم دول أوروبية", questions: [ { questionText: "ما هي عاصمة ألمانيا؟", displayAnswer: "برلين", correctAnswers: ["برلين", "berlin"] }, { questionText: "ما هي عاصمة فرنسا؟", displayAnswer: "باريس", correctAnswers: ["باريس", "paris"] }, { questionText: "ما هي عاصمة إيطاليا؟", displayAnswer: "روما", correctAnswers: ["روما", "rome"] }, { questionText: "ما هي عاصمة إسبانيا؟", displayAnswer: "مدريد", correctAnswers: ["مدريد", "madrid"] }, { questionText: "ما هي عاصمة المملكة المتحدة؟", displayAnswer: "لندن", correctAnswers: ["لندن", "london"] }, { questionText: "ما هي عاصمة بولندا؟", displayAnswer: "وارسو", correctAnswers: ["وارسو", "warsaw"] }, { questionText: "ما هي عاصمة أوكرانيا؟", displayAnswer: "كييف", correctAnswers: ["كييف", "kiev"] }, { questionText: "ما هي عاصمة رومانيا؟", displayAnswer: "بوخارست", correctAnswers: ["بوخارست", "bucharest"] }, { questionText: "ما هي عاصمة هولندا؟", displayAnswer: "أمستردام", correctAnswers: ["أمستردام", "amsterdam"] }, { questionText: "ما هي عاصمة بلجيكا؟", displayAnswer: "بروكسل", correctAnswers: ["بروكسل", "brussels"] }, { questionText: "ما هي عاصمة اليونان؟", displayAnswer: "أثينا", correctAnswers: ["أثينا", "athens"] }, { questionText: "ما هي عاصمة البرتغال؟", displayAnswer: "لشبونة", correctAnswers: ["لشبونة", "lisbon"] }, { questionText: "ما هي عاصمة السويد؟", displayAnswer: "ستوكهولم", correctAnswers: ["ستوكهولم", "stockholm"] }, { questionText: "ما هي عاصمة النمسا؟", displayAnswer: "فيينا", correctAnswers: ["فيينا", "vienna"] }, { questionText: "ما هي عاصمة سويسرا؟", displayAnswer: "برن", correctAnswers: ["برن", "bern"] }, { questionText: "ما هي عاصمة الدنمارك؟", displayAnswer: "كوبنهاغن", correctAnswers: ["كوبنهاغن", "copenhagen"] }, { questionText: "ما هي عاصمة فنلندا؟", displayAnswer: "هلسنكي", correctAnswers: ["هلسنكي", "helsinki"] }, { questionText: "ما هي عاصمة النرويج؟", displayAnswer: "أوسلو", correctAnswers: ["أوسلو", "oslo"] }, { questionText: "ما هي عاصمة إيرلندا؟", displayAnswer: "دبلن", correctAnswers: ["دبلن", "dublin"] }, { questionText: "ما هي عاصمة كرواتيا؟", displayAnswer: "زغرب", correctAnswers: ["زغرب", "zagreb"] } ] },
-            { category: "أمثال شعبية تونسية", questions: [ { questionText: "كمل المثل: قلك عمرك ما تحط القزار في طريق الرجالة ...", displayAnswer: "يجي نهار و تقصدهم حفيان ", correctAnswers: [" يجي نهار و تقصدهم حفيان ", "يجي نهار و تقصدهم حفيان "] }, { questionText: "كمل المثل: إلّي في كرشه التبن...", displayAnswer: "يخاف من النار", correctAnswers: ["يخاف من النار", "يخاف من العافية"] }, { questionText: "كمل المثل: الباب إلّي يجيك منّو الريح...", displayAnswer: "سدّو واستريح", correctAnswers: ["سدّو واستريح", "سدّو"] }, { questionText: "كمل المثل: قطوسة تتغزل في خنافرها...", displayAnswer: "والفار يلعب قدّامها", correctAnswers: ["والفار يلعب قدّامها"] }, { questionText: "كمل المثل: إلّي ما يعرفك...", displayAnswer: "يجهلك", correctAnswers: ["يجهلك"] }, { questionText: "كمل المثل: العزوزة إذا تحفّت...", displayAnswer: "تحنّ للرقص", correctAnswers: ["تحنّ للرقص", "ترقص"] }, { questionText: "كمل المثل: تفرهد القطوس...", displayAnswer: "يلعب بديلو", correctAnswers: ["يلعب بديلو"] }, { questionText: "كمل المثل: طاحت الصمعة...", displayAnswer: "علّقو الحجام", correctAnswers: ["علّقو الحجام", "علقوا الحجام"] }, { questionText: "كمل المثل: لا يعجبه العجب...", displayAnswer: "ولا صيام رجب", correctAnswers: ["ولا صيام رجب"] }, { questionText: "كمل المثل: القطوس ما يهرّبش...", displayAnswer: "على دار فيها لحمة", correctAnswers: ["على دار فيها لحمة", "على الدار فيها لحمة"] }, { questionText: "كمل المثل: إلّي تحبو يكثر...", displayAnswer: "منو الهزار", correctAnswers: ["منو الهزار"] }, { questionText: "كمل المثل: ما يحس الجمرة...", displayAnswer: "كان إلي عافس عليها", correctAnswers: ["كان إلي عافس عليها", "كان الي عافس عليها"] }, { questionText: "كمل المثل: اللّي فيه طبّة...", displayAnswer: "ما ينساهاش", correctAnswers: ["ما ينساهاش"] }, { questionText: "كمل المثل: شد مشومك...", displayAnswer: "لا يجيك ما أشوم منّو", correctAnswers: ["لا يجيك ما أشوم منّو", "ما أشوم منو"] }, { questionText: "كمل المثل: الجمل ما يشوفش...", displayAnswer: "حدبتو", correctAnswers: ["حدبتو"] }, { questionText: "كمل المثل: إلّي يخاف من عشاه...", displayAnswer: "ما يشبعش", correctAnswers: ["ما يشبعش"] }, { questionText: "كمل المثل: قالولو زغرت، قال...", displayAnswer: "نعرف نبكي", correctAnswers: ["نعرف نبكي"] }, { questionText: "كمل المثل: كي تتفرهد العصفورة...", displayAnswer: "تجيها السقطة", correctAnswers: ["تجيها السقطة"] }, { questionText: "كمل المثل: كي تطيح البقرة...", displayAnswer: "يكثروا سكاكينها", correctAnswers: ["يكثروا سكاكينها", "تكتر سكاكينها"] }, { questionText: "كمل المثل: إلّي شاف البلا يصيح...", display: "و إلّي ما شافش يقول سحر", correctAnswers: ["و إلّي ما شافش يقول سحر", "اللي ما شافش يقول سحر"] }, { questionText: "كمل المثل: الهدرة كيف السكاكين...", displayAnswer: "تجرح", correctAnswers: ["تجرح"] }, { questionText: "كمل المثل: إلّي ما ربحك...", displayAnswer: "ما يجرحكش", correctAnswers: ["ما يجرحكش"] }, { questionText: "كمل المثل: إلّي يحبك...", displayAnswer: "ما يضربكش بالعصا", correctAnswers: ["ما يضربكش بالعصا"] }, { questionText: "كمل المثل: الطماع يغلبو...", displayAnswer: "الكذاب", correctAnswers: ["الكذاب"] }, { questionText: "كمل المثل: ما يفلّ الحديد...", displayAnswer: "كان الحديد", correctAnswers: ["كان الحديد"] }, { questionText: "كمل المثل: إلّي يعوم ما يخافش...", displayAnswer: "من الموج", correctAnswers: ["من الموج"] }, { questionText: "كمل المثل: قالو لو ثنيها، قال...", displayAnswer: "كي نعدلها", correctAnswers: ["كي نعدلها"] }, { questionText: "كمل المثل: الباهي كيف الذهب...", displayAnswer: "ما يتخبّاش", correctAnswers: ["ما يتخبّاش"] }, { questionText: "كمل المثل: سكران ومبلول...", displayAnswer: "ويطلب في النار", correctAnswers: ["ويطلب في النار"] }, { questionText: "كمل المثل: الجبان...", displayAnswer: "يموت ألف مرّة", correctAnswers: ["يموت ألف مرّة", "يموت ألف مرة"] }, { questionText: "كمل المثل: رزق البخيل...", displayAnswer: "ياكلو العيّار", correctAnswers: ["ياكلو العيّار"] }, { questionText: "كمل المثل: حوت ياكل حوت...", displayAnswer: "وقليل الجهد يموت", correctAnswers: ["وقليل الجهد يموت"] }, { questionText: "كمل المثل: كيف يضيق بيك الحال...", displayAnswer: "رد بالك من الرجال", correctAnswers: ["رد بالك من الرجال"] }, { questionText: "كمل المثل: كثر الهم...", displayAnswer: "يضحّك", correctAnswers: ["يضحّك"] }, { questionText: "كمل المثل: الدنيا كالبحر...", displayAnswer: "يوم هادي ويوم هايج", correctAnswers: ["يوم هادي ويوم هايج"] }, { questionText: "كمل المثل: نعرفك تعوم...", displayAnswer: "وقت الغرق", correctAnswers: ["وقت الغرق"] }, { questionText: "كمل المثل: دابّة ما تعضّيش...", displayAnswer: "ما تخوّفنيش", correctAnswers: ["ما تخوّفنيش"] }, { questionText: "كمل المثل: الكلب كيف يكثر نباحو...", displayAnswer: "ما يعضّيش", correctAnswers: ["ما يعضّيش"] }, { questionText: "كمل المثل: الزين...", displayAnswer: "زين الروح", correctAnswers: ["زين الروح"] }, { questionText: "كمل المثل: ما تشوف بعينك...", displayAnswer: "أصدق من إلّي تسمع بأذنك", correctAnswers: ["أصدق من إلّي تسمع بأذنك"] }, { questionText: "كمل المثل: من طيّب أصله...", displayAnswer: "ما يخونكش", correctAnswers: ["ما يخونكش"] }, { questionText: "كمل المثل: إلّي يطيّحك من السرج...", displayAnswer: "ما هوش صاحبك", correctAnswers: ["ما هوش صاحبك"] }, { questionText: "كمل المثل: ثمة ناس...", displayAnswer: "تلبس ذهب وتخونك", correctAnswers: ["تلبس ذهب وتخونك"] }, { questionText: "كمل المثل: الزوالي كيف...", displayAnswer: "يطيح تكسرولو ضرسو", correctAnswers: ["يطيح تكسرولو ضرسو"] }, { questionText: "كمل المثل: إلّي ما عندوش ظهر...", displayAnswer: "ما يسوى شي", correctAnswers: ["ما يسوى شي"] }, { questionText: "كمل المثل: إلّي يزرع ريح...", displayAnswer: "يحصد العاصفة", correctAnswers: ["يحصد العاصفة"] }, { questionText: "كمل المثل: الكلمة كيف الرصاصة...", displayAnswer: "إذا خرجت ما ترجعش", correctAnswers: ["إذا خرجت ما ترجعش"] }, { questionText: "كمل المثل: اللسان...", displayAnswer: "يكسر العظم", correctAnswers: ["يكسر العظم"] }, { questionText: "كمل المثل: باش تحكم عالناس...", displayAnswer: "شوف أفعالهم", correctAnswers: ["شوف أفعالهم"] }, { questionText: "كمل المثل: ثمة ناس في وجهك مراية...", displayAnswer: "وفي ظهرك سكاكية", correctAnswers: ["وفي ظهرك سكاكية"] }, { questionText: "كمل المثل: الصحبة الزينة...", displayAnswer: "كنز ما يفنى", correctAnswers: ["كنز ما يفنى"] } ] },
+            { category: "أمثال شعبية تونسية", questions: [ { questionText: "كمل المثل: قلك عمرك ما تحط القزار في طريق الرجالة ...", displayAnswer: "يجي نهار و تقصدهم حفيان ", correctAnswers: [" يجي نهار و تقصدهم حفيان ", "يجي نهار و تقصدهم حفيان "] }, { questionText: "كمل المثل: إلّي في كرشه التبن...", displayAnswer: "يخاف من النار", correctAnswers: ["يخاف من النار", "يخاف من العافية"] }, { questionText: "كمل المثل: الباب إلّي يجيك منّو الريح...", displayAnswer: "سدّو واستريح", correctAnswers: ["سدّو واستريح", "سدّو"] }, { questionText: "كمل المثل: قطوسة تتغزل في خنافرها...", displayAnswer: "والفار يلعب قدّامها", correctAnswers: ["والفار يلعب قدّامها"] }, { questionText: "كمل المثل: إلّي ما يعرفك...", displayAnswer: "يجهلك", correctAnswers: ["يجهلك"] }, { questionText: "كمل المثل: العزوزة إذا تحفّت...", displayAnswer: "تحنّ للرقص", correctAnswers: ["تحنّ للرقص", "ترقص"] }, { questionText: "كمل المثل: تفرهد القطوس...", displayAnswer: "يلعب بديلو", correctAnswers: ["يلعب بديلو"] }, { questionText: "كمل المثل: طاحت الصمعة...", displayAnswer: "علّقو الحجام", correctAnswers: ["علّقو الحجام", "علقوا الحجام"] }, { questionText: "كمل المثل: لا يعجبه العجب...", displayAnswer: "ولا صيام رجب", correctAnswers: ["ولا صيام رجب"] }, { questionText: "كمل المثل: القطوس ما يهرّبش...", displayAnswer: "على دار فيها لحمة", correctAnswers: ["على دار فيها لحمة", "على الدار فيها لحمة"] }, { questionText: "كمل المثل: إلّي تحبو يكثر...", displayAnswer: "منو الهزار", correctAnswers: ["منو الهزار"] }, { questionText: "كمل المثل: ما يحس الجمرة...", displayAnswer: "كان إلي عافس عليها", correctAnswers: ["كان إلي عافس عليها", "كان الي عافس عليها"] }, { questionText: "كمل المثل: اللّي فيه طبّة...", displayAnswer: "ما ينساهاش", correctAnswers: ["ما ينساهاش"] }, { questionText: "كمل المثل: شد مشومك...", displayAnswer: "لا يجيك ما أشوم منّو", correctAnswers: ["لا يجيك ما أشوم منّو", "ما أشوم منو"] }, { questionText: "كمل المثل: الجمل ما يشوفش...", displayAnswer: "حدبتو", correctAnswers: ["حدبتو"] }, { questionText: "كمل المثل: إلّي يخاف من عشاه...", displayAnswer: "ما يشبعش", correctAnswers: ["ما يشبعش"] }, { questionText: "كمل المثل: قالولو زغرت، قال...", displayAnswer: "نعرف نبكي", correctAnswers: ["نعرف نبكي"] }, { questionText: "كمل المثل: كي تتفرهد العصفورة...", displayAnswer: "تجيها السقطة", correctAnswers: ["تجيها السقطة"] }, { questionText: "كمل المثل: كي تطيح البقرة...", displayAnswer: "يكثروا سكاكينها", correctAnswers: ["يكثروا سكاكينها", "تكتر سكاكينها"] }, { questionText: "كمل المثل: إلّي شاف البلا يصيح...", displayAnswer: "و إلّي ما شافش يقول سحر", correctAnswers: ["و إلّي ما شافش يقول سحر", "اللي ما شافش يقول سحر"] }, { questionText: "كمل المثل: الهدرة كيف السكاكين...", displayAnswer: "تجرح", correctAnswers: ["تجرح"] }, { questionText: "كمل المثل: إلّي ما ربحك...", displayAnswer: "ما يجرحكش", correctAnswers: ["ما يجرحكش"] }, { questionText: "كمل المثل: إلّي يحبك...", displayAnswer: "ما يضربكش بالعصا", correctAnswers: ["ما يضربكش بالعصا"] }, { questionText: "كمل المثل: الطماع يغلبو...", displayAnswer: "الكذاب", correctAnswers: ["الكذاب"] }, { questionText: "كمل المثل: ما يفلّ الحديد...", displayAnswer: "كان الحديد", correctAnswers: ["كان الحديد"] }, { questionText: "كمل المثل: إلّي يعوم ما يخافش...", displayAnswer: "من الموج", correctAnswers: ["من الموج"] }, { questionText: "كمل المثل: قالو لو ثنيها، قال...", displayAnswer: "كي نعدلها", correctAnswers: ["كي نعدلها"] }, { questionText: "كمل المثل: الباهي كيف الذهب...", displayAnswer: "ما يتخبّاش", correctAnswers: ["ما يتخبّاش"] }, { questionText: "كمل المثل: سكران ومبلول...", displayAnswer: "ويطلب في النار", correctAnswers: ["ويطلب في النار"] }, { questionText: "كمل المثل: الجبان...", displayAnswer: "يموت ألف مرّة", correctAnswers: ["يموت ألف مرّة", "يموت ألف مرة"] }, { questionText: "كمل المثل: رزق البخيل...", displayAnswer: "ياكلو العيّار", correctAnswers: ["ياكلو العيّار"] }, { questionText: "كمل المثل: حوت ياكل حوت...", displayAnswer: "وقليل الجهد يموت", correctAnswers: ["وقليل الجهد يموت"] }, { questionText: "كمل المثل: كيف يضيق بيك الحال...", displayAnswer: "رد بالك من الرجال", correctAnswers: ["رد بالك من الرجال"] }, { questionText: "كمل المثل: كثر الهم...", displayAnswer: "يضحّك", correctAnswers: ["يضحّك"] }, { questionText: "كمل المثل: الدنيا كالبحر...", displayAnswer: "يوم هادي ويوم هايج", correctAnswers: ["يوم هادي ويوم هايج"] }, { questionText: "كمل المثل: نعرفك تعوم...", displayAnswer: "وقت الغرق", correctAnswers: ["وقت الغرق"] }, { questionText: "كمل المثل: دابّة ما تعضّيش...", displayAnswer: "ما تخوّفنيش", correctAnswers: ["ما تخوّفنيش"] }, { questionText: "كمل المثل: الكلب كيف يكثر نباحو...", displayAnswer: "ما يعضّيش", correctAnswers: ["ما يعضّيش"] }, { questionText: "كمل المثل: الزين...", displayAnswer: "زين الروح", correctAnswers: ["زين الروح"] }, { questionText: "كمل المثل: ما تشوف بعينك...", displayAnswer: "أصدق من إلّي تسمع بأذنك", correctAnswers: ["أصدق من إلّي تسمع بأذنك"] }, { questionText: "كمل المثل: من طيّب أصله...", displayAnswer: "ما يخونكش", correctAnswers: ["ما يخونكش"] }, { questionText: "كمل المثل: إلّي يطيّحك من السرج...", displayAnswer: "ما هوش صاحبك", correctAnswers: ["ما هوش صاحبك"] }, { questionText: "كمل المثل: ثمة ناس...", displayAnswer: "تلبس ذهب وتخونك", correctAnswers: ["تلبس ذهب وتخونك"] }, { questionText: "كمل المثل: الزوالي كيف...", displayAnswer: "يطيح تكسرولو ضرسو", correctAnswers: ["يطيح تكسرولو ضرسو"] }, { questionText: "كمل المثل: إلّي ما عندوش ظهر...", displayAnswer: "ما يسوى شي", correctAnswers: ["ما يسوى شي"] }, { questionText: "كمل المثل: إلّي يزرع ريح...", displayAnswer: "يحصد العاصفة", correctAnswers: ["يحصد العاصفة"] }, { questionText: "كمل المثل: الكلمة كيف الرصاصة...", displayAnswer: "إذا خرجت ما ترجعش", correctAnswers: ["إذا خرجت ما ترجعش"] }, { questionText: "كمل المثل: اللسان...", displayAnswer: "يكسر العظم", correctAnswers: ["يكسر العظم"] }, { questionText: "كمل المثل: باش تحكم عالناس...", displayAnswer: "شوف أفعالهم", correctAnswers: ["شوف أفعالهم"] }, { questionText: "كمل المثل: ثمة ناس في وجهك مراية...", displayAnswer: "وفي ظهرك سكاكية", correctAnswers: ["وفي ظهرك سكاكية"] }, { questionText: "كمل المثل: الصحبة الزينة...", displayAnswer: "كنز ما يفنى", correctAnswers: ["كنز ما يفنى"] } ] },
             { category: "الثقافة العامة", questions: [ { questionText: "ما اسم عاصمة فلسطين؟", displayAnswer: "القدس", correctAnswers: ["القدس", "القدس الشريف"] }, { questionText: "ما هو الحيوان الذي يُصدر أعلى صوت؟", displayAnswer: "الحوت الأزرق", correctAnswers: ["الحوت الأزرق"] }, { questionText: "في أي سنة قامت الثورة الفرنسية؟", displayAnswer: "1789", correctAnswers: ["1789"] }, { questionText: "من هو أول من رسم خريطة للعالم؟", displayAnswer: "الإدريسي", correctAnswers: ["الإدريسي"] }, { questionText: "ما هو الشيء الذي لا يمشي إلا بالضرب؟", displayAnswer: "المسمار", correctAnswers: ["المسمار"] }, { questionText: "ما اسم أقصر سورة في القرآن؟", displayAnswer: "سورة الكوثر", correctAnswers: ["سورة الكوثر", "الكوثر"] }, { questionText: "كم عدد أسنان الطفل اللبنية؟", displayAnswer: "20", correctAnswers: ["20", "عشرون"] }, { questionText: "ما هو الحيوان الذي يُعتبر أطول الحيوانات رقبة؟", displayAnswer: "الزرافة", correctAnswers: ["الزرافة"] }, { questionText: "ما اسم أول دولة عربية نالت استقلالها؟", displayAnswer: "مصر", correctAnswers: ["مصر"] }, { questionText: "من هو الصحابي الملقب بترجمان القرآن؟", displayAnswer: "عبد الله بن عباس", correctAnswers: ["عبد الله بن عباس", "ابن عباس"] }, { questionText: "ما اسم العملة في بريطانيا؟", displayAnswer: "الجنيه الإسترليني", correctAnswers: ["الجنيه الإسترليني", "إسترليني"] }, { questionText: "في أي دولة يوجد برج بيزا المائل؟", displayAnswer: "إيطاليا", correctAnswers: ["إيطاليا"] }, { questionText: "من هو أول سفير في الإسلام؟", displayAnswer: "مصعب بن عمير", correctAnswers: ["مصعب بن عمير", "مصعب"] }, { questionText: "من هو مؤسس الدولة العباسية؟", displayAnswer: "أبو العباس السفاح", correctAnswers: ["أبو العباس السفاح", "السفاح"] }, { questionText: "ما هو أسرع المخلوقات البحرية؟", displayAnswer: "سمكة الزعنفة الشراعية", correctAnswers: ["سمكة الزعنفة الشراعية", "الزعنفة الشراعية"] }, { questionText: "من أول من آمن من الصبيان؟", displayAnswer: "علي بن أبي طالب", correctAnswers: ["علي بن أبي طالب", "علي"] }, { questionText: "ما اسم الدولة التي يُطلق عليها 'أرض الشمس المشرقة'؟", displayAnswer: "اليابان", correctAnswers: ["اليابان"] }, { questionText: "كم عدد النجوم على علم الولايات المتحدة؟", displayAnswer: "50", correctAnswers: ["50", "خمسون"] }, { questionText: "ما هو المضيق الذي يفصل بين إفريقيا وأوروبا؟", displayAnswer: "مضيق جبل طارق", correctAnswers: ["مضيق جبل طارق", "جبل طارق"] }, { questionText: "من هو الفيلسوف الذي قال: 'أنا أفكر إذن أنا موجود'؟", displayAnswer: "ديكارت", correctAnswers: ["ديكارت", "رينيه ديكارت"] }, { questionText: "ما اسم الكتاب السماوي الذي أُنزل على عيسى عليه السلام؟", displayAnswer: "الإنجيل", correctAnswers: ["الإنجيل"] }, { questionText: "ما اسم المدينة التي تُعرف بمدينة الضباب؟", displayAnswer: "لندن", correctAnswers: ["لندن"] }, { questionText: "كم عدد لاعبي فريق كرة القدم الأساسي؟", displayAnswer: "11", correctAnswers: ["11", "أحد عشر"] }, { questionText: "من هو العالم المسلم الذي اشتهر بالطب والجراحة؟", displayAnswer: "الزهراوي", correctAnswers: ["الزهراوي"] }, { questionText: "ما هو أقدم علم في التاريخ؟", displayAnswer: "الفلك", correctAnswers: ["الفلك", "علم الفلك"] }, { questionText: "من أول من استخدم الشوكة في الأكل؟", displayAnswer: "العرب", correctAnswers: ["العرب"] }, { questionText: "من هو أول من كتب بسم الله الرحمن الرحيم؟", displayAnswer: "سليمان عليه السلام", correctAnswers: ["سليمان", "سليمان عليه السلام"] }, { questionText: "ما اسم الطائر الذي كلمه النبي سليمان؟", displayAnswer: "الهدهد", correctAnswers: ["الهدهد"] }, { questionText: "ما اسم أكبر جزر العالم؟", displayAnswer: "جرينلاند", correctAnswers: ["جرينلاند", "غرينلاند"] }, { questionText: "ما هو الحيوان الذي يمتلك حاسة شم أقوى من الكلب؟", displayAnswer: "الدب", correctAnswers: ["الدب"] }, { questionText: "ما اسم عاصمة ليبيا؟", displayAnswer: "طرابلس", correctAnswers: ["طرابلس"] }, { questionText: "ما اسم أكبر بحيرة عذبة في العالم؟", displayAnswer: "بحيرة سوبيريور", correctAnswers: ["بحيرة سوبيريور"] }, { questionText: "ما هو العلم الذي يدرس الأحياء المجهرية؟", displayAnswer: "علم الميكروبيولوجيا", correctAnswers: ["علم الميكروبيولوجيا", "الميكروبيولوجيا"] }, { questionText: "من هو القائد الذي فتح الأندلس؟", displayAnswer: "طارق بن زياد", correctAnswers: ["طارق بن زياد", "طارق"] }, { questionText: "ما اسم العضو الذي يضخ الدم في الجسم؟", displayAnswer: "القلب", correctAnswers: ["القلب"] }, { questionText: "ما اسم أول دولة فازت بكأس العالم؟", displayAnswer: "الأوروغواي", correctAnswers: ["الأوروغواي", "أوروغواي"] }, { questionText: "من هو الصحابي الذي اهتز له عرش الرحمن؟", displayAnswer: "سعد بن معاذ", correctAnswers: ["سعد بن معاذ", "سعد"] }, { questionText: "ما اسم أكبر مدينة في العالم من حيث عدد السكان؟", displayAnswer: "طوكيو", correctAnswers: ["طوكيو"] }, { questionText: "ما اسم الحيوان الذي يعيش في الماء واليابسة؟", displayAnswer: "الضفدع", correctAnswers: ["الضفدع"] }, { questionText: "كم عدد أجنحة الملَك؟", displayAnswer: "600", correctAnswers: ["600", "ستمئة"] }, { questionText: "من هو الخليفة الذي أنشأ نظام البريد؟", displayAnswer: "عمر بن الخطاب", correctAnswers: ["عمر بن الخطاب", "عمر"] }, { questionText: "من هو العالم الذي اخترع المصعد؟", displayAnswer: "إليشا أوتيس", correctAnswers: ["إليشا أوتيس", "أوتيس"] }, { questionText: "ما هو أصل كلمة 'بنطلون'؟", displayAnswer: "فرنسية", correctAnswers: ["فرنسية"] }, { questionText: "في أي قارة تقع دولة كينيا؟", displayAnswer: "أفريقيا", correctAnswers: ["أفريقيا"] }, { questionText: "ما اسم الجهاز الذي يقيس سرعة الرياح؟", displayAnswer: "الأنيمومتر", correctAnswers: ["الأنيمومتر"] }, { questionText: "من هو الشاعر الجاهلي الذي لقب بالملك الضليل؟", displayAnswer: "امرؤ القيس", correctAnswers: ["امرؤ القيس"] }, { questionText: "كم عدد عيون النحلة؟", displayAnswer: "5", correctAnswers: ["5", "خمسة"] }, { questionText: "ما اسم الجبل الذي كلم الله عليه موسى؟", displayAnswer: "جبل الطور", correctAnswers: ["جبل الطور", "الطور"] }, { questionText: "ما اسم الكتاب الذي كتبه ابن خلدون؟", displayAnswer: "المقدمة", correctAnswers: ["المقدمة"] }, { questionText: "ما اسم أكبر نهر في أوروبا؟", displayAnswer: "نهر الفولغا", correctAnswers: ["نهر الفولغا", "الفولغا"] }, { questionText: "من هو أول من خطّ بالقلم؟", displayAnswer: "إدريس عليه السلام", correctAnswers: ["إدريس", "إدريس عليه السلام"] }, { questionText: "ما هو أول شيء خلقه الله؟", displayAnswer: "القلم", correctAnswers: ["القلم"] }, { questionText: "ما اسم الغاز الذي تنفثه السيارات؟", displayAnswer: "ثاني أكسيد الكربون", correctAnswers: ["ثاني أكسيد الكربون", "CO2"] }, { questionText: "ما اسم أبطأ الكائنات في العالم؟", displayAnswer: "الكسلان", correctAnswers: ["الكسلان"] }, { questionText: "من هو صاحب كتاب 'الأغاني'؟", displayAnswer: "أبو الفرج الأصفهاني", correctAnswers: ["أبو الفرج الأصفهاني"] }, { questionText: "ما اسم أول دولة عربية استضافت كأس العالم؟", displayAnswer: "قطر", correctAnswers: ["قطر"] }, { questionText: "ما اسم الدولة التي تتكون من 7000 جزيرة؟", displayAnswer: "الفلبين", correctAnswers: ["الفلبين"] }, { questionText: "من هو الصحابي الذي جمع القرآن الكريم في عهد عثمان؟", displayAnswer: "زيد بن ثابت", correctAnswers: ["زيد بن ثابت", "زيد"] }, { questionText: "كم عدد أرجل الحشرة؟", displayAnswer: "6", correctAnswers: ["6", "ستة"] }, { questionText: "من أول من سكن مكة؟", displayAnswer: "قبيلة جرهم", correctAnswers: ["قبيلة جرهم", "جرهم"] }, { questionText: "ما اسم أول كائن خلقه الله من الملائكة؟", displayAnswer: "جبريل", correctAnswers: ["جبريل"] }, { questionText: "ما اسم المرض الذي يُصيب كريات الدم الحمراء؟", displayAnswer: "فقر الدم", correctAnswers: ["فقر الدم", "أنيميا"] }, { questionText: "ما اسم وحدة قياس الضغط الجوي؟", displayAnswer: "بار", correctAnswers: ["بار"] }, { questionText: "ما اسم أصغر قارة في العالم؟", displayAnswer: "أوقيانوسيا", correctAnswers: ["أوقيانوسيا"] } ] },
             { category: " اسئلة الشلة ", questions: [ { questionText: " كي نقولو كنترول شنوة يجي للبالك ؟  ", displayAnswer: "كعبورة", correctAnswers: ["لمكعبر", "كعبر" , " ka3boura " , " كعبورة "   ] }, { questionText: "    شكون الي يفلم برشا في الشلة و يحب يجيبها يعرف كل شي ؟    ", displayAnswer: " ولد الورغي  ", correctAnswers: [" lou ", "لؤي" , " louay " , " ولد الورغي " ] }, { questionText: " قلك عمرك ما ترمي القزاز في طريق الرجالة ... ", displayAnswer: "يجي نهار و تقصدهم حفيان ، و اضرب نعنبو الي بكاهم واطا واطططططط ", correctAnswers: ["يجي نهار و تقصدهم حفيان", "واطططططط"] }, { questionText: "قلك على شلة تجي كل يوم للقهوة علالة و لا نهار قعدو مع طفلة ", displayAnswer: "شلتنا", correctAnswers: ["النياكة", "المكاحيط" , " المنيكين " ] }, { questionText: "شكون انيك واحد في الشلة ؟  ", displayAnswer: "كلكم كي زبي ", correctAnswers: ["الكل", "hama" , " الزعيم "  , " za3im " , " louay " , "ka3boura" , " lahdir " , " hayder "] }, { questionText: "رسلان  علاه معادش يقعد معانا ؟    ", displayAnswer: "رجولية هاذي ؟ وبنة نرا دينمها ... تبع لبنات تو تربح", correctAnswers: ["nour ", "نور" , " miboun "  , " ميبون " , " تبع لبنات " , "نور " , " نور متاع زبي  " , " wabna "] }, { questionText: "كعبورة قداه من مرة طاح كنترول ؟    ", displayAnswer: "قول قداه من مرة نجح برانسيبال ههه  ", correctAnswers: ["5", "2" , " 3 "  , " 4 " , " louay " , "ka3boura" , " lahdir " , " hayder "] }, { questionText: "شكون اكثر واحد يكره صاحبة الحرقاسة ؟ ", displayAnswer: "ولد الورغي اكيد ", correctAnswers: ["ولد الورغي", "louay" , "لؤي" ] } ] },
             { category: "حيوانات الغابة", questions: [ { questionText: "ملك الغابة؟", displayAnswer: "أسد", correctAnswers: ["أسد", "اسد"] }, { questionText: "حيوان مخطط بالأبيض والأسود يشبه الحصان؟", displayAnswer: "حمار وحشي", correctAnswers: ["حمار وحشي", "حماروحشي"] }, { questionText: "أكبر حيوان بري على وجه الأرض، بخرطوم طويل وأذنين كبيرتين؟", displayAnswer: "فيل", correctAnswers: ["فيل", "الفيل"] }, { questionText: "حيوان طويل العنق ذو بقع بنية، يتغذى على أوراق الأشجار العالية؟", displayAnswer: "زرافة", correctAnswers: ["زرافة", "الزرافة"] }, { questionText: "حيوان ذكي يعيش في الغابات يأكل الموز ويتأرجح بين الأشجار؟", displayAnswer: "قرد", correctAnswers: ["قرد", "القرد"] } ] },
             { category: "عواصم دول العالم (غير العربية)", questions: [ { questionText: "ما هي عاصمة اليابان؟", displayAnswer: "طوكيو", correctAnswers: ["طوكيو", "tokyo"] }, { questionText: "ما هي عاصمة الولايات المتحدة الأمريكية؟", displayAnswer: "واشنطن", correctAnswers: ["واشنطن", "washington"] }, { questionText: "ما هي عاصمة روسيا؟", displayAnswer: "موسكو", correctAnswers: ["موسكو", "moscow"] }, { questionText: "ما هي عاصمة الصين؟", displayAnswer: "بكين", correctAnswers: ["بكين", "beijing"] }, { questionText: "ما هي عاصمة الهند؟", displayAnswer: "نيودلهي", correctAnswers: ["نيودلهي", "new delhi"] } ] },
-            { category: "أسئلة تونسية", questions: [ { questionText: "شنوة عاصمة تونس؟", displayAnswer: "تونس", correctAnswers: ["تونس", "tunis", "tounes"] }, { questionText: "شنوة اسم العملة التونسية؟", displayAnswer: "دينار", correctAnswers: ["دينار", "dinar", "دنيار"] }, { questionText: "شكون ربح كاس افريقيا 2004؟", displayAnswer: "تونس", correctAnswers: ["تونس", "المنتخب التونسي", "tounes", "منتخب تونس"] }, { questionText: "شنوة اسم أطول واد في تونس؟", displayAnswer: "واد مجردة", correctAnswers: ["واد مجردة", "مجردة", "وادي مجردة", "oued mejerdah"] }, { questionText: "شكون الرئيس الأول لتونس؟", displayAnswer: "الحبيب بورقيبة", correctAnswers: ["الحبيب بورقيبة", "بورقيبة", "حبيب بورقيبة", "bourguiba"] }, { questionText: "شنوة اسم مدينة تونسية مشهورة بالحمامات الطبيعية؟", displayAnswer: "حمام الأنف", correctAnswers: ["حمام الأنف", "حمام الانف", "hammam linf", "hamam lanf"] }, { questionText: "شنوة الأكلة التونسية المشهورة اللي فيها كسكسي وخضرة ولحم؟", displayAnswer: "كسكسي", correctAnswers: ["كسكسي", "كسكس", "couscous"] }, { questionText: "شنوة العاصمة الثقافية لتونس؟", displayAnswer: "القيروان", correctAnswers: ["القيروان", "kairouan", "kayrawan"] }, { questionText: "شنوة اسم أشهر طبق حلويات تونسي في الأعياد؟", displayAnswer: "المقروض", correctAnswers: ["المقروض", "مقروض", "makroudh"] }, { questionText: "أكبر جزيرة تونسية؟", displayAnswer: "جربة", correctAnswers: ["جربة", "djerba", "jareba"] }, { questionText: "شنوة اسم الجبل الأعلى في تونس؟", displayAnswer: "جبل الشعانبي", correctAnswers: ["جبل الشعانبي", "الشعانبي", "chambi"] }, { questionText: "فنان تونسي مشهور بأغنية 'يا ليلى يا ليلة'؟", displayAnswer: "صابر الرباعي", correctAnswers: ["صابر الرباعي", "رباعي", "saber rebai"] }, { questionText: "شنوة اسم بحيرة تونسية مشهورة بالطيور المهاجرة؟", displayAnswer: "بحيرة إشكل", correctAnswers: ["بحيرة إشكل", "إشكل", "ichkeul"] }, { questionText: "اسم الملعب الوطني في تونس العاصمة؟", displayAnswer: "ملعب حمادي العقربي", correctAnswers: ["ملعب حمادي العقربي", "ملعب رادس", "رادس", "hamadi agerbi"] }, { questionText: "في أي ولاية تونسية توجد مدينة دقة الأثرية؟", displayAnswer: "باجة", correctAnswers: ["باجة", "beja"] } ] }
+            { category: "أسئلة تونسية", questions: [ { questionText: "شنوة عاصمة تونس؟", displayAnswer: "تونس", correctAnswers: ["تونس", "tunis", "tounes"] }, { questionText: "شنوة اسم العملة التونسية؟", displayAnswer: "دينار", correctAnswers: ["دينار", "dinar", "دنيار"] }, { questionText: "شكون ربح كاس افريقيا 2004؟", displayAnswer: "تونس", correctAnswers: ["تونس", "المنتخب التونسي", "tounes", "منتخب تونس"] }, { questionText: "شنوة اسم أطول واد في تونس؟", displayAnswer: "واد مجردة", correctAnswers: ["واد مجردة", "مجردة", "وادي مجردة", "oued mejerdah"] }, { questionText: "شكون الرئيس الأول لتونس؟", displayAnswer: "الحبيب بورقيبة", correctAnswers: ["الحبيب بورقيبة", "بورقيبة", "حبيب بورقيبة", "bourguiba"] }, { questionText: "شنوة اسم مدينة تونسية مشهورة بالحمامات الطبيعية؟", displayAnswer: "حمام الأنف", correctAnswers: ["حمام الأنف", "حمام الانف", "hammam linf", "hamam lanf"] }, { questionText: "شنوة الأكلة التونسية المشهورة اللي فيها كسكسي وخضرة ولحم؟", displayAnswer: "كسكسي", correctAnswers: ["كسكسي", "كسكس", "couscous"] }, { questionText: "شنوة العاصمة الثقافية لتونس؟", displayAnswer: "القيروان", correctAnswers: ["القيروان", "kairouan", "kayrawan"] }, { questionText: "شنوة اسم أشهر طبق حلويات تونسي في الأعياد؟", displayAnswer: "المقروض", correctAnswers: ["المقروض", "مقروض", "makroudh"] }, { questionText: "أكبر جزيرة تونسية؟", displayAnswer: "جربة", correctAnswers: ["جربة", "djerba", "jareba"] }, { questionText: "شنوة اسم الجبل الأعلى في تونس؟", displayAnswer: "جبل الشعانبي", correctAnswers: ["جبل الشعانبي", "الشعانبي", "chambi"] }, { questionText: "فنان تونسي مشهور بأغنية 'يا ليلى يا ليلة'؟", displayAnswer: "صابر الرباعي", correctAnswers: ["صابر الرباعي", "رباعي", "saber rebai"] }, { questionText: "شنوة اسم بحيرة تونسية مشهورة بالطيور المهاجرة؟", displayAnswer: "بحيرة إشكل", correctAnswers: ["بحيرة إشكل", "إشكل", "ichkeul"] }, { questionText: "اسم الملعب الوطني في تونس العاصمة؟", displayAnswer: "ملعب حمادي العقربي", correctAnswers: ["ملعب حمادي العقربي", "ملعب رادس", "رادس", "hamadi agerbi"] }, { questionText: "في أي ولاية تونسية توجد مدينة دقة الأثرية؟", displayAnswer: "باجة", correctAnswers: ["باجة", "beja"] } ] },
+            // NEW CATEGORY: Tunisian Multiple Choice Questions
+            {
+                category: "أسئلة تونسية (متعددة الخيارات)",
+                questions: [
+                    {
+                        questionText: "ما هي عاصمة ولاية صفاقس؟",
+                        options: ["سوسة", "صفاقس", "المنستير", "القيروان"],
+                        correctAnswerIndex: 1,
+                        displayAnswer: "صفاقس",
+                        correctAnswers: ["صفاقس", "sfax"]
+                    },
+                    {
+                        questionText: "كم عدد الولايات في تونس؟",
+                        options: ["20", "22", "24", "26"],
+                        correctAnswerIndex: 2,
+                        displayAnswer: "24",
+                        correctAnswers: ["24", "اربعة وعشرون"]
+                    },
+                    {
+                        questionText: "ما هو اسم البحر الذي تطل عليه تونس؟",
+                        options: ["البحر الأحمر", "البحر الأسود", "البحر الأبيض المتوسط", "المحيط الأطلسي"],
+                        correctAnswerIndex: 2,
+                        displayAnswer: "البحر الأبيض المتوسط",
+                        correctAnswers: ["البحر الأبيض المتوسط", "المتوسط"]
+                    },
+                    {
+                        questionText: "ما هو الطبق التونسي التقليدي المصنوع من السميد والخضروات؟",
+                        options: ["المرقة", "الكسكسي", "اللبلابي", "الفريكاسي"],
+                        correctAnswerIndex: 1,
+                        displayAnswer: "الكسكسي",
+                        correctAnswers: ["الكسكسي", "كسكس"]
+                    },
+                    {
+                        questionText: "من هو أول رئيس للجمهورية التونسية؟",
+                        options: ["الحبيب بورقيبة", "زين العابدين بن علي", "الباجي قائد السبسي", "فرحات حشاد"],
+                        correctAnswerIndex: 0,
+                        displayAnswer: "الحبيب بورقيبة",
+                        correctAnswers: ["الحبيب بورقيبة", "بورقيبة"]
+                    }
+                ]
+            }
         ];
         
         function normalize(text) {
@@ -542,7 +621,10 @@
 
         function isCorrectAnswer(playerAnswer, acceptedAnswers) {
             const normalizedPlayerAnswer = normalize(playerAnswer);
-            return acceptedAnswers.some(ans => similarity(normalizedPlayerAnswer, ans) >= 0.8);
+            // For multiple choice, acceptedAnswers will typically be very precise.
+            // For open-ended, similarity is used.
+            // We rely on the `correctAnswers` array in the quiz object to contain normalized forms suitable for comparison.
+            return acceptedAnswers.some(ans => normalizedPlayerAnswer === ans || similarity(normalizedPlayerAnswer, ans) >= 0.8);
         }
 
         let selectedQuizIndices = [];
@@ -793,11 +875,7 @@
 
                             if (!playerNicknameInput.value) {
                                 showScreen(joinGameScreen);
-                                showCustomMessageBox("الانضمام إلى لعبة", `أدخل اسمك المستعار للانضمام إلى اللعبة برمز ${gameId}.`, {
-                                    buttons: [
-                                        { text: 'حسناً', callback: hideCustomMessageBox }
-                                    ]
-                                });
+                                showCustomMessageBox("الانضمام إلى لعبة", `أدخل اسمك المستعار للانضمام إلى اللعبة برمز ${gameId}.`);
                             } else {
                                 showCustomMessageBox("الانضمام إلى لعبة", `هل تريد الانضمام إلى اللعبة برمز ${gameId} باسم ${playerNicknameInput.value}؟`, {
                                     buttons: [
@@ -996,7 +1074,10 @@
                                 category: category.category,
                                 question: q.questionText,
                                 displayAnswer: q.displayAnswer,
-                                correctAnswers: q.correctAnswers.map(normalize)
+                                correctAnswers: q.correctAnswers.map(normalize),
+                                // Include options and correctAnswerIndex if present
+                                options: q.options || null,
+                                correctAnswerIndex: q.correctAnswerIndex !== undefined ? q.correctAnswerIndex : null
                             });
                         });
                     }
@@ -1033,7 +1114,10 @@
                     countdownStartTime: null,
                     countdownDuration: 5,
                     scoresReconciledForCurrentQuestion: false,
-                    currentRemainingTime: 0 
+                    currentRemainingTime: 0,
+                    // NEW: Store multiple choice options and correct index for the current question
+                    currentQuestionOptions: null,
+                    currentCorrectAnswerIndex: null
                 });
                 
                 const playerRef = gameRef.collection('players').doc(userId);
@@ -1147,7 +1231,10 @@
                     questionStartTime: Date.now(), 
                     timeLimitPerQuestion: gameData.timeLimitPerQuestion,
                     scoresReconciledForCurrentQuestion: false,
-                    currentRemainingTime: gameData.timeLimitPerQuestion 
+                    currentRemainingTime: gameData.timeLimitPerQuestion,
+                    // NEW: Pass multiple choice options and correct index to Firestore
+                    currentQuestionOptions: currentQuestion.options || null,
+                    currentCorrectAnswerIndex: currentQuestion.correctAnswerIndex !== undefined ? currentQuestion.correctAnswerIndex : null
                 });
 
                 const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
@@ -1263,7 +1350,10 @@
                                 category: category.category,
                                 question: q.questionText,
                                 displayAnswer: q.displayAnswer,
-                                correctAnswers: q.correctAnswers.map(normalize)
+                                correctAnswers: q.correctAnswers.map(normalize),
+                                // Include options and correctAnswerIndex if present
+                                options: q.options || null,
+                                correctAnswerIndex: q.correctAnswerIndex !== undefined ? q.correctAnswerIndex : null
                             });
                         });
                     }
@@ -1293,7 +1383,10 @@
                     questionStartTime: null, 
                     countdownStartTime: null,
                     scoresReconciledForCurrentQuestion: false,
-                    currentRemainingTime: 0 
+                    currentRemainingTime: 0,
+                    // Reset multiple choice data for new round
+                    currentQuestionOptions: null,
+                    currentCorrectAnswerIndex: null
                 });
 
                 const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
@@ -1444,15 +1537,28 @@
             }
         }
 
-        async function submitGuess() {
-             if (!gameId || (gamePlayScreen && gamePlayScreen.classList.contains('hidden'))) { return; }
-            if (!gameGuessInput || !pointsButtonGroup || !submitAnswerButton) { return; }
-            if (gameGuessInput.disabled) { showCustomMessageBox("تم الإجابة", "لقد أجبت بالفعل."); return; }
+        // Modified submitGuess to handle both text input and multiple choice
+        async function submitGuess(selectedOptionText = null) {
+            if (!gameId || (gamePlayScreen && gamePlayScreen.classList.contains('hidden'))) { return; }
+            if (!pointsButtonGroup || !submitAnswerButton) { return; }
 
-            const guess = gameGuessInput.value.trim();  
+            let guess;
+            if (selectedOptionText !== null) {
+                guess = selectedOptionText;
+                // Visually mark the selected option and disable others
+                Array.from(multipleChoiceOptionsContainer.children).forEach(btn => {
+                    btn.disabled = true;
+                    if (btn.textContent === selectedOptionText) {
+                        btn.classList.add('selected-option');
+                    }
+                });
+            } else {
+                if (!gameGuessInput || gameGuessInput.disabled) { showCustomMessageBox("تم الإجابة", "لقد أجبت بالفعل."); return; }
+                guess = gameGuessInput.value.trim();
+                if (guess === '') { showCustomMessageBox("خطأ", "الرجاء كتابة إجابتك."); return; }
+            }
+
             const pointsBet = selectedPointsBet;
-
-            if (guess === '') { showCustomMessageBox("خطأ", "الرجاء كتابة إجابتك."); return; }
             if (isNaN(pointsBet) || pointsBet < 1 || pointsBet > 20) { showCustomMessageBox("خطأ", "الرجاء اختيار عدد نقاط صحيح."); return; }
 
             showLoading();
@@ -1485,12 +1591,11 @@
                 });
 
                 isDoublePointsActive = false;
-                powerUpDoublePointsBtn.classList.remove('ring-4', 'ring-yellow-300');
-
+                powerUpDoublePointsBtn.classList.remove('ring-4', 'ring-yellow-300', 'opacity-50');
 
                 if (gameGuessInput) gameGuessInput.disabled = true;
-                if (pointsButtonGroup) { Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true); }
                 if (submitAnswerButton) submitAnswerButton.disabled = true;
+                if (pointsButtonGroup) { Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true); }
 
             } catch (error) {
                 showCustomMessageBox("خطأ في الإجابة", error.message);
@@ -1544,6 +1649,11 @@
                                 gameGuessInput.disabled = false;
                             }
                             if (submitAnswerButton) submitAnswerButton.disabled = false;
+                            // Hide multiple choice options
+                            if (multipleChoiceOptionsContainer) multipleChoiceOptionsContainer.classList.add('hidden');
+                            if (gameGuessInput) gameGuessInput.classList.remove('hidden');
+                            if (submitAnswerButton) submitAnswerButton.classList.remove('hidden');
+
                             selectedPointsBet = 1;
                             userUsedPointsBets = [];
                             populatePointsButtons();
@@ -1566,6 +1676,7 @@
                             }
                             // Reset lastDisplayedQuestionIndex for new round
                             lastDisplayedQuestionIndex = -1;
+                            selectedMultipleChoiceOption = null; // Reset selected multiple choice option
                             break;
                         case 'game_countdown':
                             showScreen(gameCountdownScreen);
@@ -1591,8 +1702,11 @@
                             if (gameCategoryDisplay) gameCategoryDisplay.textContent = gameData.currentCategory;
                             if (gameQuestionDisplay) gameQuestionDisplay.textContent = gameData.currentQuestionText;
                             
-                            // Only reset input field if it's a NEW question being displayed
+                            // Handle multiple choice vs. text input display
+                            const isCurrentQuestionMultipleChoice = gameData.currentQuestionOptions && gameData.currentQuestionOptions.length > 0;
+
                             if (gameData.currentQuestionIndexInGame !== lastDisplayedQuestionIndex) {
+                                // Reset for a new question
                                 if (gameGuessInput) {
                                     gameGuessInput.value = '';
                                     gameGuessInput.disabled = false;
@@ -1603,6 +1717,28 @@
                                 isDoublePointsActive = false; // Reset double points state
                                 if (powerUpDoublePointsBtn) powerUpDoublePointsBtn.classList.remove('ring-4', 'ring-yellow-300', 'opacity-50');
                                 lastDisplayedQuestionIndex = gameData.currentQuestionIndexInGame; // Update the tracking index
+                                selectedMultipleChoiceOption = null; // Reset selected multiple choice option
+                            }
+
+                            if (isCurrentQuestionMultipleChoice) {
+                                if (gameGuessInput) gameGuessInput.classList.add('hidden');
+                                if (submitAnswerButton) submitAnswerButton.classList.add('hidden');
+                                if (multipleChoiceOptionsContainer) {
+                                    multipleChoiceOptionsContainer.innerHTML = ''; // Clear previous options
+                                    gameData.currentQuestionOptions.forEach(optionText => {
+                                        const optionButton = document.createElement('button');
+                                        optionButton.type = 'button';
+                                        optionButton.className = 'multiple-choice-option-btn';
+                                        optionButton.textContent = optionText;
+                                        optionButton.onclick = () => submitGuess(optionText); // Pass the option text to submitGuess
+                                        multipleChoiceOptionsContainer.appendChild(optionButton);
+                                    });
+                                    multipleChoiceOptionsContainer.classList.remove('hidden');
+                                }
+                            } else {
+                                if (gameGuessInput) gameGuessInput.classList.remove('hidden');
+                                if (submitAnswerButton) submitAnswerButton.classList.remove('hidden');
+                                if (multipleChoiceOptionsContainer) multipleChoiceOptionsContainer.classList.add('hidden');
                             }
 
                             db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId).get().then(playerDoc => {
@@ -1614,11 +1750,20 @@
                                         if (gameGuessInput) gameGuessInput.disabled = true;
                                         if (pointsButtonGroup) Array.from(pointsButtonGroup.children).forEach(btn => btn.disabled = true);
                                         if (submitAnswerButton) submitAnswerButton.disabled = true;
+                                        // Disable multiple choice buttons if already submitted
+                                        if (isCurrentQuestionMultipleChoice && multipleChoiceOptionsContainer) {
+                                            Array.from(multipleChoiceOptionsContainer.children).forEach(btn => {
+                                                btn.disabled = true;
+                                                if (btn.textContent === currentPlayerData.playerSubmittedAnswer) {
+                                                    btn.classList.add('selected-option');
+                                                }
+                                            });
+                                        }
                                     }
                                 }
                             });
                             
-                            if (gameGuessInput) gameGuessInput.focus();
+                            if (gameGuessInput && !isCurrentQuestionMultipleChoice) gameGuessInput.focus();
 
                             if (isHost) {
                                 if (hostGameplayControls) hostGameplayControls.classList.remove('hidden');
@@ -1662,6 +1807,7 @@
                             }
                             // Reset lastDisplayedQuestionIndex as question has ended
                             lastDisplayedQuestionIndex = -1;
+                            selectedMultipleChoiceOption = null; // Reset selected multiple choice option
 
                             if (resultsCategory) resultsCategory.textContent = gameData.currentCategory;
                             if (resultsQuestion) resultsQuestion.textContent = gameData.currentQuestionText;
@@ -1713,6 +1859,7 @@
                             }
                             // Reset lastDisplayedQuestionIndex
                             lastDisplayedQuestionIndex = -1;
+                            selectedMultipleChoiceOption = null; // Reset selected multiple choice option
                             showFinalScores();
                             break;
                     }
@@ -1907,7 +2054,8 @@
         if (createHostButton) { createHostButton.addEventListener('click', () => { setupQuizCategorySelection(); if (hostNicknameInput) hostNicknameInput.value = localStorage.getItem('hostNickname') || ''; showScreen(hostSetupScreen); }); }
         if (joinPlayerButton) { joinPlayerButton.addEventListener('click', () => { if (playerNicknameInput) playerNicknameInput.value = localStorage.getItem('playerNickname') || ''; showScreen(joinGameScreen); }); }
         if (createGameButton) createGameButton.addEventListener('click', createGame);
-        if (submitAnswerButton) submitAnswerButton.addEventListener('click', submitGuess);
+        // Modified submitAnswerButton to call submitGuess without arguments (for text input)
+        if (submitAnswerButton) submitAnswerButton.addEventListener('click', () => submitGuess());
         if (startGameButton) startGameButton.addEventListener('click', initiateGameStartCountdown);  
         if (endQuestionEarlyButton) endQuestionEarlyButton.addEventListener('click', endQuestionEarly);  
         if (nextQuestionButton) nextQuestionButton.addEventListener('click', startNextQuestion);  
