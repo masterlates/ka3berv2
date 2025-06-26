@@ -986,29 +986,22 @@
         async function initializeFirebase() {
             showLoading();
             try {
-                // Use global variables provided by the environment
-                const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+                const firebaseConfig = {
+                    apiKey: "AIzaSyCwdZjTwrnjKZU_AilP5_GZJeEuUZjVcUY",
+                    authDomain: "ka3boura-dbcf5.firebaseapp.com",
+                    projectId: "ka3boura-dbcf5",
+                    storageBucket: "ka3boura-dbcf5.firebasestorage.app",
+                    messagingSenderId: "1051115240747",
+                    appId: "1:1051115240747:web:694751eef3173327f5596e",
+                    measurementId: "G-9413DFK5DF"
+                };
                 
-                // Ensure projectId is part of firebaseConfig, defaulting to __app_id if not present
-                // This is crucial because initializeApp requires projectId within the config object
-                if (!firebaseConfig.projectId && typeof __app_id !== 'undefined') {
-                    firebaseConfig.projectId = __app_id;
-                }
-
-                // Set appId for internal use based on the now-guaranteed projectId
                 appId = firebaseConfig.projectId;
-
-                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
                 app = firebase.initializeApp(firebaseConfig);
                 db = firebase.firestore(app);
                 auth = firebase.auth(app);
 
-                if (initialAuthToken) {
-                    await auth.signInWithCustomToken(initialAuthToken);
-                } else {
-                    await auth.signInAnonymously();
-                }
+                await auth.signInAnonymously();
 
                 auth.onAuthStateChanged((user) => {
                     if (user) {
