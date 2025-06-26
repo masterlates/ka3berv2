@@ -182,6 +182,39 @@
         #power-up-double-points { background-color: #f59e0b; color: white; }
         #power-up-extra-time { background-color: #10b981; color: white; }
         #power-up-hint { background-color: #8b5cf6; color: white; }
+
+        /* Responsive adjustments for game play screen elements */
+        @media (max-width: 767px) {
+            .game-stats-row {
+                flex-direction: column;
+                gap: 1rem; /* Add vertical gap for stacked items */
+                width: 100%;
+            }
+            .game-stats-item {
+                width: 100%; /* Make each stat item take full width */
+                justify-content: center; /* Center content within item */
+            }
+            .power-ups-container {
+                flex-direction: column; /* Stack power-up buttons vertically on small screens */
+                width: 100%;
+                gap: 0.75rem; /* Adjust gap for vertical stacking */
+            }
+            .power-up-btn {
+                width: 100%; /* Make power-up buttons take full width */
+                justify-content: center;
+            }
+            /* Adjust input and button in gameplay for better mobile experience */
+            .game-input-send {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            #game-guess-input {
+                width: 100%;
+            }
+            #submit-answer-button {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 min-h-screen flex flex-col items-center justify-center p-4 text-gray-800">
@@ -220,14 +253,14 @@
             <div class="w-full md:w-5/6 mb-6">
                 <label for="host-nickname-input" class="block text-xl font-semibold text-gray-700 mb-2 text-center">اسمك المستعار (المضيف):</label>
                 <input type="text" id="host-nickname-input" placeholder="اسم المضيف"
-                       class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-400 bg-gray-50 text-center">
+                        class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-400 bg-gray-50 text-center">
             </div>
 
             <div class="w-full md:w-5/6 mb-6">
                 <label for="quiz-category-input" class="block text-xl font-semibold text-gray-700 mb-2 text-center">اختر فئات الأسئلة:</label>
                 <div class="multiselect-container">
                     <input type="text" id="quiz-category-input" readonly placeholder="انقر هنا لاختيار الفئات..."
-                           class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50 cursor-pointer text-center">
+                            class="w-full p-3 border-2 border-gray-300 rounded-lg text-lg focus:outline-none focus:border-blue-500 bg-gray-50 cursor-pointer text-center">
                     <div id="quiz-category-dropdown" class="multiselect-dropdown hidden"></div>
                 </div>
                 <div id="selected-categories-tags" class="multiselect-selected-tags"></div>
@@ -288,12 +321,12 @@
             <div class="w-full md:w-5/6 mb-6">
                 <label for="game-code-input" class="block text-xl font-semibold text-gray-700 mb-2 text-center">أدخل رمز الغرفة:</label>
                 <input type="text" id="game-code-input" placeholder="مثال: 123"
-                       class="w-full p-4 mb-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-400 transition-colors duration-300 bg-gray-50 uppercase text-center tracking-widest">
+                        class="w-full p-4 mb-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-400 transition-colors duration-300 bg-gray-50 uppercase text-center tracking-widest">
             </div>
              <div class="w-full md:w-5/6 mb-6">
                 <label for="player-nickname-input" class="block text-xl font-semibold text-gray-700 mb-2 text-center">أدخل اسمك المستعار:</label>
                 <input type="text" id="player-nickname-input" placeholder="اسمك"
-                       class="w-full p-4 mb-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-400 transition-colors duration-300 bg-gray-50 text-center">
+                        class="w-full p-4 mb-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-400 transition-colors duration-300 bg-gray-50 text-center">
             </div>
             <button id="join-room-button" class="w-11/12 md:w-2/3 bg-green-600 hover:bg-green-700 text-white text-2xl font-bold py-4 rounded-lg shadow-lg transform hover:scale-105 hover:shadow-xl transition-all duration-300 ease-out flex items-center justify-center gap-3">
                 <i class="fas fa-door-open"></i> الانضمام
@@ -308,16 +341,16 @@
                 <p class="text-2xl font-extrabold text-gray-900" id="game-question"></p>
             </div>
 
-            <div class="flex flex-col md:flex-row justify-around items-center w-full mb-6 space-y-4 md:space-y-0 md:space-x-4">
-                <div class="flex items-center space-x-2 space-x-reverse text-xl font-bold text-gray-700 bg-gray-100 px-4 py-2 rounded-lg shadow-md">
+            <div class="game-stats-row flex flex-col md:flex-row justify-around items-center w-full mb-6 space-y-4 md:space-y-0 md:space-x-4">
+                <div class="game-stats-item flex items-center space-x-2 space-x-reverse text-xl font-bold text-gray-700 bg-gray-100 px-4 py-2 rounded-lg shadow-md w-full md:w-auto">
                     <i class="fas fa-hourglass-half text-blue-500"></i>
                     <span>الوقت: <span id="game-timer" class="text-blue-600">--</span> ثانية</span>
                 </div>
-                <div class="flex items-center space-x-2 space-x-reverse text-xl font-bold text-gray-700 bg-gray-100 px-4 py-2 rounded-lg shadow-md">
+                <div class="game-stats-item flex items-center space-x-2 space-x-reverse text-xl font-bold text-gray-700 bg-gray-100 px-4 py-2 rounded-lg shadow-md w-full md:w-auto">
                     <i class="fas fa-star text-yellow-500"></i>
                     <span>نقاطك: <span id="player-score" class="text-yellow-600">0</span></span>
                 </div>
-                <div class="flex items-center space-x-2 space-x-reverse text-xl font-bold text-gray-700 bg-gray-100 px-4 py-2 rounded-lg shadow-md">
+                <div class="game-stats-item flex items-center space-x-2 space-x-reverse text-xl font-bold text-gray-700 bg-gray-100 px-4 py-2 rounded-lg shadow-md w-full md:w-auto">
                     <i class="fas fa-question-circle text-purple-500"></i>
                     <span>السؤال: <span id="question-counter" class="text-purple-600">-- / --</span></span>
                 </div>
@@ -331,7 +364,7 @@
                      <i class="fas fa-clock"></i> وقت إضافي
                  </button>
                  <button id="power-up-hint" class="power-up-btn">
-                     <i class="fas fa-lightbulb"></i> تلميح
+                     <i class="fas fa-lightbulb"></i> استعمال جوكر
                  </button>
             </div>
             
@@ -340,7 +373,7 @@
                 <div id="points-button-group" class="points-button-group"></div>
             </div>
 
-            <div class="flex items-center flex-wrap gap-2 w-full mb-4">
+            <div class="game-input-send flex items-center flex-wrap gap-2 w-full mb-4">
                 <label for="game-guess-input" class="sr-only">اكتب إجابتك هنا</label>
                 <input type="text" id="game-guess-input" placeholder="اكتب إجابتك هنا..."
                    class="flex-grow p-4 text-xl border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-400 transition-colors duration-300 bg-gray-50 text-center">
@@ -349,7 +382,7 @@
                 </button>
             </div>
 
-           
+            
             <div id="host-gameplay-controls" class="w-full flex flex-col items-center gap-4 hidden mt-6">
                 <h3 class="text-xl font-semibold text-gray-800 mb-2">حالة إجابة اللاعبين (المضيف فقط):</h3>
                 <ul id="host-submission-status-list" class="w-full bg-gray-100 border border-gray-200 rounded-lg p-3 mb-4 shadow-inner text-base max-h-32 overflow-y-auto"></ul>
@@ -422,12 +455,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode.js/1.0.0/qrcode.min.js"></script>
     <script type="text/javascript">
       // JAVASCRIPT LOGIC
-       let app, db, auth, userId, userNickname, appId;
+        let app, db, auth, userId, userNickname, appId;
         let gameId = null;
         let isHost = false;
         let gameSnapshotUnsubscribe = null; // Listener for game document changes
         let playersSnapshotUnsubscribe = null; // Listener for players collection changes
         let timerInterval = null; // Interval for local game timer (for all clients)
+        let hostTimeUpdateInterval = null; // New: Interval for host to update time in Firestore
         let selectedPointsBet = 1; // Default selected points bet
         let userUsedPointsBets = []; // Array to store points already used by the current player in the current GAME
         let currentQuestionSoundInterval = null; // Interval for repeated sound effect
@@ -441,11 +475,11 @@
             { category: "الفواكه", questions: [ { questionText: "فاكهة حمراء وصغيرة غالباً ما تستخدم في الحلويات؟", displayAnswer: "فراولة", correctAnswers: ["فراولة", "كرز", "توت"] }, { questionText: "فاكهة صفراء تنمو في مجموعات وغنية بالبوتاسيوم؟", displayAnswer: "موز", correctAnswers: ["موز"] }, { questionText: "فاكهة برتقالية اللون، غنية بفيتامين سي؟", displayAnswer: "برتقال", correctAnswers: ["برتقال", "يوسفي", "مانجو"] }, { questionText: "فاكهة استوائية كبيرة ذات قشرة خائكة ولحم أصفر حلو جداً؟", displayAnswer: "أناناس", correctAnswers: ["أناناس"] }, { questionText: "فاكهة صيفية كبيرة الحجم، خضراء من الخارج وحمراء من الداخل مع بذور سوداء؟", displayAnswer: "دلاع", correctAnswers: ["دلاع"] } ] },
             { category: "عواصم دول أوروبية", questions: [ { questionText: "ما هي عاصمة ألمانيا؟", displayAnswer: "برلين", correctAnswers: ["برلين", "berlin"] }, { questionText: "ما هي عاصمة فرنسا؟", displayAnswer: "باريس", correctAnswers: ["باريس", "paris"] }, { questionText: "ما هي عاصمة إيطاليا؟", displayAnswer: "روما", correctAnswers: ["روما", "rome"] }, { questionText: "ما هي عاصمة إسبانيا؟", displayAnswer: "مدريد", correctAnswers: ["مدريد", "madrid"] }, { questionText: "ما هي عاصمة المملكة المتحدة؟", displayAnswer: "لندن", correctAnswers: ["لندن", "london"] }, { questionText: "ما هي عاصمة بولندا؟", displayAnswer: "وارسو", correctAnswers: ["وارسو", "warsaw"] }, { questionText: "ما هي عاصمة أوكرانيا؟", displayAnswer: "كييف", correctAnswers: ["كييف", "kiev"] }, { questionText: "ما هي عاصمة رومانيا؟", displayAnswer: "بوخارست", correctAnswers: ["بوخارست", "bucharest"] }, { questionText: "ما هي عاصمة هولندا؟", displayAnswer: "أمستردام", correctAnswers: ["أمستردام", "amsterdam"] }, { questionText: "ما هي عاصمة بلجيكا؟", displayAnswer: "بروكسل", correctAnswers: ["بروكسل", "brussels"] }, { questionText: "ما هي عاصمة اليونان؟", displayAnswer: "أثينا", correctAnswers: ["أثينا", "athens"] }, { questionText: "ما هي عاصمة البرتغال؟", displayAnswer: "لشبونة", correctAnswers: ["لشبونة", "lisbon"] }, { questionText: "ما هي عاصمة السويد؟", displayAnswer: "ستوكهولم", correctAnswers: ["ستوكهولم", "stockholm"] }, { questionText: "ما هي عاصمة النمسا؟", displayAnswer: "فيينا", correctAnswers: ["فيينا", "vienna"] }, { questionText: "ما هي عاصمة سويسرا؟", displayAnswer: "برن", correctAnswers: ["برن", "bern"] }, { questionText: "ما هي عاصمة الدنمارك؟", displayAnswer: "كوبنهاغن", correctAnswers: ["كوبنهاغن", "copenhagen"] }, { questionText: "ما هي عاصمة فنلندا؟", displayAnswer: "هلسنكي", correctAnswers: ["هلسنكي", "helsinki"] }, { questionText: "ما هي عاصمة النرويج؟", displayAnswer: "أوسلو", correctAnswers: ["أوسلو", "oslo"] }, { questionText: "ما هي عاصمة إيرلندا؟", displayAnswer: "دبلن", correctAnswers: ["دبلن", "dublin"] }, { questionText: "ما هي عاصمة كرواتيا؟", displayAnswer: "زغرب", correctAnswers: ["زغرب", "zagreb"] } ] },
             { category: "أمثال شعبية تونسية", questions: [ { questionText: "كمل المثل: قلك عمرك ما تحط القزار في طريق الرجالة ...", displayAnswer: "يجي نهار و تقصدهم حفيان ", correctAnswers: [" يجي نهار و تقصدهم حفيان ", "يجي نهار و تقصدهم حفيان "] }, { questionText: "كمل المثل: إلّي في كرشه التبن...", displayAnswer: "يخاف من النار", correctAnswers: ["يخاف من النار", "يخاف من العافية"] }, { questionText: "كمل المثل: الباب إلّي يجيك منّو الريح...", displayAnswer: "سدّو واستريح", correctAnswers: ["سدّو واستريح", "سدّو"] }, { questionText: "كمل المثل: قطوسة تتغزل في خنافرها...", displayAnswer: "والفار يلعب قدّامها", correctAnswers: ["والفار يلعب قدّامها"] }, { questionText: "كمل المثل: إلّي ما يعرفك...", displayAnswer: "يجهلك", correctAnswers: ["يجهلك"] }, { questionText: "كمل المثل: العزوزة إذا تحفّت...", displayAnswer: "تحنّ للرقص", correctAnswers: ["تحنّ للرقص", "ترقص"] }, { questionText: "كمل المثل: تفرهد القطوس...", displayAnswer: "يلعب بديلو", correctAnswers: ["يلعب بديلو"] }, { questionText: "كمل المثل: طاحت الصمعة...", displayAnswer: "علّقو الحجام", correctAnswers: ["علّقو الحجام", "علقوا الحجام"] }, { questionText: "كمل المثل: لا يعجبه العجب...", displayAnswer: "ولا صيام رجب", correctAnswers: ["ولا صيام رجب"] }, { questionText: "كمل المثل: القطوس ما يهرّبش...", displayAnswer: "على دار فيها لحمة", correctAnswers: ["على دار فيها لحمة", "على الدار فيها لحمة"] }, { questionText: "كمل المثل: إلّي تحبو يكثر...", displayAnswer: "منو الهزار", correctAnswers: ["منو الهزار"] }, { questionText: "كمل المثل: ما يحس الجمرة...", displayAnswer: "كان إلي عافس عليها", correctAnswers: ["كان إلي عافس عليها", "كان الي عافس عليها"] }, { questionText: "كمل المثل: اللّي فيه طبّة...", displayAnswer: "ما ينساهاش", correctAnswers: ["ما ينساهاش"] }, { questionText: "كمل المثل: شد مشومك...", displayAnswer: "لا يجيك ما أشوم منّو", correctAnswers: ["لا يجيك ما أشوم منّو", "ما أشوم منو"] }, { questionText: "كمل المثل: الجمل ما يشوفش...", displayAnswer: "حدبتو", correctAnswers: ["حدبتو"] }, { questionText: "كمل المثل: إلّي يخاف من عشاه...", displayAnswer: "ما يشبعش", correctAnswers: ["ما يشبعش"] }, { questionText: "كمل المثل: قالولو زغرت، قال...", displayAnswer: "نعرف نبكي", correctAnswers: ["نعرف نبكي"] }, { questionText: "كمل المثل: كي تتفرهد العصفورة...", displayAnswer: "تجيها السقطة", correctAnswers: ["تجيها السقطة"] }, { questionText: "كمل المثل: كي تطيح البقرة...", displayAnswer: "يكثروا سكاكينها", correctAnswers: ["يكثروا سكاكينها", "تكتر سكاكينها"] }, { questionText: "كمل المثل: إلّي شاف البلا يصيح...", displayAnswer: "و إلّي ما شافش يقول سحر", correctAnswers: ["و إلّي ما شافش يقول سحر", "اللي ما شافش يقول سحر"] }, { questionText: "كمل المثل: الهدرة كيف السكاكين...", displayAnswer: "تجرح", correctAnswers: ["تجرح"] }, { questionText: "كمل المثل: إلّي ما ربحك...", displayAnswer: "ما يجرحكش", correctAnswers: ["ما يجرحكش"] }, { questionText: "كمل المثل: إلّي يحبك...", displayAnswer: "ما يضربكش بالعصا", correctAnswers: ["ما يضربكش بالعصا"] }, { questionText: "كمل المثل: الطماع يغلبو...", displayAnswer: "الكذاب", correctAnswers: ["الكذاب"] }, { questionText: "كمل المثل: ما يفلّ الحديد...", displayAnswer: "كان الحديد", correctAnswers: ["كان الحديد"] }, { questionText: "كمل المثل: إلّي يعوم ما يخافش...", displayAnswer: "من الموج", correctAnswers: ["من الموج"] }, { questionText: "كمل المثل: قالو لو ثنيها، قال...", displayAnswer: "كي نعدلها", correctAnswers: ["كي نعدلها"] }, { questionText: "كمل المثل: الباهي كيف الذهب...", displayAnswer: "ما يتخبّاش", correctAnswers: ["ما يتخبّاش"] }, { questionText: "كمل المثل: سكران ومبلول...", displayAnswer: "ويطلب في النار", correctAnswers: ["ويطلب في النار"] }, { questionText: "كمل المثل: الجبان...", displayAnswer: "يموت ألف مرّة", correctAnswers: ["يموت ألف مرّة", "يموت ألف مرة"] }, { questionText: "كمل المثل: رزق البخيل...", displayAnswer: "ياكلو العيّار", correctAnswers: ["ياكلو العيّار"] }, { questionText: "كمل المثل: حوت ياكل حوت...", displayAnswer: "وقليل الجهد يموت", correctAnswers: ["وقليل الجهد يموت"] }, { questionText: "كمل المثل: كيف يضيق بيك الحال...", displayAnswer: "رد بالك من الرجال", correctAnswers: ["رد بالك من الرجال"] }, { questionText: "كمل المثل: كثر الهم...", displayAnswer: "يضحّك", correctAnswers: ["يضحّك"] }, { questionText: "كمل المثل: الدنيا كالبحر...", displayAnswer: "يوم هادي ويوم هايج", correctAnswers: ["يوم هادي ويوم هايج"] }, { questionText: "كمل المثل: نعرفك تعوم...", displayAnswer: "وقت الغرق", correctAnswers: ["وقت الغرق"] }, { questionText: "كمل المثل: دابّة ما تعضّيش...", displayAnswer: "ما تخوّفنيش", correctAnswers: ["ما تخوّفنيش"] }, { questionText: "كمل المثل: الكلب كيف يكثر نباحو...", displayAnswer: "ما يعضّيش", correctAnswers: ["ما يعضّيش"] }, { questionText: "كمل المثل: الزين...", displayAnswer: "زين الروح", correctAnswers: ["زين الروح"] }, { questionText: "كمل المثل: ما تشوف بعينك...", displayAnswer: "أصدق من إلّي تسمع بأذنك", correctAnswers: ["أصدق من إلّي تسمع بأذنك"] }, { questionText: "كمل المثل: من طيّب أصله...", displayAnswer: "ما يخونكش", correctAnswers: ["ما يخونكش"] }, { questionText: "كمل المثل: إلّي يطيّحك من السرج...", displayAnswer: "ما هوش صاحبك", correctAnswers: ["ما هوش صاحبك"] }, { questionText: "كمل المثل: ثمة ناس...", displayAnswer: "تلبس ذهب وتخونك", correctAnswers: ["تلبس ذهب وتخونك"] }, { questionText: "كمل المثل: الزوالي كيف...", displayAnswer: "يطيح تكسرولو ضرسو", correctAnswers: ["يطيح تكسرولو ضرسو"] }, { questionText: "كمل المثل: إلّي ما عندوش ظهر...", displayAnswer: "ما يسوى شي", correctAnswers: ["ما يسوى شي"] }, { questionText: "كمل المثل: إلّي يزرع ريح...", displayAnswer: "يحصد العاصفة", correctAnswers: ["يحصد العاصفة"] }, { questionText: "كمل المثل: الكلمة كيف الرصاصة...", displayAnswer: "إذا خرجت ما ترجعش", correctAnswers: ["إذا خرجت ما ترجعش"] }, { questionText: "كمل المثل: اللسان...", displayAnswer: "يكسر العظم", correctAnswers: ["يكسر العظم"] }, { questionText: "كمل المثل: باش تحكم عالناس...", displayAnswer: "شوف أفعالهم", correctAnswers: ["شوف أفعالهم"] }, { questionText: "كمل المثل: ثمة ناس في وجهك مراية...", displayAnswer: "وفي ظهرك سكاكية", correctAnswers: ["وفي ظهرك سكاكية"] }, { questionText: "كمل المثل: الصحبة الزينة...", displayAnswer: "كنز ما يفنى", correctAnswers: ["كنز ما يفنى"] } ] },
-            { category: "الثقافة العامة", questions: [ { questionText: "ما اسم عاصمة فلسطين؟", displayAnswer: "القدس", correctAnswers: ["القدس", "القدس الشريف"] }, { questionText: "ما هو الحيوان الذي يُصدر أعلى صوت؟", displayAnswer: "الحوت الأزرق", correctAnswers: ["الحوت الأزرق"] }, { questionText: "في أي سنة قامت الثورة الفرنسية؟", displayAnswer: "1789", correctAnswers: ["1789"] }, { questionText: "من هو أول من رسم خريطة للعالم؟", displayAnswer: "الإدريسي", correctAnswers: ["الإدريسي"] }, { questionText: "ما هو الشيء الذي لا يمشي إلا بالضرب؟", displayAnswer: "المسمار", correctAnswers: ["المسمار"] }, { questionText: "ما اسم أقصر سورة في القرآن؟", displayAnswer: "سورة الكوثر", correctAnswers: ["سورة الكوثر", "الكوثر"] }, { questionText: "كم عدد أسنان الطفل اللبنية؟", displayAnswer: "20", correctAnswers: ["20", "عشرون"] }, { questionText: "ما هو الحيوان الذي يُعتبر أطول الحيوانات رقبة؟", displayAnswer: "الزرافة", correctAnswers: ["الزرافة"] }, { questionText: "ما اسم أول دولة عربية نالت استقلالها؟", displayAnswer: "مصر", correctAnswers: ["مصر"] }, { questionText: "من هو الصحابي الملقب بترجمان القرآن؟", displayAnswer: "عبد الله بن عباس", correctAnswers: ["عبد الله بن عباس", "ابن عباس"] }, { questionText: "ما اسم العملة في بريطانيا؟", displayAnswer: "الجنيه الإسترليني", correctAnswers: ["الجنيه الإسترليني", "إسترليني"] }, { questionText: "في أي دولة يوجد برج بيزا المائل؟", displayAnswer: "إيطاليا", correctAnswers: ["إيطاليا"] }, { questionText: "من هو أول سفير في الإسلام؟", displayAnswer: "مصعب بن عمير", correctAnswers: ["مصعب بن عمير", "مصعب"] }, { questionText: "من هو مؤسس الدولة العباسية؟", displayAnswer: "أبو العباس السفاح", correctAnswers: ["أبو العباس السفاح", "السفاح"] }, { questionText: "ما هو أسرع المخلوقات البحرية؟", displayAnswer: "سمكة الزعنفة الشراعية", correctAnswers: ["سمكة الزعنفة الشراعية", "الزعنفة الشراعية"] }, { questionText: "من أول من آمن من الصبيان؟", displayAnswer: "علي بن أبي طالب", correctAnswers: ["علي بن أبي طالب", "علي"] }, { questionText: "ما اسم الدولة التي يُطلق عليها 'أرض الشمس المشرقة'؟", displayAnswer: "اليابان", correctAnswers: ["اليابان"] }, { questionText: "كم عدد النجوم على علم الولايات المتحدة؟", displayAnswer: "50", correctAnswers: ["50", "خمسون"] }, { questionText: "ما هو المضيق الذي يفصل بين إفريقيا وأوروبا؟", displayAnswer: "مضيق جبل طارق", correctAnswers: ["مضيق جبل طارق", "جبل طارق"] }, { questionText: "من هو الفيلسوف الذي قال: 'أنا أفكر إذن أنا موجود'؟", displayAnswer: "ديكارت", correctAnswers: ["ديكارت", "رينيه ديكارت"] }, { questionText: "ما اسم الكتاب السماوي الذي أُنزل على عيسى عليه السلام؟", displayAnswer: "الإنجيل", correctAnswers: ["الإنجيل"] }, { questionText: "ما اسم المدينة التي تُعرف بمدينة الضباب؟", displayAnswer: "لندن", correctAnswers: ["لندن"] }, { questionText: "كم عدد لاعبي فريق كرة القدم الأساسي؟", displayAnswer: "11", correctAnswers: ["11", "أحد عشر"] }, { questionText: "من هو العالم المسلم الذي اشتهر بالطب والجراحة؟", displayAnswer: "الزهراوي", correctAnswers: ["الزهراوي"] }, { questionText: "ما هو أقدم علم في التاريخ؟", displayAnswer: "الفلك", correctAnswers: ["الفلك", "علم الفلك"] }, { questionText: "من أول من استخدم الشوكة في الأكل؟", displayAnswer: "العرب", correctAnswers: ["العرب"] }, { questionText: "من هو أول من كتب بسم الله الرحمن الرحيم؟", displayAnswer: "سليمان عليه السلام", correctAnswers: ["سليمان", "سليمان عليه السلام"] }, { questionText: "ما اسم الطائر الذي كلمه النبي سليمان؟", displayAnswer: "الهدهد", correctAnswers: ["الهدهد"] }, { questionText: "ما اسم أكبر جزر العالم؟", displayAnswer: "جرينلاند", correctAnswers: ["جرينلاند", "غرينلاند"] }, { questionText: "ما هو الحيوان الذي يمتلك حاسة شم أقوى من الكلب؟", displayAnswer: "الدب", correctAnswers: ["الدب"] }, { questionText: "ما اسم عاصمة ليبيا؟", displayAnswer: "طرابلس", correctAnswers: ["طرابلس"] }, { questionText: "ما اسم أكبر بحيرة عذبة في العالم؟", displayAnswer: "بحيرة سوبيريور", correctAnswers: ["بحيرة سوبيريور"] }, { questionText: "ما هو العلم الذي يدرس الأحياء المجهرية؟", displayAnswer: "علم الميكروبيولوجيا", correctAnswers: ["علم الميكروبيولوجيا", "الميكروبيولوجيا"] }, { questionText: "من هو القائد الذي فتح الأندلس؟", displayAnswer: "طارق بن زياد", correctAnswers: ["طارق بن زياد", "طارق"] }, { questionText: "ما اسم العضو الذي يضخ الدم في الجسم؟", displayAnswer: "القلب", correctAnswers: ["القلب"] }, { questionText: "ما اسم أول دولة فازت بكأس العالم؟", displayAnswer: "الأوروغواي", correctAnswers: ["الأوروغواي", "أوروغواي"] }, { questionText: "من هو الصحابي الذي اهتز له عرش الرحمن؟", displayAnswer: "سعد بن معاذ", correctAnswers: ["سعد بن معاذ", "سعد"] }, { questionText: "ما اسم أكبر مدينة في العالم من حيث عدد السكان؟", displayAnswer: "طوكيو", correctAnswers: ["طوكيو"] }, { questionText: "ما اسم الحيوان الذي يعيش في الماء واليابسة؟", displayAnswer: "الضفدع", correctAnswers: ["الضفدع"] }, { questionText: "كم عدد أجنحة الملَك؟", displayAnswer: "600", correctAnswers: ["600", "ستمئة"] }, { questionText: "من هو الخليفة الذي أنشأ نظام البريد؟", displayAnswer: "عمر بن الخطاب", correctAnswers: ["عمر بن الخطاب", "عمر"] }, { questionText: "من هو العالم الذي اخترع المصعد؟", displayAnswer: "إليشا أوتيس", correctAnswers: ["إليشا أوتيس", "أوتيس"] }, { questionText: "ما هو أصل كلمة 'بنطلون'؟", displayAnswer: "فرنسية", correctAnswers: ["فرنسية"] }, { questionText: "في أي قارة تقع دولة كينيا؟", displayAnswer: "أفريقيا", correctAnswers: ["أفريقيا"] }, { questionText: "ما اسم الجهاز الذي يقيس سرعة الرياح؟", displayAnswer: "الأنيمومتر", correctAnswers: ["الأنيمومتر"] }, { questionText: "من هو الشاعر الجاهلي الذي لقب بالملك الضليل؟", displayAnswer: "امرؤ القيس", correctAnswers: ["امرؤ القيس"] }, { questionText: "كم عدد عيون النحلة؟", displayAnswer: "5", correctAnswers: ["5", "خمسة"] }, { questionText: "ما اسم الجبل الذي كلم الله عليه موسى؟", displayAnswer: "جبل الطور", correctAnswers: ["جبل الطور", "الطور"] }, { questionText: "ما اسم الكتاب الذي كتبه ابن خلدون؟", displayAnswer: "المقدمة", correctAnswers: ["المقدمة"] }, { questionText: "ما اسم أكبر نهر في أوروبا؟", displayAnswer: "نهر الفولغا", correctAnswers: ["نهر الفولغا", "الفولغا"] }, { questionText: "من هو أول من خطّ بالقلم؟", displayAnswer: "إدريس عليه السلام", correctAnswers: ["إدريس", "إدريس عليه السلام"] }, { questionText: "ما هو أول شيء خلقه الله؟", displayAnswer: "القلم", correctAnswers: ["القلم"] }, { questionText: "ما اسم الغاز الذي تنفثه السيارات؟", displayAnswer: "ثاني أكسيد الكربون", correctAnswers: ["ثاني أكسيد الكربون", "CO2"] }, { questionText: "ما اسم أبطأ الكائنات في العالم؟", displayAnswer: "الكسلان", correctAnswers: ["الكسلان"] }, { questionText: "من هو صاحب كتاب 'الأغاني'؟", displayAnswer: "أبو الفرج الأصفهاني", correctAnswers: ["أبو الفرج الأصفهاني"] }, { questionText: "ما اسم أول دولة عربية استضافت كأس العالم؟", displayAnswer: "قطر", correctAnswers: ["قطر"] }, { questionText: "ما اسم الدولة التي تتكون من 7000 جزيرة؟", displayAnswer: "الفلبين", correctAnswers: ["الفلبين"] }, { questionText: "من هو الصحابي الذي جمع القرآن الكريم في عهد عثمان؟", displayAnswer: "زيد بن ثابت", correctAnswers: ["زيد بن ثابت", "زيد"] }, { questionText: "كم عدد أرجل الحشرة؟", displayAnswer: "6", correctAnswers: ["6", "ستة"] }, { questionText: "من أول من سكن مكة؟", displayAnswer: "قبيلة جرهم", correctAnswers: ["قبيلة جرهم", "جرهم"] }, { questionText: "ما اسم أول كائن خلقه الله من الملائكة؟", displayAnswer: "جبريل", correctAnswers: ["جبريل"] }, { questionText: "ما اسم المرض الذي يُصيب كريات الدم الحمراء؟", displayAnswer: "فقر الدم", correctAnswers: ["فقر الدم", "أنيميا"] }, { questionText: "ما اسم وحدة قياس الضغط الجوي؟", displayAnswer: "بار", correctAnswers: ["بار"] }, { questionText: "ما اسم أصغر قارة في العالم؟", displayAnswer: "أوقيانوسيا", correctAnswers: ["أوقيانوسيا"] } ] },
-            { category: " اسئلة الشلة ", questions: [ { questionText: " كي نقولو كنترول شنوة يجي للبالك ؟  ", displayAnswer: "كعبورة", correctAnswers: ["لمكعبر", "كعبر" , " ka3boura " , " كعبورة "   ] }, { questionText: "     شكون الي يفلم برشا في الشلة و يحب يجيبها يعرف كل شي ؟    ", displayAnswer: " ولد الورغي   ", correctAnswers: [" lou ", "لؤي" , " louay " , " ولد الورغي " ] }, { questionText: " قلك عمرك ما ترمي القزاز في طريق الرجالة ... ", displayAnswer: "يجي نهار و تقصدهم حفيان ، و اضرب نعنبو الي بكاهم واطا واطططططط ", correctAnswers: ["يجي نهار و تقصدهم حفيان", "واطططططط"] }, { questionText: "قلك على شلة تجي كل يوم للقهوة علالة و لا نهار قعدو مع طفلة ", displayAnswer: "شلتنا", correctAnswers: ["النياكة", "المكاحيط" , " المنيكين " ] }, { questionText: "شكون انيك واحد في الشلة ؟  ", displayAnswer: "كلكم كي زبي ", correctAnswers: ["الكل", "hama" , " الزعيم "  , " za3im " , " louay " , "ka3boura" , " lahdir " , " hayder "] }, { questionText: "رسلان  علاه معادش يقعد معانا ؟   ", displayAnswer: "رجولية هاذي ؟ وبنة نرا دينمها ... تبع لبنات تو تربح", correctAnswers: ["nour ", "نور" , " miboun "  , " ميبون " , " تبع لبنات " , "نور " , " نور متاع زبي  " , " wabna "] }, { questionText: "كعبورة قداه من مرة طاح كنترول ؟   ", displayAnswer: "قول قداه من مرة نجح برانسيبال ههه  ", correctAnswers: ["5", "2" , " 3 "  , " 4 " , " louay " , "ka3boura" , " lahdir " , " hayder "] }, { questionText: "شكون اكثر واحد يكره صاحبة الحرقاسة ؟ ", displayAnswer: "ولد الورغي اكيد ", correctAnswers: ["ولد الورغي", "louay" , "لؤي" ] } ] },
+            { category: "الثقافة العامة", questions: [ { questionText: "ما اسم عاصمة فلسطين؟", displayAnswer: "القدس", correctAnswers: ["القدس", "القدس الشريف"] }, { questionText: "ما هو الحيوان الذي يُصدر أعلى صوت؟", displayAnswer: "الحوت الأزرق", correctAnswers: ["الحوت الأزرق"] }, { questionText: "في أي سنة قامت الثورة الفرنسية؟", displayAnswer: "1789", correctAnswers: ["1789"] }, { questionText: "من هو أول من رسم خريطة للعالم؟", displayAnswer: "الإدريسي", correctAnswers: ["الإدريسي"] }, { questionText: "ما هو الشيء الذي لا يمشي إلا بالضرب؟", displayAnswer: "المسمار", correctAnswers: ["المسمار"] }, { questionText: "ما اسم أقصر سورة في القرآن؟", displayAnswer: "سورة الكوثر", correctAnswers: ["سورة الكوثر", "الكوثر"] }, { questionText: "كم عدد أسنان الطفل اللبنية؟", displayAnswer: "20", correctAnswers: ["20", "عشرون"] }, { questionText: "ما هو الحيوان الذي يُعتبر أطول الحيوانات رقبة؟", displayAnswer: "الزرافة", correctAnswers: ["الزرافة"] }, { questionText: "ما اسم أول دولة عربية نالت استقلالها؟", displayAnswer: "مصر", correctAnswers: ["مصر"] }, { questionText: "من هو الصحابي الملقب بترجمان القرآن؟", display: "عبد الله بن عباس", correctAnswers: ["عبد الله بن عباس", "ابن عباس"] }, { questionText: "ما اسم العملة في بريطانيا؟", displayAnswer: "الجنيه الإسترليني", correctAnswers: ["الجنيه الإسترليني", "إسترليني"] }, { questionText: "في أي دولة يوجد برج بيزا المائل؟", displayAnswer: "إيطاليا", correctAnswers: ["إيطاليا"] }, { questionText: "من هو أول سفير في الإسلام؟", displayAnswer: "مصعب بن عمير", correctAnswers: ["مصعب بن عمير", "مصعب"] }, { questionText: "من هو مؤسس الدولة العباسية؟", displayAnswer: "أبو العباس السفاح", correctAnswers: ["أبو العباس السفاح", "السفاح"] }, { questionText: "ما هو أسرع المخلوقات البحرية؟", displayAnswer: "سمكة الزعنفة الشراعية", correctAnswers: ["سمكة الزعنفة الشراعية", "الزعنفة الشراعية"] }, { questionText: "من أول من آمن من الصبيان؟", displayAnswer: "علي بن أبي طالب", correctAnswers: ["علي بن أبي طالب", "علي"] }, { questionText: "ما اسم الدولة التي يُطلق عليها 'أرض الشمس المشرقة'؟", displayAnswer: "اليابان", correctAnswers: ["اليابان"] }, { questionText: "كم عدد النجوم على علم الولايات المتحدة؟", displayAnswer: "50", correctAnswers: ["50", "خمسون"] }, { questionText: "ما هو المضيق الذي يفصل بين إفريقيا وأوروبا؟", displayAnswer: "مضيق جبل طارق", correctAnswers: ["مضيق جبل طارق", "جبل طارق"] }, { questionText: "من هو الفيلسوف الذي قال: 'أنا أفكر إذن أنا موجود'؟", displayAnswer: "ديكارت", correctAnswers: ["ديكارت", "رينيه ديكارت"] }, { questionText: "ما اسم الكتاب السماوي الذي أُنزل على عيسى عليه السلام؟", displayAnswer: "الإنجيل", correctAnswers: ["الإنجيل"] }, { questionText: "ما اسم المدينة التي تُعرف بمدينة الضباب؟", displayAnswer: "لندن", correctAnswers: ["لندن"] }, { questionText: "كم عدد لاعبي فريق كرة القدم الأساسي؟", displayAnswer: "11", correctAnswers: ["11", "أحد عشر"] }, { questionText: "من هو العالم المسلم الذي اشتهر بالطب والجراحة؟", displayAnswer: "الزهراوي", correctAnswers: ["الزهراوي"] }, { questionText: "ما هو أقدم علم في التاريخ؟", displayAnswer: "الفلك", correctAnswers: ["الفلك", "علم الفلك"] }, { questionText: "من أول من استخدم الشوكة في الأكل؟", displayAnswer: "العرب", correctAnswers: ["العرب"] }, { questionText: "من هو أول من كتب بسم الله الرحمن الرحيم؟", displayAnswer: "سليمان عليه السلام", correctAnswers: ["سليمان", "سليمان عليه السلام"] }, { questionText: "ما اسم الطائر الذي كلمه النبي سليمان؟", displayAnswer: "الهدهد", correctAnswers: ["الهدهد"] }, { questionText: "ما اسم أكبر جزر العالم؟", displayAnswer: "جرينلاند", correctAnswers: ["جرينلاند", "غرينلاند"] }, { questionText: "ما هو الحيوان الذي يمتلك حاسة شم أقوى من الكلب؟", displayAnswer: "الدب", correctAnswers: ["الدب"] }, { questionText: "ما اسم عاصمة ليبيا؟", displayAnswer: "طرابلس", correctAnswers: ["طرابلس"] }, { questionText: "ما اسم أكبر بحيرة عذبة في العالم؟", displayAnswer: "بحيرة سوبيريور", correctAnswers: ["بحيرة سوبيريور"] }, { questionText: "ما هو العلم الذي يدرس الأحياء المجهرية؟", displayAnswer: "علم الميكروبيولوجيا", correctAnswers: ["علم الميكروبيولوجيا", "الميكروبيولوجيا"] }, { questionText: "من هو القائد الذي فتح الأندلس؟", displayAnswer: "طارق بن زياد", correctAnswers: ["طارق بن زياد", "طارق"] }, { questionText: "ما اسم العضو الذي يضخ الدم في الجسم؟", display: "القلب", correctAnswers: ["القلب"] }, { questionText: "ما اسم أول دولة فازت بكأس العالم؟", displayAnswer: "الأوروغواي", correctAnswers: ["الأوروغواي", "أوروغواي"] }, { questionText: "من هو الصحابي الذي اهتز له عرش الرحمن؟", displayAnswer: "سعد بن معاذ", correctAnswers: ["سعد بن معاذ", "سعد"] }, { questionText: "ما اسم أكبر مدينة في العالم من حيث عدد السكان؟", displayAnswer: "طوكيو", correctAnswers: ["طوكيو"] }, { questionText: "ما اسم الحيوان الذي يعيش في الماء واليابسة؟", displayAnswer: "الضفدع", correctAnswers: ["الضفدع"] }, { questionText: "كم عدد أجنحة الملَك؟", displayAnswer: "600", correctAnswers: ["600", "ستمئة"] }, { questionText: "من هو الخليفة الذي أنشأ نظام البريد؟", displayAnswer: "عمر بن الخطاب", correctAnswers: ["عمر بن الخطاب", "عمر"] }, { questionText: "من هو العالم الذي اخترع المصعد؟", displayAnswer: "إليشا أوتيس", correctAnswers: ["إليشا أوتيس", "أوتيس"] }, { questionText: "ما هو أصل كلمة 'بنطلون'؟", displayAnswer: "فرنسية", correctAnswers: ["فرنسية"] }, { questionText: "في أي قارة تقع دولة كينيا؟", displayAnswer: "أفريقيا", correctAnswers: ["أفريقيا"] }, { questionText: "ما اسم الجهاز الذي يقيس سرعة الرياح؟", displayAnswer: "الأنيمومتر", correctAnswers: ["الأنيمومتر"] }, { questionText: "من هو الشاعر الجاهلي الذي لقب بالملك الضليل؟", displayAnswer: "امرؤ القيس", correctAnswers: ["امرؤ القيس"] }, { questionText: "كم عدد عيون النحلة؟", displayAnswer: "5", correctAnswers: ["5", "خمسة"] }, { questionText: "ما اسم الجبل الذي كلم الله عليه موسى؟", displayAnswer: "جبل الطور", correctAnswers: ["جبل الطور", "الطور"] }, { questionText: "ما اسم الكتاب الذي كتبه ابن خلدون؟", displayAnswer: "المقدمة", correctAnswers: ["المقدمة"] }, { questionText: "ما اسم أكبر نهر في أوروبا؟", displayAnswer: "نهر الفولغا", correctAnswers: ["نهر الفولغا", "الفولغا"] }, { questionText: "من هو أول من خطّ بالقلم؟", displayAnswer: "إدريس عليه السلام", correctAnswers: ["إدريس", "إدريس عليه السلام"] }, { questionText: "ما هو أول شيء خلقه الله؟", displayAnswer: "القلم", correctAnswers: ["القلم"] }, { questionText: "ما اسم الغاز الذي تنفثه السيارات؟", displayAnswer: "ثاني أكسيد الكربون", correctAnswers: ["ثاني أكسيد الكربون", "CO2"] }, { questionText: "ما اسم أبطأ الكائنات في العالم؟", displayAnswer: "الكسلان", correctAnswers: ["الكسلان"] }, { questionText: "من هو صاحب كتاب 'الأغاني'؟", displayAnswer: "أبو الفرج الأصفهاني", correctAnswers: ["أبو الفرج الأصفهاني"] }, { questionText: "ما اسم أول دولة عربية استضافت كأس العالم؟", displayAnswer: "قطر", correctAnswers: ["قطر"] }, { questionText: "ما اسم الدولة التي تتكون من 7000 جزيرة؟", displayAnswer: "الفلبين", correctAnswers: ["الفلبين"] }, { questionText: "من هو الصحابي الذي جمع القرآن الكريم في عهد عثمان؟", displayAnswer: "زيد بن ثابت", correctAnswers: ["زيد بن ثابت", "زيد"] }, { questionText: "كم عدد أرجل الحشرة؟", displayAnswer: "6", correctAnswers: ["6", "ستة"] }, { questionText: "من أول من سكن مكة؟", displayAnswer: "قبيلة جرهم", correctAnswers: ["قبيلة جرهم", "جرهم"] }, { questionText: "ما اسم أول كائن خلقه الله من الملائكة؟", displayAnswer: "جبريل", correctAnswers: ["جبريل"] }, { questionText: "ما اسم المرض الذي يُصيب كريات الدم الحمراء؟", display: "فقر الدم", correctAnswers: ["فقر الدم", "أنيميا"] }, { questionText: "ما اسم وحدة قياس الضغط الجوي؟", displayAnswer: "بار", correctAnswers: ["بار"] }, { questionText: "ما اسم أصغر قارة في العالم؟", displayAnswer: "أوقيانوسيا", correctAnswers: ["أوقيانوسيا"] } ] },
+            { category: " اسئلة الشلة ", questions: [ { questionText: " كي نقولو كنترول شنوة يجي للبالك ؟  ", displayAnswer: "كعبورة", correctAnswers: ["لمكعبر", "كعبر" , " ka3boura " , " كعبورة "   ] }, { questionText: "    شكون الي يفلم برشا في الشلة و يحب يجيبها يعرف كل شي ؟    ", displayAnswer: " ولد الورغي  ", correctAnswers: [" lou ", "لؤي" , " louay " , " ولد الورغي " ] }, { questionText: " قلك عمرك ما ترمي القزاز في طريق الرجالة ... ", displayAnswer: "يجي نهار و تقصدهم حفيان ، و اضرب نعنبو الي بكاهم واطا واطططططط ", correctAnswers: ["يجي نهار و تقصدهم حفيان", "واطططططط"] }, { questionText: "قلك على شلة تجي كل يوم للقهوة علالة و لا نهار قعدو مع طفلة ", displayAnswer: "شلتنا", correctAnswers: ["النياكة", "المكاحيط" , " المنيكين " ] }, { questionText: "شكون انيك واحد في الشلة ؟  ", displayAnswer: "كلكم كي زبي ", correctAnswers: ["الكل", "hama" , " الزعيم "  , " za3im " , " louay " , "ka3boura" , " lahdir " , " hayder "] }, { questionText: "رسلان  علاه معادش يقعد معانا ؟    ", displayAnswer: "رجولية هاذي ؟ وبنة نرا دينمها ... تبع لبنات تو تربح", correctAnswers: ["nour ", "نور" , " miboun "  , " ميبون " , " تبع لبنات " , "نور " , " نور متاع زبي  " , " wabna "] }, { questionText: "كعبورة قداه من مرة طاح كنترول ؟    ", displayAnswer: "قول قداه من مرة نجح برانسيبال ههه  ", correctAnswers: ["5", "2" , " 3 "  , " 4 " , " louay " , "ka3boura" , " lahdir " , " hayder "] }, { questionText: "شكون اكثر واحد يكره صاحبة الحرقاسة ؟ ", displayAnswer: "ولد الورغي اكيد ", correctAnswers: ["ولد الورغي", "louay" , "لؤي" ] } ] },
             { category: "حيوانات الغابة", questions: [ { questionText: "ملك الغابة؟", displayAnswer: "أسد", correctAnswers: ["أسد", "اسد"] }, { questionText: "حيوان مخطط بالأبيض والأسود يشبه الحصان؟", displayAnswer: "حمار وحشي", correctAnswers: ["حمار وحشي", "حماروحشي"] }, { questionText: "أكبر حيوان بري على وجه الأرض، بخرطوم طويل وأذنين كبيرتين؟", displayAnswer: "فيل", correctAnswers: ["فيل", "الفيل"] }, { questionText: "حيوان طويل العنق ذو بقع بنية، يتغذى على أوراق الأشجار العالية؟", displayAnswer: "زرافة", correctAnswers: ["زرافة", "الزرافة"] }, { questionText: "حيوان ذكي يعيش في الغابات يأكل الموز ويتأرجح بين الأشجار؟", displayAnswer: "قرد", correctAnswers: ["قرد", "القرد"] } ] },
             { category: "عواصم دول العالم (غير العربية)", questions: [ { questionText: "ما هي عاصمة اليابان؟", displayAnswer: "طوكيو", correctAnswers: ["طوكيو", "tokyo"] }, { questionText: "ما هي عاصمة الولايات المتحدة الأمريكية؟", displayAnswer: "واشنطن", correctAnswers: ["واشنطن", "washington"] }, { questionText: "ما هي عاصمة روسيا؟", displayAnswer: "موسكو", correctAnswers: ["موسكو", "moscow"] }, { questionText: "ما هي عاصمة الصين؟", displayAnswer: "بكين", correctAnswers: ["بكين", "beijing"] }, { questionText: "ما هي عاصمة الهند؟", displayAnswer: "نيودلهي", correctAnswers: ["نيودلهي", "new delhi"] } ] },
-            { category: "أسئلة تونسية", questions: [ { questionText: "شنوة عاصمة تونس؟", displayAnswer: "تونس", correctAnswers: ["تونس", "tunis", "tounes"] }, { questionText: "شنوة اسم العملة التونسية؟", displayAnswer: "دينار", correctAnswers: ["دينار", "dinar", "دنيار"] }, { questionText: "شكون ربح كاس افريقيا 2004؟", displayAnswer: "تونس", correctAnswers: ["تونس", "المنتخب التونسي", "tounes", "منتخب تونس"] }, { questionText: "شنوة اسم أطول واد في تونس؟", displayAnswer: "واد مجردة", correctAnswers: ["واد مجردة", "مجردة", "وادي مجردة", "oued mejerdah"] }, { questionText: "شكون الرئيس الأول لتونس؟", displayAnswer: "الحبيب بورقيبة", correctAnswers: ["الحبيب بورقيبة", "بورقيبة", "حبيب بورقيبة", "bourguiba"] }, { questionText: "شنوة اسم مدينة تونسية مشهورة بالحمامات الطبيعية؟", displayAnswer: "حمام الأنف", correctAnswers: ["حمام الأنف", "حمام الانف", "hammam linf", "hamam lanf"] }, { questionText: "شنوة الأكلة التونسية المشهورة اللي فيها كسكسي وخضرة ولحم؟", displayAnswer: "كسكسي", correctAnswers: ["كسكسي", "كسكس", "couscous"] }, { questionText: "شنوة العاصمة الثقافية لتونس؟", displayAnswer: "القيروان", correctAnswers: ["القيروان", "kairouan", "kayrawan"] }, { questionText: "شنوة اسم أشهر طبق حلويات تونسي في الأعياد؟", displayAnswer: "المقروض", correctAnswers: ["المقروض", "مقروض", "makroudh"] }, { questionText: "أكبر جزيرة تونسية؟", displayAnswer: "جربة", correctAnswers: ["جربة", "djerba", "jareba"] }, { questionText: "شنوة اسم الجبل الأعلى في تونس؟", displayAnswer: "جبل الشعانبي", correctAnswers: ["جبل الشعانبي", "الشعانبي", "chambi"] }, { questionText: "فنان تونسي مشهور بأغنية 'يا ليلى يا ليلة'؟", displayAnswer: "صابر الرباعي", correctAnswers: ["صابر الرباعي", "رباعي", "saber rebai"] }, { questionText: "شنوة اسم بحيرة تونسية مشهورة بالطيور المهاجرة؟", displayAnswer: "بحيرة إشكل", correctAnswers: ["بحيرة إشكل", "إشكل", "ichkeul"] }, { questionText: "اسم الملعب الوطني في تونس العاصمة؟", displayAnswer: "ملعب حمادي العقربي", correctAnswers: ["ملعب حمادي العقربي", "ملعب رادس", "رادس", "hamadi agerbi"] }, { questionText: "في أي ولاية تونسية توجد مدينة دقة الأثرية؟", displayAnswer: "باجة", correctAnswers: ["باجة", "beja"] } ] }
+            { category: "أسئلة تونسية", questions: [ { questionText: "شنوة عاصمة تونس؟", displayAnswer: "تونس", correctAnswers: ["تونس", "tunis", "tounes"] }, { questionText: "شنوة اسم العملة التونسية؟", displayAnswer: "دينار", correctAnswers: ["دينار", "dinar", "دنيار"] }, { questionText: "شكون ربح كاس افريقيا 2004؟", displayAnswer: "تونس", correctAnswers: ["تونس", "المنتخب التونسي", "tounes", "منتخب تونس"] }, { questionText: "شنوة اسم أطول واد في تونس؟", displayAnswer: "واد مجردة", correctAnswers: ["واد مجردة", "مجردة", "وادي مجردة", "oued mejerdah"] }, { questionText: "شكون الرئيس الأول لتونس؟", displayAnswer: "الحبيب بورقيبة", correctAnswers: ["الحبيب بورقيبة", "بورقيبة", "حبيب بورقيبة", "bourguiba"] }, { questionText: "شنوة اسم مدينة تونسية مشهورة بالحمامات الطبيعية؟", displayAnswer: "حمام الأنف", correctAnswers: ["حمام الأنف", "حمام الانف", "hammam linf", "hamam lanf"] }, { questionText: "شنوة الأكلة التونسية المشهورة اللي فيها كسكسي وخضرة ولحم؟", displayAnswer: "كسكسي", correctAnswers: ["كسكسي", "كسكس", "couscous"] }, { questionText: "شنوة العاصمة الثقافية لتونس؟", displayAnswer: "القيروان", correctAnswers: ["القيروان", "kairouan", "kayrawan"] }, { questionText: "شنوة اسم أشهر طبق حلويات تونسي في الأعياد؟", display: "المقروض", correctAnswers: ["المقروض", "مقروض", "makroudh"] }, { questionText: "أكبر جزيرة تونسية؟", displayAnswer: "جربة", correctAnswers: ["جربة", "djerba", "jareba"] }, { questionText: "شنوة اسم الجبل الأعلى في تونس؟", displayAnswer: "جبل الشعانبي", correctAnswers: ["جبل الشعانبي", "الشعانبي", "chambi"] }, { questionText: "فنان تونسي مشهور بأغنية 'يا ليلى يا ليلة'؟", displayAnswer: "صابر الرباعي", correctAnswers: ["صابر الرباعي", "رباعي", "saber rebai"] }, { questionText: "شنوة اسم بحيرة تونسية مشهورة بالطيور المهاجرة؟", displayAnswer: "بحيرة إشكل", correctAnswers: ["بحيرة إشكل", "إشكل", "ichkeul"] }, { questionText: "اسم الملعب الوطني في تونس العاصمة؟", displayAnswer: "ملعب حمادي العقربي", correctAnswers: ["ملعب حمادي العقربي", "ملعب رادس", "رادس", "hamadi agerbi"] }, { questionText: "في أي ولاية تونسية توجد مدينة دقة الأثرية؟", displayAnswer: "باجة", correctAnswers: ["باجة", "beja"] } ] }
         ];
         
         function normalize(text) {
@@ -619,7 +653,7 @@
         const startNewRoundSameRoomButton = document.getElementById('start-new-round-same-room-button');
         const playerExitButtonGameplay = document.getElementById('player-exit-button-gameplay');
         const playerExitButtonResults = document.getElementById('player-exit-button-results');
-        const customMessageButtonsContainer = document.getElementById('custom-message-buttons'); 
+        const customMessageButtonsContainer = document.getElementById('custom-message-buttons');  
         const customMessageBox = document.getElementById('custom-message-box');
         const customMessageTitle = document.getElementById('custom-message-title');
         const customMessageContent = document.getElementById('custom-message-content');
@@ -818,13 +852,14 @@
         function exitGame() {
             showLoading();
             if (lobbyMusicLoop && lobbyMusicLoop.state === "started") {
-                 Tone.Transport.stop();
-                 lobbyMusicLoop.stop(0);
+                Tone.Transport.stop();
+                lobbyMusicLoop.stop(0);
             }
             gameId = null;
             isHost = false;
             clearInterval(timerInterval);
             clearInterval(currentQuestionSoundInterval);
+            clearInterval(hostTimeUpdateInterval); // Clear host time update interval
             soundStarted = false;
             if (gameSnapshotUnsubscribe) {
                 gameSnapshotUnsubscribe();
@@ -1047,8 +1082,8 @@
                     questionStartTime: Date.now(),
                     timeLimitPerQuestion: gameData.timeLimitPerQuestion,
                     scoresReconciledForCurrentQuestion: false,
-                    currentTime: gameData.timeLimitPerQuestion, 
-                    lastHostTimeUpdate: Date.now()
+                    currentTime: gameData.timeLimitPerQuestion, // Initialize currentTime for the new question
+                    lastHostTimeUpdate: Date.now() // Set last update time
                 });
 
                 const playersCollectionRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
@@ -1067,6 +1102,30 @@
                 clearInterval(currentQuestionSoundInterval);
                 soundStarted = false;
 
+                // Host-side interval to periodically update game time in Firestore
+                clearInterval(hostTimeUpdateInterval);
+                hostTimeUpdateInterval = setInterval(async () => {
+                    try {
+                        const gameCurrentDoc = await gameRef.get();
+                        if (gameCurrentDoc.exists && gameCurrentDoc.data().gamePhase === 'question_active') {
+                            const remainingTime = Math.max(0, gameCurrentDoc.data().currentTime - 1);
+                            await gameRef.update({
+                                currentTime: remainingTime,
+                                lastHostTimeUpdate: Date.now()
+                            });
+                            if (remainingTime <= 0) {
+                                clearInterval(hostTimeUpdateInterval);
+                                // This will trigger the gamePhase change to question_results via listener
+                            }
+                        } else {
+                            clearInterval(hostTimeUpdateInterval);
+                        }
+                    } catch (error) {
+                        console.error("Error updating host time:", error);
+                        clearInterval(hostTimeUpdateInterval);
+                    }
+                }, 1000); // Update every second
+
             } catch (error) {
                 showCustomMessageBox("خطأ", error.message);
             } finally {
@@ -1080,10 +1139,11 @@
             showLoading();
             try {
                 const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
+                clearInterval(hostTimeUpdateInterval); // Stop host timer updates
                 await gameRef.update({
                     gamePhase: 'question_results',
                     scoresReconciledForCurrentQuestion: false,
-                    currentTime: 0,
+                    currentTime: 0, // Ensure timer is zero
                     lastHostTimeUpdate: Date.now()
                 });
                 reconcileQuestionScores();
@@ -1119,7 +1179,7 @@
                 }
                 const gameData = gameDoc.data();
                 const selectedCategories = gameData.selectedCategoryIndices || [];
-                const totalQuestions = gameData.quizSet ? gameData.quizSet.length : 10; 
+                const totalQuestions = gameData.quizSet ? gameData.quizSet.length : 10;  // Use existing total questions
 
                 if (selectedCategories.length === 0) {
                     showCustomMessageBox("خطأ", "لا توجد فئات أسئلة مختارة.");
@@ -1140,6 +1200,7 @@
                         });
                     }
                 });
+                // Shuffle questions for the new round
                 for (let i = allPossibleQuestions.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [allPossibleQuestions[i], allPossibleQuestions[j]] = [allPossibleQuestions[j], allPossibleQuestions[i]];
@@ -1148,12 +1209,13 @@
 
                 if (newQuizSetForGame.length === 0) {
                     showCustomMessageBox("خطأ", "الفئات المختارة لا تحتوي على أسئلة.");
+                    hideLoading();
                     return;
                 }
 
                 const batch = db.batch();
                 batch.update(gameRef, {
-                    gamePhase: 'lobby',
+                    gamePhase: 'lobby', // Set phase back to lobby for all players
                     quizSet: newQuizSetForGame,
                     currentQuestionIndexInGame: 0,
                     currentCategory: '',
@@ -1172,7 +1234,7 @@
                 const playersDocs = await playersCollectionRef.get();
                 playersDocs.forEach(playerDoc => {
                     batch.update(playerDoc.ref, {
-                        score: 0,
+                        score: 0, // Reset scores for all players
                         playerSubmittedAnswer: '',
                         playerSelectedPoints: 0,
                         playerScoreChange: 0,
@@ -1183,11 +1245,12 @@
                 });
                 await batch.commit();
 
-                if (playerScoreDisplay) playerScoreDisplay.textContent = '0';
-                userUsedPointsBets = [];
-                populatePointsButtons();
+                // No need to showScreen(waitingRoomScreen) here for host,
+                // the Firestore listener will handle it for all clients,
+                // including the host, once the gamePhase updates to 'lobby'.
+                // This ensures consistent state transitions.
+                // The listeners were intentionally NOT unsubscribed in showFinalScores().
 
-                showScreen(waitingRoomScreen); 
             } catch (error) {
                 showCustomMessageBox("خطأ", error.message);
             } finally {
@@ -1223,7 +1286,7 @@
                         const normalizedSubmittedAnswer = normalize(submittedAnswer);
                         if (isCorrectAnswer(normalizedSubmittedAnswer, currentCorrectAnswers)) {
                             scoreChange = playerData.playerSelectedPoints;
-                            if (!roundCorrectGuesses.some(g => normalize(g) === normalizedSubmittedAnswer)) { 
+                            if (!roundCorrectGuesses.some(g => normalize(g) === normalizedSubmittedAnswer)) {  
                                 roundCorrectGuesses.push(submittedAnswer);
                             }
                         } else {
@@ -1240,7 +1303,7 @@
                     });
                 }
 
-                batch.update(gameRef, { 
+                batch.update(gameRef, {  
                     currentQuestionGuessedAnswers: roundCorrectGuesses,
                     scoresReconciledForCurrentQuestion: true
                 });
@@ -1301,6 +1364,7 @@
                     window.history.pushState({ path: newUrl }, '', newUrl);
                 }
 
+                // Show waiting room for all players joining or rejoining
                 showScreen(waitingRoomScreen);
                 if (document.getElementById('waiting-room-title')) document.getElementById('waiting-room-title').textContent = `في انتظار بدء اللعبة...`;
                 
@@ -1310,6 +1374,7 @@
                 if (qrcodeFallbackMessage) qrcodeFallbackMessage.textContent = '';
                 if (copyLinkButton) copyLinkButton.classList.add('hidden');
                 
+                // Ensure listeners are active for all players, regardless of how they join
                 listenToGameChanges();
                 listenToPlayers();
             } catch (error) {
@@ -1348,7 +1413,7 @@
                         throw new Error("لقد أجبت بالفعل.");
                     }
                     if (playerData.usedPointsBets.includes(pointsBet)) {
-                         throw new Error(`لقد استخدمت قيمة ${pointsBet} نقطة بالفعل.`);
+                            throw new Error(`لقد استخدمت قيمة ${pointsBet} نقطة بالفعل.`);
                     }
 
                     transaction.update(playerRef, {
@@ -1375,6 +1440,7 @@
         }
 
         function listenToGameChanges() {
+            // Unsubscribe existing listener if any, before setting up a new one
             if (gameSnapshotUnsubscribe) gameSnapshotUnsubscribe();
 
             const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
@@ -1397,18 +1463,18 @@
                         }
                     }
                     if (gamePhase === 'question_results') {
-                         db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId).get().then(playerDoc => {
-                             if (playerDoc.exists && playerDoc.data().playerScoreChange > 0) {
-                                 playCorrectAnswerSound();
-                             }
-                         });
+                             db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId).get().then(playerDoc => {
+                                 if (playerDoc.exists && playerDoc.data().playerScoreChange > 0) {
+                                     playCorrectAnswerSound();
+                                 }
+                             });
                     }
 
                     if (questionCounterDisplay) {
                         const currentQNum = gameData.currentQuestionIndexInGame;
                         const totalQs = gameData.quizSet ? gameData.quizSet.length : 0;
                         const displayQNum = (gamePhase === 'game_countdown' || gamePhase === 'lobby') ? 0 : currentQNum;
-                        if (totalQs > 0) { questionCounterDisplay.textContent = `${displayQNum} / ${totalQs}`; } 
+                        if (totalQs > 0) { questionCounterDisplay.textContent = `${displayQNum} / ${totalQs}`; }  
                         else { questionCounterDisplay.textContent = `-- / --`; }
                     }
 
@@ -1440,6 +1506,7 @@
                             showScreen(gameCountdownScreen);
                             clearInterval(timerInterval);
                             clearInterval(currentQuestionSoundInterval);
+                            clearInterval(hostTimeUpdateInterval); // Ensure host time update is cleared during countdown
                             soundStarted = false;
                             const countdownDuration = gameData.countdownDuration || 5;
                             let currentCountdown = countdownDuration;
@@ -1498,8 +1565,10 @@
 
                             timerInterval = setInterval(() => {
                                 const now = Date.now();
-                                const lastHostTimeUpdate = gameData.lastHostTimeUpdate || now;
-                                const timeFromHost = gameData.currentTime || gameData.timeLimitPerQuestion;
+                                const lastHostTimeUpdate = gameData.lastHostTimeUpdate || now; // Use gameData.lastHostTimeUpdate
+                                const timeFromHost = gameData.currentTime || gameData.timeLimitPerQuestion; // Use gameData.currentTime
+                                
+                                // Calculate compensated time based on host's last update
                                 const compensatedTime = timeFromHost - Math.floor((now - lastHostTimeUpdate) / 1000);
                                 
                                 localTimerRemaining = Math.max(0, compensatedTime);
@@ -1513,20 +1582,20 @@
                                     clearInterval(timerInterval);
                                     clearInterval(currentQuestionSoundInterval);
                                     soundStarted = false;
-                                    if (isHost) {
-                                        db.collection(`artifacts/${appId}/public/data/games`).doc(gameId).update({ gamePhase: 'question_results', scoresReconciledForCurrentQuestion: false });
-                                        reconcileQuestionScores();
-                                    }
+                                    // Host will handle the phase change, clients just react to it.
+                                    // If client timer reaches 0 before host, they wait for host update.
                                 }
                             }, 1000);
                             break;
                         case 'question_results':
+                            // Host only reconciles scores once
                             if (isHost && !gameData.scoresReconciledForCurrentQuestion) {
                                 reconcileQuestionScores();  
                             }
                             showScreen(questionResultsScreen);
                             clearInterval(timerInterval);
                             clearInterval(currentQuestionSoundInterval);
+                            clearInterval(hostTimeUpdateInterval); // Clear host time update interval
                             soundStarted = false;
 
                             if (resultsCategory) resultsCategory.textContent = gameData.currentCategory;
@@ -1572,11 +1641,13 @@
                         case 'final_results':
                             clearInterval(timerInterval);
                             clearInterval(currentQuestionSoundInterval);
+                            clearInterval(hostTimeUpdateInterval); // Clear host time update interval
                             soundStarted = false;
                             showFinalScores();
                             break;
                     }
                 } else {
+                    // Game document no longer exists, exit the game for all players
                     showCustomMessageBox("اللعبة غير موجودة", "تم إغلاق الغرفة.");
                     exitGame();
                 }
@@ -1587,6 +1658,7 @@
         }
 
         function listenToPlayers() {
+            // Unsubscribe existing listener if any, before setting up a new one
             if (playersSnapshotUnsubscribe) playersSnapshotUnsubscribe();
 
             const playersRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`);
@@ -1647,9 +1719,9 @@
 
                     if (gamePhase === 'lobby' && isHost) {
                         if (snapshot.size >= 1) { // Changed to 1 so host can start alone
-                           if (startGameButton) startGameButton.classList.remove('hidden'); 
-                        } else { 
-                           if (startGameButton) startGameButton.classList.add('hidden'); 
+                           if (startGameButton) startGameButton.classList.remove('hidden');  
+                        } else {  
+                           if (startGameButton) startGameButton.classList.add('hidden');  
                         }
                     }
 
@@ -1712,9 +1784,10 @@
         async function showFinalScores() {
             showLoading();
             try {
-                if (gameSnapshotUnsubscribe) { gameSnapshotUnsubscribe(); gameSnapshotUnsubscribe = null; }
-                if (playersSnapshotUnsubscribe) { playersSnapshotUnsubscribe(); playersSnapshotUnsubscribe = null; }
+                // IMPORTANT: Do NOT unsubscribe gameSnapshotUnsubscribe and playersSnapshotUnsubscribe here.
+                // They should remain active for "start new round in same room" functionality.
                 clearInterval(currentQuestionSoundInterval);
+                clearInterval(hostTimeUpdateInterval); // Clear host time update interval
                 soundStarted = false;
                 clearInterval(timerInterval);
 
@@ -1814,8 +1887,8 @@
                     const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
                     const playerRef = gameRef.collection('players').doc(userId);
                     await db.runTransaction(async (transaction) => {
-                         transaction.update(gameRef, { currentTime: firebase.firestore.FieldValue.increment(15) });
-                         transaction.update(playerRef, { 'powerUpsUsed.extraTime': true });
+                            transaction.update(gameRef, { currentTime: firebase.firestore.FieldValue.increment(15) });
+                            transaction.update(playerRef, { 'powerUpsUsed.extraTime': true });
                     });
                      showCustomMessageBox("وقت إضافي!", "تمت إضافة 15 ثانية.");
                 } catch (e) {
@@ -1824,7 +1897,6 @@
             });
         }
 
-      
         if (powerUpHintBtn) {
             powerUpHintBtn.addEventListener('click', async () => {
                  if (powerUpHintBtn.disabled) return;
@@ -1836,10 +1908,10 @@
                          const displayAnswer = gameDoc.data().currentDisplayAnswer;
                          // Show the full answer as requested
                          await playerRef.update({ 'powerUpsUsed.hint': true });
-                         showCustomMessageBox("تلميح!", `الإجابة هي: <strong class="text-2xl">${displayAnswer}</strong>`);
+                         showCustomMessageBox("استعمال جوكر!", `الإجابة هي: <strong class="text-2xl">${displayAnswer}</strong>`);
                      }
                  } catch (e) {
-                     showCustomMessageBox("خطأ", "لم نتمكن من استخدام قوة التلميح.");
+                     showCustomMessageBox("خطأ", "لم نتمكن من استخدام قوة الجوكر.");
                  }
             });
         }
@@ -1847,45 +1919,19 @@
     </script>
 
 
-  
+    
 <!-- مكتبة QR Code -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <script>
-  function generateQRCode(link) {
-    const qrcodeContainer = document.getElementById("qrcode");
-    qrcodeContainer.innerHTML = ""; // ننظف القديم
-
-    new QRCode(qrcodeContainer, {
-      text: link,
-      width: 150,
-      height: 150,
-    });
-  }
-
-  // عند عرض رابط الغرفة
-  window.addEventListener('DOMContentLoaded', () => {
-    const link = window.location.href; // أو أي رابط الغرفة
-    const linkDisplay = document.getElementById("game-link-display");
-    if (linkDisplay) {
-      linkDisplay.textContent = link;
-    }
-    generateQRCode(link);
-  });
+    // This script block seems to duplicate QR code generation and might cause issues.
+    // The main script block already handles QR code generation when gameId is set.
+    // I will keep the original QR code logic and remove this duplicated one.
+    // The existing generateQRCode function is already called in createGame.
+    // The window.addEventListener('DOMContentLoaded') here would likely run before
+    // the main script's initializeFirebase completes and gameId is set for game link display.
+    // Keeping the original logic as it's better integrated.
 </script>
-
-    
-
-
-
-
-
-
-
-
-
-
-
 
     
 </body>
