@@ -1843,7 +1843,6 @@
                      const gameDoc = await gameRef.get();
                      if (gameDoc.exists) {
                          const displayAnswer = gameDoc.data().currentDisplayAnswer;
-                         const firstLetter = displayAnswer.charAt(0);
                          await playerRef.update({ 'powerUpsUsed.hint': true });
                          showCustomMessageBox("تلميح!", `الحرف الأول من الإجابة هو: <strong class="text-2xl">${firstLetter}</strong>`);
                      }
