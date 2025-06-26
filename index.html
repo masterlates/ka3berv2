@@ -623,16 +623,14 @@
                 
                 const gameRoomLink = `${window.location.origin}${window.location.pathname}?gameId=${gameId}`;
                 if (gameLinkDisplay) gameLinkDisplay.textContent = gameRoomLink;
-                if (qrcodeDiv) {
-                    qrcodeDiv.innerHTML = '';
-                    try {
-                        if (typeof QRCode !== 'undefined') {
-                            new QRCode(qrcodeDiv, { text: gameRoomLink, width: 128, height: 128 });
-                        }
-                    } catch(e) {
-                         console.error("Failed to generate QR Code:", e);
-                         if(qrcodeFallbackMessage) qrcodeFallbackMessage.textContent = "فشل توليد رمز QR.";
+                try {
+                    if (typeof QRCode !== 'undefined' && qrcodeDiv) {
+                        qrcodeDiv.innerHTML = '';
+                        new QRCode(qrcodeDiv, { text: gameRoomLink, width: 128, height: 128 });
                     }
+                } catch(e) {
+                     console.error("Could not generate QR Code, but proceeding:", e);
+                     if(qrcodeFallbackMessage) qrcodeFallbackMessage.textContent = "فشل توليد رمز QR.";
                 }
                 if (copyLinkButton) copyLinkButton.onclick = () => { navigator.clipboard.writeText(gameRoomLink).then(() => showCustomMessageBox("تم النسخ!", "تم نسخ رابط الغرفة."), () => showCustomMessageBox("خطأ", "فشل نسخ الرابط.")); };
 
