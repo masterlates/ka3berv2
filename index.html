@@ -275,6 +275,32 @@
             border: 2px solid #3b82f6; /* Blue-600 */
             transform: scale(1.02);
         }
+
+        /* Animation for score change */
+        @keyframes scorePulse {
+            0% { transform: scale(1); color: inherit; }
+            50% { transform: scale(1.1); color: #f59e0b; } /* Yellow-600 */
+            100% { transform: scale(1); color: inherit; }
+        }
+        .score-pulse {
+            animation: scorePulse 0.5s ease-out;
+        }
+        @keyframes scoreFlashGreen {
+            0% { background-color: transparent; }
+            50% { background-color: #a7f3d0; } /* Green-200 */
+            100% { background-color: transparent; }
+        }
+        @keyframes scoreFlashRed {
+            0% { background-color: transparent; }
+            50% { background-color: #fecaca; } /* Red-200 */
+            100% { background-color: transparent; }
+        }
+        .score-flash-green {
+            animation: scoreFlashGreen 1s ease-out;
+        }
+        .score-flash-red {
+            animation: scoreFlashRed 1s ease-out;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 min-h-screen flex flex-col items-center justify-center p-4 text-gray-800">
@@ -1670,7 +1696,7 @@
                 const gameRoomLink = `${window.location.origin}${window.location.pathname}?gameId=${gameId}`;
                 if (gameLinkDisplay) {
                     gameLinkDisplay.textContent = gameRoomLink;
-                    gameLinkDisplay.href = gameRoomLink;
+                    gameLinkLink.href = gameRoomLink; // Corrected typo
                 }
                 
                 if (qrcodeDiv) qrcodeDiv.innerHTML = '';
@@ -1945,6 +1971,75 @@
             } finally {
                 hideLoading();
             }
+        }
+
+        // NEW: Function for host to manually correct a player's answer
+        async function hostCorrectPlayerAnswer(playerIdToCorrect, playerNickname, playerSelectedPoints, currentScore) {
+            if (!isHost || !gameId) return;
+
+            showCustomMessageBox("تأكيد تصحيح الإجابة", `هل أنت متأكد من تصحيح إجابة اللاعب ${playerNickname}؟ سيتم إضافة نقاط الرهان له.`, {
+                buttons: [
+                    {
+                        text: 'نعم، صحح',
+                        className: 'bg-green-600 hover:bg-green-700 text-white text-xl font-semibold py-3 px-8 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out',
+                        callback: async () => {
+                            showLoading();
+                            try {
+                                const playerRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(playerIdToCorrect);
+                                const gameRef = db.collection(`artifacts/${appId}/public/data/games`).doc(gameId);
+                                const gameDoc = await gameRef.get();
+                                const gameData = gameDoc.data();
+
+                                // Calculate new score: current score + (2 * pointsBet) because they lost pointsBet and now gain pointsBet (original bet) + pointsBet (for correct answer)
+                                // Or simpler: current score + pointsBet (if they didn't lose it yet)
+                                // Let's assume they lost it, so we add 2x to compensate and reward.
+                                // If they didn't submit, scoreChange was 0, so just add pointsBet.
+                                // If they submitted wrong, scoreChange was -pointsBet, so add 2*pointsBet.
+
+                                await db.runTransaction(async (transaction) => {
+                                    const playerDoc = await transaction.get(playerRef);
+                                    if (!playerDoc.exists) throw new Error("بيانات اللاعب غير موجودة.");
+                                    const playerData = playerDoc.data();
+
+                                    let scoreChangeForThisCorrection = 0;
+                                    if (playerData.hasSubmittedAnswer && playerData.playerScoreChange < 0) {
+                                        // Player submitted wrong, lost points. Add back 2x to compensate loss and give points.
+                                        scoreChangeForThisCorrection = 2 * playerData.playerSelectedPoints;
+                                    } else if (!playerData.hasSubmittedAnswer || playerData.playerScoreChange === 0) {
+                                        // Player didn't submit or submitted 0 points. Just add points.
+                                        scoreChangeForThisCorrection = playerData.playerSelectedPoints;
+                                    }
+                                    
+                                    const newScore = (playerData.score || 0) + scoreChangeForThisCorrection;
+
+                                    transaction.update(playerRef, {
+                                        score: newScore,
+                                        playerScoreChange: scoreChangeForThisCorrection, // Update score change for display on results
+                                        hasSubmittedAnswer: true, // Mark as submitted
+                                        playerSubmittedAnswer: gameData.currentDisplayAnswer, // Set their answer to correct display answer
+                                        // Ensure doublePoints is marked as used if applicable, or just hint
+                                        'powerUpsUsed.hint': true // Mark hint as used as a side effect of host correction
+                                    });
+                                });
+
+                                showCustomMessageBox("تم التصحيح!", `تم تصحيح إجابة ${playerNickname} وإضافة النقاط بنجاح.`);
+                                // Re-render the detailed scores to reflect the change
+                                showQuestionPlayerScoresDetailed(); 
+                            } catch (error) {
+                                showCustomMessageBox("خطأ في التصحيح", error.message);
+                                console.error("Error correcting player answer:", error);
+                            } finally {
+                                hideLoading();
+                            }
+                        }
+                    },
+                    {
+                        text: 'إلغاء',
+                        className: 'bg-gray-500 hover:bg-gray-600 text-white text-xl font-semibold py-3 px-8 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-out',
+                        callback: hideCustomMessageBox
+                    }
+                ]
+            });
         }
 
         async function reconcileQuestionScores() {
@@ -2425,6 +2520,8 @@
             });
         }
 
+        let previousPlayerScores = {}; // To track scores for animation
+
         function listenToPlayers() {
             if (playersSnapshotUnsubscribe) playersSnapshotUnsubscribe();
 
@@ -2452,13 +2549,29 @@
                         const playerData = doc.data();
                         const playerId = doc.id;
 
+                        // Animate score change in joinedPlayersList
                         if (joinedPlayersList) {
                             const listItem = document.createElement('li');
                             let playerDisplayName = playerData.nickname || 'لاعب مجهول';
                             if (hostIdFromGame && hostIdFromGame === playerId) {
                                 playerDisplayName += ' <i class="fas fa-crown text-yellow-500"></i> (المضيف)';
                             }
-                            listItem.innerHTML = `${playerDisplayName} <span class="font-bold">(النقاط: ${playerData.score || 0})</span>`;
+                            
+                            const currentScore = playerData.score || 0;
+                            let scoreSpan = `<span class="font-bold">(النقاط: ${currentScore})</span>`;
+
+                            // Check for score change and apply animation class
+                            if (previousPlayerScores[playerId] !== undefined && previousPlayerScores[playerId] !== currentScore) {
+                                const scoreChangeAmount = currentScore - previousPlayerScores[playerId];
+                                if (scoreChangeAmount > 0) {
+                                    scoreSpan = `<span class="font-bold text-green-600 score-pulse">(النقاط: ${currentScore} <i class="fas fa-arrow-up"></i>)</span>`;
+                                } else if (scoreChangeAmount < 0) {
+                                    scoreSpan = `<span class="font-bold text-red-600 score-pulse">(النقاط: ${currentScore} <i class="fas fa-arrow-down"></i>)</span>`;
+                                }
+                            }
+                            previousPlayerScores[playerId] = currentScore; // Update previous score
+
+                            listItem.innerHTML = `${playerDisplayName} ${scoreSpan}`;
                             joinedPlayersList.appendChild(listItem);
                         }
 
@@ -2470,7 +2583,13 @@
                             let statusIcon = playerData.hasSubmittedAnswer ? '<i class="fas fa-check-circle text-green-500 ml-2"></i>' : '<i class="fas fa-hourglass-half text-gray-500 ml-2"></i>';
                             let submittedAnswerText = playerData.hasSubmittedAnswer ? `إجابة: ${submittedAnswerActual || 'لا توجد'}` : 'لم يجب';
                             let scoreInfo = (scoreChangeValue !== 0 || selectedPointsActual > 0) ? `(راهن بـ ${selectedPointsActual}، تغيير: ${scoreChangeValue >= 0 ? '+' : ''}${scoreChangeValue})` : '';
-                            statusItem.innerHTML = `${playerData.nickname || 'مجهول'}: ${statusIcon} ${submittedAnswerText} ${scoreInfo}`;
+                            
+                            // Add host correction button if answer is wrong and submitted
+                            if (isHost && playerData.hasSubmittedAnswer && scoreChangeValue < 0) { // Assuming negative scoreChange means wrong answer
+                                statusItem.innerHTML = `${playerData.nickname || 'مجهول'}: ${statusIcon} ${submittedAnswerText} ${scoreInfo} <button class="bg-yellow-500 text-white px-2 py-1 rounded-md text-sm mr-2" onclick="hostCorrectPlayerAnswer('${playerId}', '${playerData.nickname}', ${selectedPointsActual}, ${playerData.score})">تصحيح</button>`;
+                            } else {
+                                statusItem.innerHTML = `${playerData.nickname || 'مجهول'}: ${statusIcon} ${submittedAnswerText} ${scoreInfo}`;
+                            }
                             hostSubmissionStatusList.appendChild(statusItem);
                         }
 
@@ -2482,7 +2601,14 @@
                             updatePowerUpButtonsUI(powerUps);
                         }
                     });
-                    if (playerScoreDisplay) playerScoreDisplay.innerHTML = currentPlayerOverallScore;
+                    if (playerScoreDisplay) {
+                        const oldScore = parseInt(playerScoreDisplay.textContent || '0');
+                        playerScoreDisplay.textContent = currentPlayerOverallScore;
+                        if (currentPlayerOverallScore > oldScore) {
+                            playerScoreDisplay.classList.add('score-pulse');
+                            setTimeout(() => playerScoreDisplay.classList.remove('score-pulse'), 500);
+                        }
+                    }
 
                     if (gamePhase === 'lobby' && isHost) {
                         if (snapshot.size >= 1) { 
@@ -2519,6 +2645,7 @@
                         playersSnapshot.forEach(doc => {
                             const playerData = doc.data();
                             questionScores.push({
+                                id: doc.id, // Include player ID for host control
                                 nickname: playerData.nickname,
                                 submittedAnswer: playerData.playerSubmittedAnswer || 'لم يجب',
                                 selectedPoints: playerData.playerSelectedPoints || 0,
@@ -2545,7 +2672,13 @@
                                 }
                                 const answerStatusIcon = player.submittedAnswer !== 'لم يجب' ? (isPlayerAnswerCorrect ? `<i class="fas fa-check-circle text-green-500 mr-2"></i>` : `<i class="fas fa-times-circle text-red-500 mr-2"></i>`) : `<i class="fas fa-question-circle text-gray-500 mr-2"></i>`;
                                 const answerColorClass = player.submittedAnswer !== 'لم يجب' ? (isPlayerAnswerCorrect ? 'text-green-700' : 'text-red-700') : 'text-gray-500';
-                                listItem.innerHTML = `<span class="font-bold">المركز ${index + 1}: ${player.nickname}</span> <span class="${answerColorClass}">${answerStatusIcon} ${player.submittedAnswer}</span> <span class="text-xs text-gray-600">(راهن بـ ${player.selectedPoints} | تغيير: ${player.scoreChange >= 0 ? '+' : ''}${player.scoreChange} | إجمالي: ${player.overallScore})</span>`;
+                                
+                                let correctionButton = '';
+                                if (isHost && !isPlayerAnswerCorrect && player.submittedAnswer !== 'لم يجب') {
+                                    correctionButton = `<button class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md text-sm mr-2" onclick="hostCorrectPlayerAnswer('${player.id}', '${player.nickname}', ${player.selectedPoints}, ${player.overallScore})">تصحيح</button>`;
+                                }
+
+                                listItem.innerHTML = `<span class="font-bold">المركز ${index + 1}: ${player.nickname}</span> <span class="${answerColorClass}">${answerStatusIcon} ${player.submittedAnswer}</span> ${correctionButton} <span class="text-xs text-gray-600">(راهن بـ ${player.selectedPoints} | تغيير: ${player.scoreChange >= 0 ? '+' : ''}${player.scoreChange} | إجمالي: ${player.overallScore})</span>`;
                                 questionPlayerScoresList.appendChild(listItem);
                             });
                         }
@@ -2647,14 +2780,17 @@
         if (playAgainButton) { playAgainButton.addEventListener('click', exitGame); }
         
         if (powerUpDoublePointsBtn) {
-            powerUpDoublePointsBtn.addEventListener('click', () => {
+            powerUpDoublePointsBtn.addEventListener('click', async () => { // Made async
                 if (powerUpDoublePointsBtn.disabled) return;
-                isDoublePointsActive = !isDoublePointsActive;
-                if (isDoublePointsActive) {
+                try {
+                    const playerRef = db.collection(`artifacts/${appId}/public/data/games/${gameId}/players`).doc(userId);
+                    await playerRef.update({ 'powerUpsUsed.doublePoints': true }); // Mark as used in Firestore
+                    isDoublePointsActive = true; // Activate locally for current submission
                     powerUpDoublePointsBtn.classList.add('ring-4', 'ring-yellow-300', 'opacity-50');
                     showCustomMessageBox("ضعف النقاط!", "تم تفعيل قوة ضعف النقاط لهذا السؤال.");
-                } else {
-                    powerUpDoublePointsBtn.classList.remove('ring-4', 'ring-yellow-300', 'opacity-50');
+                } catch (e) {
+                    showCustomMessageBox("خطأ", "لم نتمكن من تفعيل قوة ضعف النقاط.");
+                    console.error("Error activating double points:", e);
                 }
             });
         }
