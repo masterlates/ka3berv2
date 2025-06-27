@@ -1696,7 +1696,7 @@
                 const gameRoomLink = `${window.location.origin}${window.location.pathname}?gameId=${gameId}`;
                 if (gameLinkDisplay) {
                     gameLinkDisplay.textContent = gameRoomLink;
-                    gameLinkLink.href = gameRoomLink; // Corrected typo
+                    gameLinkDisplay.href  = gameRoomLink; // Corrected typo
                 }
                 
                 if (qrcodeDiv) qrcodeDiv.innerHTML = '';
